@@ -12,8 +12,8 @@ Every requirement written into a spec is tagged with exactly one of six source t
 
 | source | meaning | `ref` field |
 |---|---|---|
-| `human` | verbatim user input given during this session | omitted or `"user message"` |
-| `ai_assumption` | agent-inferred, with nothing else grounding it — the default when no other source applies | omitted |
+| `human` | verbatim user input given during this session | `null` |
+| `ai_assumption` | agent-inferred, with nothing else grounding it — the default when no other source applies | `null` |
 | `skill_doc` | grounded in a skill file or other project doc | file path, e.g. `skills/brainstorming/SKILL.md:107-110` |
 | `tool_output` | grounded in output from graphify or another tool/plugin | the command run, e.g. `graphify explain "brainstorming_skill"` |
 | `existing_codebase` | grounded in an existing pattern found in the repo | file:line, e.g. `skills/brainstorming/visual-companion.md:12` |
