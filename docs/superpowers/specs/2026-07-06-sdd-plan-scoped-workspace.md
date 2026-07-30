@@ -6,13 +6,13 @@
 
 ## Problem
 
-SDD's durable-progress workspace (`.superpowers/sdd/`, introduced v6.0.0/v6.0.3) has
+SDD's durable-progress workspace (`.governed-superpowers/sdd/`, introduced v6.0.0/v6.0.3) has
 no plan identity and no end-of-life. Every artifact is keyed by bare task number
 (`progress.md`, `task-N-brief.md`, `task-N-report.md`), and SKILL.md instructs a
 starting controller to treat whatever ledger it finds as its own progress:
 
 > At skill start, check for a ledger:
-> `cat "$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"`. Tasks listed there
+> `cat "$(git rev-parse --show-toplevel)/.governed-superpowers/sdd/progress.md"`. Tasks listed there
 > as complete are DONE — do not re-dispatch them; resume at the first task
 > not marked complete.
 
@@ -48,7 +48,7 @@ structural.
 
 ### 1. Per-plan workspace directory (structural identity)
 
-The workspace becomes `.superpowers/sdd/<plan-slug>/`, where `<plan-slug>` is
+The workspace becomes `.governed-superpowers/sdd/<plan-slug>/`, where `<plan-slug>` is
 the plan file's basename without its `.md` extension (plan filenames are
 already dated kebab-case, e.g. `2026-07-04-plugin-marketplaces-p1-backend-core`).
 Artifacts from different plans can no longer collide; a stale sibling directory
@@ -57,8 +57,8 @@ is inert because no instruction ever points at it.
 Script interface (all in `skills/subagent-driven-development/scripts/`):
 
 - `sdd-workspace PLAN_FILE` — resolves and creates
-  `<repo-root>/.superpowers/sdd/<plan-slug>/`, maintains the self-ignoring
-  `.gitignore` at `.superpowers/sdd/.gitignore` (parent level, content `*`),
+  `<repo-root>/.governed-superpowers/sdd/<plan-slug>/`, maintains the self-ignoring
+  `.gitignore` at `.governed-superpowers/sdd/.gitignore` (parent level, content `*`),
   prints the plan directory's absolute path. Errors (exit 2) on missing
   argument or nonexistent plan file. Slug must be non-empty after stripping.
 - `task-brief PLAN_FILE N [OUTFILE]` — signature unchanged; default OUTFILE
@@ -76,7 +76,7 @@ The ledger stays `<workspace>/progress.md`. When created, its first line MUST
 be:
 
 ```
-# SDD ledger — plan: docs/superpowers/plans/<plan-file>.md
+# SDD ledger — plan: docs/governed-superpowers/plans/<plan-file>.md
 ```
 
 SKILL.md's start-of-skill check becomes plan-scoped and carries a conditional
@@ -95,12 +95,12 @@ counters are added only for failures actually observed in the RED baseline.
 
 When the final whole-branch review is clean and its fix wave (if any) is
 merged — immediately before handing off to
-`superpowers:finishing-a-development-branch` — the controller deletes its
+`governed-superpowers:finishing-a-development-branch` — the controller deletes its
 plan's workspace directory (`rm -rf "$WORKSPACE"`). The record of the work is
 the git history; the ledger's job (mid-plan compaction recovery) is over.
 Sibling directories are never touched: crashed or parallel plans own their own
 dirs, and deliberately parked cross-plan artifacts (observed pattern:
-`WAVE1-HANDOFF.md`) live directly under `.superpowers/sdd/` untouched by any
+`WAVE1-HANDOFF.md`) live directly under `.governed-superpowers/sdd/` untouched by any
 plan's cleanup.
 
 ### 4. SKILL.md touch points
@@ -120,7 +120,7 @@ plan's cleanup.
 ## Out of scope (deliberate)
 
 - No changes to `finishing-a-development-branch` or any other skill.
-- No git-level guards against committing `.superpowers/` beyond the existing
+- No git-level guards against committing `.governed-superpowers/` beyond the existing
   parent `.gitignore`.
 - No retroactive cleanup of the serf repo (separate follow-up).
 - No legacy-layout migration or fallback reads.
@@ -129,7 +129,7 @@ plan's cleanup.
 
 ### Deterministic shell tests (`tests/claude-code/test-sdd-workspace.sh`, extended)
 
-- `sdd-workspace PLAN` prints `<root>/.superpowers/sdd/<slug>` and creates it;
+- `sdd-workspace PLAN` prints `<root>/.governed-superpowers/sdd/<slug>` and creates it;
   errors without a plan arg; errors on missing plan file.
 - Two different plan files resolve to two distinct directories; artifacts
   written via `task-brief` land in their own plan's directory.
@@ -178,7 +178,7 @@ committed eval docs.
   1–2 recognized, Task 3 dispatched. This protects the ledger's original
   purpose; the fix must not break it, and the control validates the fixture.
 
-Results land in `docs/superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-results.md`
+Results land in `docs/governed-superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-results.md`
 and are summarized in the PR.
 
 ## Risks

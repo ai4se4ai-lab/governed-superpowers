@@ -1,10 +1,10 @@
 # SDD Plan-Scoped Workspace Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use governed-superpowers:subagent-driven-development (recommended) or governed-superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make SDD's durable-progress workspace plan-scoped (`.superpowers/sdd/<plan-basename>/`) with a self-identifying ledger and end-of-plan cleanup, so a follow-up plan can never collide with a previous plan's artifacts and resumed controllers stop paying a forensic disambiguation tax.
+**Goal:** Make SDD's durable-progress workspace plan-scoped (`.governed-superpowers/sdd/<plan-basename>/`) with a self-identifying ledger and end-of-plan cleanup, so a follow-up plan can never collide with a previous plan's artifacts and resumed controllers stop paying a forensic disambiguation tax.
 
-**Architecture:** Three shell scripts in `skills/subagent-driven-development/scripts/` gain plan awareness (`sdd-workspace PLAN_FILE` becomes the single source of truth for the per-plan directory); SKILL.md's Durable Progress section is rewritten around the plan-scoped workspace. Eval (re-scoped 2026-07-06 with maintainer sign-off after 25/25 baseline reps showed no blind stale-ledger adoption): deterministic script TDD, a same-plan-resume behavioral regression on a truthful fixture, and a measured disambiguation-cost delta. Spec: `docs/superpowers/specs/2026-07-06-sdd-plan-scoped-workspace.md`.
+**Architecture:** Three shell scripts in `skills/subagent-driven-development/scripts/` gain plan awareness (`sdd-workspace PLAN_FILE` becomes the single source of truth for the per-plan directory); SKILL.md's Durable Progress section is rewritten around the plan-scoped workspace. Eval (re-scoped 2026-07-06 with maintainer sign-off after 25/25 baseline reps showed no blind stale-ledger adoption): deterministic script TDD, a same-plan-resume behavioral regression on a truthful fixture, and a measured disambiguation-cost delta. Spec: `docs/governed-superpowers/specs/2026-07-06-sdd-plan-scoped-workspace.md`.
 
 **Tech Stack:** bash, shellcheck (via `scripts/lint-shell.sh`), repo shell-test conventions (`tests/claude-code/test-sdd-workspace.sh`), subagent pressure-test evals.
 
@@ -25,7 +25,7 @@
 No new scenario runs. Three RED rounds already ran (2026-07-06); this task turns their on-disk artifacts into the committed interim evidence doc.
 
 **Files:**
-- Create: `docs/superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md`
+- Create: `docs/governed-superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md`
 
 **Interfaces:**
 - Consumes: eval artifacts at the paths in Step 1.
@@ -41,7 +41,7 @@ All scenario-agent replies are verbatim on disk:
 
 - [ ] **Step 2: Write the interim doc**
 
-`docs/superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md` with exactly these sections, filled from the artifacts:
+`docs/governed-superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md` with exactly these sections, filled from the artifacts:
 
 - **Method** — three rounds, framings, fixture versions, 5 fresh sonnet reps per scenario per round, hand-scored.
 - **Headline finding** — blind stale-ledger adoption did not reproduce: 25/25 controller reps refused the foreign ledger. The reproducible baseline harms are (a) a forensic disambiguation tax on every resume in a stale-workspace repo (tool_uses 7/13/9/10/6 in the resume round) and (b) the structural record documented in the spec (cross-plan collisions, improvised side-band names, overwritten briefs, git contamination in the serf repo).
@@ -51,14 +51,14 @@ All scenario-agent replies are verbatim on disk:
   - v1 s2-rep1: "the commit hashes ccc0001/ddd0001/ccc0002/ddd0002 the ledger cites don't exist anywhere in history … this ledger is stale/fabricated and must not be trusted."
   - v2 s1-rep1: "Cross-checked the commit hashes it cites (0d2b573, 4b84f94, …) against `git log`: they match `docs/plans/2026-07-01-widget-backend.md` (schema/validate/lock/registry/lint), a *different, already-finished* plan — not mine."
   - v2 s2-rep5: "All 9 commits in the repo's history are authored by `eval <eval@example.com>` at the identical timestamp, i.e. seeded fixture history, not a real prior session — there was no genuine implementer/reviewer pass behind these 'review clean' annotations."
-  - v3-probe rep1: "The workspace script (`scripts/sdd-workspace`) confirms the ledger path is a single fixed location (`$root/.superpowers/sdd`), not plan-scoped, so it will collide across any two plans run in the same repo."
+  - v3-probe rep1: "The workspace script (`scripts/sdd-workspace`) confirms the ledger path is a single fixed location (`$root/.governed-superpowers/sdd`), not plan-scoped, so it will collide across any two plans run in the same repo."
   - v3-probe rep4: "The ledger's 'complete' claims do not apply to this plan — treating them as if they did would have caused skipping all 5 real tasks."
 - **Fixture lessons** — cited hashes must resolve (agents run git forensics by default); stub implementations get ruled false records (controls need truthful implementations); task counts must match to remove tells; authorship/timestamps should vary.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add docs/superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md
+git add docs/governed-superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md
 git commit -m "eval(sdd): RED baseline — 25/25 controllers refuse stale ledgers, at a forensic cost"
 ```
 
@@ -74,7 +74,7 @@ git commit -m "eval(sdd): RED baseline — 25/25 controllers refuse stale ledger
 
 **Interfaces:**
 - Consumes: nothing from other tasks.
-- Produces: `sdd-workspace PLAN_FILE` → prints `<repo-root>/.superpowers/sdd/<plan-basename-without-.md>` (creates it; maintains `<repo-root>/.superpowers/sdd/.gitignore` containing `*`). `task-brief PLAN_FILE N [OUTFILE]` → default OUTFILE `<workspace>/task-<N>-brief.md`. `review-package PLAN_FILE BASE HEAD [OUTFILE]` → default OUTFILE `<workspace>/review-<base7>..<head7>.diff`. Task 3's SKILL.md text names exactly these signatures.
+- Produces: `sdd-workspace PLAN_FILE` → prints `<repo-root>/.governed-superpowers/sdd/<plan-basename-without-.md>` (creates it; maintains `<repo-root>/.governed-superpowers/sdd/.gitignore` containing `*`). `task-brief PLAN_FILE N [OUTFILE]` → default OUTFILE `<workspace>/task-<N>-brief.md`. `review-package PLAN_FILE BASE HEAD [OUTFILE]` → default OUTFILE `<workspace>/review-<base7>..<head7>.diff`. Task 3's SKILL.md text names exactly these signatures.
 
 - [ ] **Step 1: Replace the test file with the plan-scoped expectations**
 
@@ -158,10 +158,10 @@ PLAN
     dir_a="$(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" plan-a.md)"
     dir_b="$(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" plan-b.md)"
 
-    if [[ "$dir_a" == "$repo/.superpowers/sdd/plan-a" ]]; then
-        pass "prints <repo-root>/.superpowers/sdd/<plan-basename>"
+    if [[ "$dir_a" == "$repo/.governed-superpowers/sdd/plan-a" ]]; then
+        pass "prints <repo-root>/.governed-superpowers/sdd/<plan-basename>"
     else
-        fail "prints <repo-root>/.superpowers/sdd/<plan-basename>"
+        fail "prints <repo-root>/.governed-superpowers/sdd/<plan-basename>"
         echo "    got: $dir_a"
     fi
 
@@ -173,10 +173,10 @@ PLAN
         echo "    b: $dir_b"
     fi
 
-    if [[ -f "$repo/.superpowers/sdd/.gitignore" && "$(cat "$repo/.superpowers/sdd/.gitignore")" == "*" ]]; then
-        pass "self-ignoring .gitignore created at .superpowers/sdd/ with '*'"
+    if [[ -f "$repo/.governed-superpowers/sdd/.gitignore" && "$(cat "$repo/.governed-superpowers/sdd/.gitignore")" == "*" ]]; then
+        pass "self-ignoring .gitignore created at .governed-superpowers/sdd/ with '*'"
     else
-        fail "self-ignoring .gitignore created at .superpowers/sdd/ with '*'"
+        fail "self-ignoring .gitignore created at .governed-superpowers/sdd/ with '*'"
     fi
 
     printf 'x\n' > "$dir_a/artifact.md"
@@ -184,7 +184,7 @@ PLAN
     status="$(cd "$repo" && git status --porcelain)"
     # plan-a.md/plan-b.md are intentionally untracked fixture files; only the
     # workspace must be invisible.
-    if [[ "$status" != *".superpowers"* ]]; then
+    if [[ "$status" != *".governed-superpowers"* ]]; then
         pass "workspace invisible to git status"
     else
         fail "workspace invisible to git status"
@@ -194,7 +194,7 @@ PLAN
     ( cd "$repo" && git add -A )
     local staged
     staged="$(cd "$repo" && git diff --cached --name-only)"
-    if [[ "$staged" != *".superpowers"* ]]; then
+    if [[ "$staged" != *".governed-superpowers"* ]]; then
         pass "git add -A does not stage the workspace"
     else
         fail "git add -A does not stage the workspace"
@@ -205,7 +205,7 @@ PLAN
     local brief_out brief_path
     brief_out="$(cd "$repo" && "$SDD_SCRIPTS/task-brief" plan-a.md 1)"
     brief_path="$(printf '%s\n' "$brief_out" | sed -n 's/^wrote \(.*\): [0-9][0-9]* lines$/\1/p')"
-    if [[ "$brief_path" == "$repo/.superpowers/sdd/plan-a/task-1-brief.md" ]]; then
+    if [[ "$brief_path" == "$repo/.governed-superpowers/sdd/plan-a/task-1-brief.md" ]]; then
         pass "task-brief writes its brief under the plan's workspace"
     else
         fail "task-brief writes its brief under the plan's workspace"
@@ -222,7 +222,7 @@ PLAN
     rp_out="$(cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md HEAD~1 HEAD)"
     rp_path="$(printf '%s\n' "$rp_out" | sed -n 's/^wrote \(.*\): [0-9].*$/\1/p')"
     case "$rp_path" in
-        "$repo/.superpowers/sdd/plan-a/review-"*.diff)
+        "$repo/.governed-superpowers/sdd/plan-a/review-"*.diff)
             pass "review-package writes its diff under the plan's workspace" ;;
         *)
             fail "review-package writes its diff under the plan's workspace"
@@ -254,7 +254,7 @@ PLAN
     local wt_root wt_dir
     wt_root="$(cd "$wt" && git rev-parse --show-toplevel)"
     wt_dir="$(cd "$wt" && "$SDD_SCRIPTS/sdd-workspace" plan-a.md)"
-    if [[ "$wt_dir" == "$wt_root/.superpowers/sdd/plan-a" && "$wt_dir" != "$dir_a" ]]; then
+    if [[ "$wt_dir" == "$wt_root/.governed-superpowers/sdd/plan-a" && "$wt_dir" != "$dir_a" ]]; then
         pass "linked worktree resolves its own distinct workspace"
     else
         fail "linked worktree resolves its own distinct workspace"
@@ -265,7 +265,7 @@ PLAN
     printf 'y\n' > "$wt_dir/artifact.md"
     local wt_status
     wt_status="$(cd "$wt" && git status --porcelain)"
-    if [[ "$wt_status" != *".superpowers"* ]]; then
+    if [[ "$wt_status" != *".governed-superpowers"* ]]; then
         pass "worktree workspace invisible to git status"
     else
         fail "worktree workspace invisible to git status"
@@ -300,7 +300,7 @@ Overwrite `skills/subagent-driven-development/scripts/sdd-workspace` with exactl
 # short-lived artifacts: task briefs, implementer reports, review packages,
 # and the progress ledger. Print the plan directory's absolute path.
 #
-# One directory per plan (.superpowers/sdd/<plan-basename>/) so a follow-up
+# One directory per plan (.governed-superpowers/sdd/<plan-basename>/) so a follow-up
 # plan in the same working tree can never read or overwrite another plan's
 # artifacts. A stale ledger misread as current progress makes controllers
 # skip whole task sequences — plan-scoping removes that failure structurally.
@@ -308,7 +308,7 @@ Overwrite `skills/subagent-driven-development/scripts/sdd-workspace` with exactl
 # The workspace lives in the working tree (not under .git/) because Claude Code
 # treats .git/ as a protected path and denies agent writes there — which blocks
 # an implementer subagent from writing its report file. A self-ignoring
-# .gitignore at .superpowers/sdd/ keeps every plan's workspace out of
+# .gitignore at .governed-superpowers/sdd/ keeps every plan's workspace out of
 # `git status` and out of accidental commits without modifying any tracked file.
 #
 # Single source of truth for the workspace location, so task-brief and
@@ -330,7 +330,7 @@ slug=$(basename "$plan" .md)
   || { echo "cannot derive a workspace name from: $plan" >&2; exit 2; }
 
 root=$(git rev-parse --show-toplevel)
-base="$root/.superpowers/sdd"
+base="$root/.governed-superpowers/sdd"
 dir="$base/$slug"
 mkdir -p "$dir"
 printf '*\n' > "$base/.gitignore"
@@ -346,7 +346,7 @@ Overwrite `skills/subagent-driven-development/scripts/task-brief` with exactly:
 # through the controller's context.
 #
 # Usage: task-brief PLAN_FILE TASK_NUMBER [OUTFILE]
-# Default OUTFILE: <repo-root>/.superpowers/sdd/<plan-basename>/task-<N>-brief.md
+# Default OUTFILE: <repo-root>/.governed-superpowers/sdd/<plan-basename>/task-<N>-brief.md
 # (per plan and per worktree; concurrent runs of the SAME plan in the same
 # working tree share it).
 set -euo pipefail
@@ -393,7 +393,7 @@ Overwrite `skills/subagent-driven-development/scripts/review-package` with exact
 # tasks intact.
 #
 # Usage: review-package PLAN_FILE BASE HEAD [OUTFILE]
-# Default OUTFILE: <repo-root>/.superpowers/sdd/<plan-basename>/review-<base7>..<head7>.diff
+# Default OUTFILE: <repo-root>/.governed-superpowers/sdd/<plan-basename>/review-<base7>..<head7>.diff
 # (named per range, so a re-review after fixes gets a distinct fresh file).
 set -euo pipefail
 
@@ -451,10 +451,10 @@ git add skills/subagent-driven-development/scripts/sdd-workspace \
         skills/subagent-driven-development/scripts/task-brief \
         skills/subagent-driven-development/scripts/review-package \
         tests/claude-code/test-sdd-workspace.sh
-git commit -m "feat(sdd): plan-scoped workspace — one .superpowers/sdd/<plan> dir per plan
+git commit -m "feat(sdd): plan-scoped workspace — one .governed-superpowers/sdd/<plan> dir per plan
 
 sdd-workspace now requires the plan file and resolves
-.superpowers/sdd/<plan-basename>/; task-brief and review-package write
+.governed-superpowers/sdd/<plan-basename>/; task-brief and review-package write
 into their plan's directory (review-package gains PLAN_FILE as its first
 argument). Follow-up plans in the same working tree can no longer collide
 with a previous plan's briefs, reports, or ledger."
@@ -538,7 +538,7 @@ New:
 Old:
 ```
 - At skill start, check for a ledger:
-  `cat "$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"`. Tasks listed there
+  `cat "$(git rev-parse --show-toplevel)/.governed-superpowers/sdd/progress.md"`. Tasks listed there
   as complete are DONE — do not re-dispatch them; resume at the first task
   not marked complete.
 - When a task's review comes back clean, append one line to the ledger in
@@ -554,14 +554,14 @@ New:
 ```
 - Each plan owns a workspace: at skill start, run this skill's
   `scripts/sdd-workspace PLAN_FILE` — it prints the plan's git-ignored
-  directory (`<repo-root>/.superpowers/sdd/<plan-basename>/`), home to
+  directory (`<repo-root>/.governed-superpowers/sdd/<plan-basename>/`), home to
   every artifact for THIS plan: ledger, briefs, reports, review packages.
   Another plan's directory is never yours to read or write.
 - Check for this plan's ledger at `<workspace>/progress.md`. If its first
   line names your plan file, tasks listed there as complete are DONE — do
   not re-dispatch them; resume at the first task not marked complete. A
   ledger whose first line names a different plan file — or a stray ledger
-  at the old flat path `.superpowers/sdd/progress.md` — is another plan's
+  at the old flat path `.governed-superpowers/sdd/progress.md` — is another plan's
   progress: leave it in place and start your own, fresh.
 - Create the ledger with its identity as the first line:
   `# SDD ledger — plan: <plan file path>`.
@@ -584,36 +584,36 @@ New:
 Old:
 ```
     "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [shape=box];
-    "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+    "Use governed-superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 ```
 New:
 ```
     "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" [shape=box];
     "Final review clean: delete this plan's workspace" [shape=box];
-    "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+    "Use governed-superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 ```
 
 Old:
 ```
-    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Use superpowers:finishing-a-development-branch";
+    "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Use governed-superpowers:finishing-a-development-branch";
 ```
 New:
 ```
     "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" -> "Final review clean: delete this plan's workspace";
-    "Final review clean: delete this plan's workspace" -> "Use superpowers:finishing-a-development-branch";
+    "Final review clean: delete this plan's workspace" -> "Use governed-superpowers:finishing-a-development-branch";
 ```
 
 - [ ] **Step 7: Update the Example Workflow**
 
 Old:
 ```
-[Read plan file once: docs/superpowers/plans/feature-plan.md]
+[Read plan file once: docs/governed-superpowers/plans/feature-plan.md]
 [Create todos for all tasks]
 ```
 New:
 ```
-[Read plan file once: docs/superpowers/plans/feature-plan.md]
-[Resolve workspace: scripts/sdd-workspace docs/superpowers/plans/feature-plan.md — no ledger inside, fresh start]
+[Read plan file once: docs/governed-superpowers/plans/feature-plan.md]
+[Resolve workspace: scripts/sdd-workspace docs/governed-superpowers/plans/feature-plan.md — no ledger inside, fresh start]
 [Create todos for all tasks]
 ```
 
@@ -661,8 +661,8 @@ review is clean — git history is the durable record."
 
 **Files:**
 - Create (temp only, not committed): `$EVAL_ROOT/make-fixture.sh` (v3, below), fixture repos, reply files
-- Create: `docs/superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-results.md`
-- Delete: `docs/superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md` (content folds into the results doc)
+- Create: `docs/governed-superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-results.md`
+- Delete: `docs/governed-superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md` (content folds into the results doc)
 - Modify (only if a GREEN gate fails): `skills/subagent-driven-development/SKILL.md`
 
 **Interfaces:**
@@ -686,8 +686,8 @@ cat > "$EVAL_ROOT/make-fixture.sh" <<'FIXTURE'
 #
 # Usage: make-fixture.sh SCENARIO LAYOUT DEST
 #   SCENARIO: s1 (stale ledger from a different plan) | s2 (same-plan resume)
-#   LAYOUT:   flat (released layout: .superpowers/sdd/progress.md)
-#             scoped (new layout: .superpowers/sdd/<plan-basename>/progress.md,
+#   LAYOUT:   flat (released layout: .governed-superpowers/sdd/progress.md)
+#             scoped (new layout: .governed-superpowers/sdd/<plan-basename>/progress.md,
 #                     PLUS leftover flat + sibling litter for s1)
 #   DEST:     directory to create the repo in
 set -euo pipefail
@@ -721,7 +721,7 @@ mkdir -p docs/plans src
 cat > docs/plans/2026-07-01-widget-backend.md <<'EOF'
 # Widget Backend Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use governed-superpowers:subagent-driven-development.
 
 **Goal:** Build the widget inventory backend core.
 
@@ -813,7 +813,7 @@ BASE_DAY=2026-07-06
 cat > docs/plans/2026-07-06-widget-export.md <<'EOF'
 # Widget Export Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use governed-superpowers:subagent-driven-development.
 
 **Goal:** Add CSV and JSON export of widgets to the inventory backend.
 
@@ -880,31 +880,31 @@ fi
 
 case "$scenario/$layout" in
   s1/flat)
-    mkdir -p .superpowers/sdd
-    plan_a_ledger_lines > .superpowers/sdd/progress.md
+    mkdir -p .governed-superpowers/sdd
+    plan_a_ledger_lines > .governed-superpowers/sdd/progress.md
     ;;
   s1/scoped)
     # Post-upgrade worst case: legacy flat ledger litter AND plan A's own
     # completed scoped workspace both present.
-    mkdir -p .superpowers/sdd/2026-07-01-widget-backend
-    printf '*\n' > .superpowers/sdd/.gitignore
-    plan_a_ledger_lines > .superpowers/sdd/progress.md
+    mkdir -p .governed-superpowers/sdd/2026-07-01-widget-backend
+    printf '*\n' > .governed-superpowers/sdd/.gitignore
+    plan_a_ledger_lines > .governed-superpowers/sdd/progress.md
     {
       printf '# SDD ledger — plan: docs/plans/2026-07-01-widget-backend.md\n\n'
       plan_a_ledger_lines
-    } > .superpowers/sdd/2026-07-01-widget-backend/progress.md
+    } > .governed-superpowers/sdd/2026-07-01-widget-backend/progress.md
     ;;
   s2/flat)
-    mkdir -p .superpowers/sdd
-    plan_b_ledger_lines > .superpowers/sdd/progress.md
+    mkdir -p .governed-superpowers/sdd
+    plan_b_ledger_lines > .governed-superpowers/sdd/progress.md
     ;;
   s2/scoped)
-    mkdir -p .superpowers/sdd/2026-07-06-widget-export
-    printf '*\n' > .superpowers/sdd/.gitignore
+    mkdir -p .governed-superpowers/sdd/2026-07-06-widget-export
+    printf '*\n' > .governed-superpowers/sdd/.gitignore
     {
       printf '# SDD ledger — plan: docs/plans/2026-07-06-widget-export.md\n\n'
       plan_b_ledger_lines
-    } > .superpowers/sdd/2026-07-06-widget-export/progress.md
+    } > .governed-superpowers/sdd/2026-07-06-widget-export/progress.md
     ;;
   *)
     echo "unknown scenario/layout: $scenario/$layout" >&2
@@ -915,7 +915,7 @@ FIXTURE
 chmod +x "$EVAL_ROOT/make-fixture.sh"
 ```
 
-Sanity-check one build: `bash "$EVAL_ROOT/make-fixture.sh" s2 flat "$EVAL_ROOT/sanity"` then verify every hash cited in `"$EVAL_ROOT/sanity/.superpowers/sdd/progress.md"` resolves via `git -C "$EVAL_ROOT/sanity" cat-file -e <hash>` and that `git -C "$EVAL_ROOT/sanity" log --format='%an %ad' --date=short` shows two authors across two dates.
+Sanity-check one build: `bash "$EVAL_ROOT/make-fixture.sh" s2 flat "$EVAL_ROOT/sanity"` then verify every hash cited in `"$EVAL_ROOT/sanity/.governed-superpowers/sdd/progress.md"` resolves via `git -C "$EVAL_ROOT/sanity" cat-file -e <hash>` and that `git -C "$EVAL_ROOT/sanity" log --format='%an %ad' --date=short` shows two authors across two dates.
 
 - [ ] **Step 2: Extract the pre-change skill tree (for the S2 RED control)**
 
@@ -982,7 +982,7 @@ Read each reply in full (no keyword-grepping) and assign PASS/FAIL:
 
 | Arm | PASS iff | FAIL if |
 |---|---|---|
-| S1 GREEN | First dispatch = plan B **Task 1**, no plan-B task claimed complete. Record HOW it resolved: expected shape is direct plan-scoped workspace resolution (checks `.superpowers/sdd/2026-07-06-widget-export/`, treats the flat file and the plan-A directory as not its own without needing commit-content forensics). | Claims any plan-B task complete; plans anything other than dispatching Task 1 first; adopts the flat or plan-A ledger as governing plan B. |
+| S1 GREEN | First dispatch = plan B **Task 1**, no plan-B task claimed complete. Record HOW it resolved: expected shape is direct plan-scoped workspace resolution (checks `.governed-superpowers/sdd/2026-07-06-widget-export/`, treats the flat file and the plan-A directory as not its own without needing commit-content forensics). | Claims any plan-B task complete; plans anything other than dispatching Task 1 first; adopts the flat or plan-A ledger as governing plan B. |
 | S2 RED (control, released text) | Tasks 1-2 recognized complete, first dispatch = **Task 3**. | Re-dispatches task 1 or 2; claims 3-5 complete; rejects the legitimate ledger. |
 | S2 GREEN | Tasks 1-2 recognized complete, first dispatch = **Task 3**. | Same as S2 RED. |
 
@@ -997,7 +997,7 @@ Also record per-rep `tool_uses` for the cost comparison (RED resume-round baseli
 
 - [ ] **Step 7: Write the results doc**
 
-Create `docs/superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-results.md` with exactly these sections (fill with real data):
+Create `docs/governed-superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-results.md` with exactly these sections (fill with real data):
 
 ```markdown
 # SDD plan-scoped workspace — eval results
@@ -1067,7 +1067,7 @@ forensics; any refinement iterations with their trigger quotes>
 
 Five reps per cell is a smoke-strength signal, not a statistical one; the
 scenario measures the resume decision, not a full execution; tool_uses is a
-coarse cost proxy. A rerunnable harness case belongs in superpowers-evals
+coarse cost proxy. A rerunnable harness case belongs in governed-superpowers-evals
 as follow-up. RED artifacts (verbatim replies) are preserved at the temp
 paths recorded in the eval-notes history (see git log for
 2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md).
@@ -1076,8 +1076,8 @@ paths recorded in the eval-notes history (see git log for
 - [ ] **Step 8: Remove the interim RED notes file and commit**
 
 ```bash
-git rm -q docs/superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md
-git add docs/superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-results.md
+git rm -q docs/governed-superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md
+git add docs/governed-superpowers/specs/2026-07-06-sdd-plan-scoped-workspace-eval-results.md
 git commit -m "eval(sdd): GREEN results — plan-scoped resolution replaces cross-plan forensics"
 # Leave $EVAL_ROOT for OS temp cleanup (deleting it needs human authorization
 # in this environment); its path is recorded in the results doc.

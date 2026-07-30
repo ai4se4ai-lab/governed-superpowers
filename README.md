@@ -1,11 +1,11 @@
-# Superpowers
+# Governed-Superpowers
 
-Superpowers is a complete software development methodology for your coding agents, built on top of a set of composable skills and some initial instructions that make sure your agent uses them.
+Governed-Superpowers is a complete software development methodology for your coding agents, built on top of a set of composable skills and some initial instructions that make sure your agent uses them.
 
 
 ## Quickstart
 
-Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
+Give your agent Governed-Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
 
 ## How it works
 
@@ -17,66 +17,66 @@ After you've signed off on the design, your agent puts together an implementatio
 
 Next up, once you say "go", it launches a *subagent-driven-development* process, having agents work through each engineering task, inspecting and reviewing their work, and continuing forward. It's not uncommon for your agent to work autonomously for a couple hours at a time without deviating from the plan you put together.
 
-There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Superpowers.
+There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Governed-Superpowers.
 
 ## Commercial Services
 
-If you're using Superpowers in enterprise and could benefit from commercial support, additional tooling, or managed spending, please don't hesitate to drop us a line at sales@primeradiant.com.
+If you're using Governed-Superpowers in enterprise and could benefit from commercial support, additional tooling, or managed spending, please don't hesitate to drop us a line at sales@primeradiant.com.
 
 ## Installation
 
-Installation differs by harness. If you use more than one, install Superpowers separately for each one.
+Installation differs by harness. If you use more than one, install Governed-Superpowers separately for each one.
 
 ### Claude Code
 
-Superpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/superpowers)
+Governed-Superpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/governed-superpowers)
 
 #### Official Marketplace
 
 - Install the plugin from Anthropic's official marketplace:
 
   ```bash
-  /plugin install superpowers@claude-plugins-official
+  /plugin install governed-superpowers@claude-plugins-official
   ```
 
-#### Superpowers Marketplace
+#### Governed-Superpowers Marketplace
 
-The Superpowers marketplace provides Superpowers and some other related plugins for Claude Code.
+The Governed-Superpowers marketplace provides Governed-Superpowers and some other related plugins for Claude Code.
 
 - Register the marketplace:
 
   ```bash
-  /plugin marketplace add obra/superpowers-marketplace
+  /plugin marketplace add obra/governed-superpowers-marketplace
   ```
 
 - Install the plugin from this marketplace:
 
   ```bash
-  /plugin install superpowers@superpowers-marketplace
+  /plugin install governed-superpowers@governed-superpowers-marketplace
   ```
 
 ### Antigravity
 
-Install Superpowers as a plugin from this repository:
+Install Governed-Superpowers as a plugin from this repository:
 
 ```bash
-agy plugin install https://github.com/obra/superpowers
+agy plugin install https://github.com/obra/governed-superpowers
 ```
 
-Antigravity runs the plugin's session-start hook, so Superpowers is active from
+Antigravity runs the plugin's session-start hook, so Governed-Superpowers is active from
 the first message. Reinstall with the same command to update.
 
 ### Codex App
 
-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
+Governed-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
 
 - In the Codex app, click on Plugins in the sidebar.
-- You should see `Superpowers` in the Coding section.
-- Click the `+` next to Superpowers and follow the prompts.
+- You should see `Governed-Superpowers` in the Coding section.
+- Click the `+` next to Governed-Superpowers and follow the prompts.
 
 ### Codex CLI
 
-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
+Governed-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
 
 - Open the plugin search interface:
 
@@ -84,10 +84,10 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
   /plugins
   ```
 
-- Search for Superpowers:
+- Search for Governed-Superpowers:
 
   ```bash
-  superpowers
+  governed-superpowers
   ```
 
 - Select `Install Plugin`.
@@ -97,23 +97,23 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 - In Cursor Agent chat, install from marketplace:
 
   ```text
-  /add-plugin superpowers
+  /add-plugin governed-superpowers
   ```
 
-- Or search for "superpowers" in the plugin marketplace.
+- Or search for "governed-superpowers" in the plugin marketplace.
 
 ### Factory Droid
 
 - Register the marketplace:
 
   ```bash
-  droid plugin marketplace add https://github.com/obra/superpowers
+  droid plugin marketplace add https://github.com/obra/governed-superpowers
   ```
 
 - Install the plugin:
 
   ```bash
-  droid plugin install superpowers@superpowers
+  droid plugin install governed-superpowers@governed-superpowers
   ```
 
 ### Gemini CLI
@@ -121,13 +121,13 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 - Install the extension:
 
   ```bash
-  gemini extensions install https://github.com/obra/superpowers
+  gemini extensions install https://github.com/obra/governed-superpowers
   ```
 
 - Update later:
 
   ```bash
-  gemini extensions update superpowers
+  gemini extensions update governed-superpowers
   ```
 
 ### GitHub Copilot CLI
@@ -135,18 +135,18 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 - Register the marketplace:
 
   ```bash
-  copilot plugin marketplace add obra/superpowers-marketplace
+  copilot plugin marketplace add obra/governed-superpowers-marketplace
   ```
 
 - Install the plugin:
 
   ```bash
-  copilot plugin install superpowers@superpowers-marketplace
+  copilot plugin install governed-superpowers@governed-superpowers-marketplace
   ```
 
 ### Kimi Code
 
-Superpowers is available in Kimi Code's plugin marketplace.
+Governed-Superpowers is available in Kimi Code's plugin marketplace.
 
 - Open Kimi Code's plugin manager:
 
@@ -154,44 +154,44 @@ Superpowers is available in Kimi Code's plugin marketplace.
   /plugins
   ```
 
-- Go to `Marketplace` > `Superpowers` and install it.
+- Go to `Marketplace` > `Governed-Superpowers` and install it.
 
 - Or install directly from this repository:
 
   ```text
-  /plugins install https://github.com/obra/superpowers
+  /plugins install https://github.com/obra/governed-superpowers
   ```
 
 - Detailed docs: [docs/README.kimi.md](docs/README.kimi.md)
 
 ### OpenCode
 
-OpenCode uses its own plugin install; install Superpowers separately even if you
+OpenCode uses its own plugin install; install Governed-Superpowers separately even if you
 already use it in another harness.
 
 - Tell OpenCode:
 
   ```
-  Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md
+  Fetch and follow instructions from https://raw.githubusercontent.com/obra/governed-superpowers/refs/heads/main/.opencode/INSTALL.md
   ```
 
 - Detailed docs: [docs/README.opencode.md](docs/README.opencode.md)
 
 ### Pi
 
-Install Superpowers as a Pi package from this repository:
+Install Governed-Superpowers as a Pi package from this repository:
 
 ```bash
-pi install git:github.com/obra/superpowers
+pi install git:github.com/obra/governed-superpowers
 ```
 
 For local development, run Pi with this checkout loaded as a temporary package:
 
 ```bash
-pi -e /path/to/superpowers
+pi -e /path/to/governed-superpowers
 ```
 
-The Pi package loads the Superpowers skills and a small extension that injects the `using-superpowers` bootstrap at session startup and again after compaction. Pi has native skills, so no compatibility `Skill` tool is required. Subagent and task-list tools remain optional Pi companion packages.
+The Pi package loads the Governed-Superpowers skills and a small extension that injects the `using-governed-superpowers` bootstrap at session startup and again after compaction. Pi has native skills, so no compatibility `Skill` tool is required. Subagent and task-list tools remain optional Pi companion packages.
 
 ## The Basic Workflow
 
@@ -235,7 +235,7 @@ The Pi package loads the Superpowers skills and a small extension that injects t
 
 **Meta**
 - **writing-skills** - Create new skills following best practices (includes testing methodology)
-- **using-superpowers** - Introduction to the skills system
+- **using-governed-superpowers** - Introduction to the skills system
 
 ## Philosophy
 
@@ -244,11 +244,11 @@ The Pi package loads the Superpowers skills and a small extension that injects t
 - **Complexity reduction** - Simplicity as primary goal
 - **Evidence over claims** - Verify before declaring success
 
-Read [the original release announcement](https://blog.fsck.com/2025/10/09/superpowers/).
+Read [the original release announcement](https://blog.fsck.com/2025/10/09/governed-superpowers/).
 
 ## Contributing
 
-The general contribution process for Superpowers is below. Keep in mind that we don't generally accept contributions of new skills and that any updates to skills must work across all of the coding agents we support.
+The general contribution process for Governed-Superpowers is below. Keep in mind that we don't generally accept contributions of new skills and that any updates to skills must work across all of the coding agents we support.
 
 1. Fork the repository
 2. Switch to the 'dev' branch
@@ -256,13 +256,13 @@ The general contribution process for Superpowers is below. Keep in mind that we 
 4. Follow the `writing-skills` skill for creating and testing new and modified skills
 5. Submit a PR, being sure to fill in the pull request template.
 
-Skill-behavior tests use the drill eval harness from [superpowers-evals](https://github.com/prime-radiant-inc/superpowers-evals/), cloned into `evals/` — see `evals/README.md` for setup. Plugin-infrastructure tests live at `tests/` and run via the relevant `run-*.sh` or `npm test`.
+Skill-behavior tests use the drill eval harness from [governed-superpowers-evals](https://github.com/prime-radiant-inc/governed-superpowers-evals/), cloned into `evals/` — see `evals/README.md` for setup. Plugin-infrastructure tests live at `tests/` and run via the relevant `run-*.sh` or `npm test`.
 
 See `skills/writing-skills/SKILL.md` for the complete guide.
 
 ## Updating
 
-Superpowers updates are somewhat coding-agent dependent, but are often automatic.
+Governed-Superpowers updates are somewhat coding-agent dependent, but are often automatic.
 
 ## License
 
@@ -270,12 +270,12 @@ MIT License - see LICENSE file for details
 
 ## Visual companion telemetry
 
-Because skills and plugins don't provide any feedback to creators, we have no idea how many of you are using Superpowers. By default, the Prime Radiant logo on brainstorming's optional visual companion feature is loaded from our website. It includes the version of Superpowers in use. It does not include any details about your project, prompt, or coding agent. We don't see your clicks or anything about what you're building. This helps us have a rough idea of how many folks are using Superpowers and which version of Superpowers they're using. It's 100% optional. To disable this, set the environment variable `SUPERPOWERS_DISABLE_TELEMETRY` to any true value. Superpowers also honors Claude Code's `DISABLE_TELEMETRY` and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` opt-outs.
+Because skills and plugins don't provide any feedback to creators, we have no idea how many of you are using Governed-Superpowers. By default, the Prime Radiant logo on brainstorming's optional visual companion feature is loaded from our website. It includes the version of Governed-Superpowers in use. It does not include any details about your project, prompt, or coding agent. We don't see your clicks or anything about what you're building. This helps us have a rough idea of how many folks are using Governed-Superpowers and which version of Governed-Superpowers they're using. It's 100% optional. To disable this, set the environment variable `SUPERPOWERS_DISABLE_TELEMETRY` to any true value. Governed-Superpowers also honors Claude Code's `DISABLE_TELEMETRY` and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` opt-outs.
 
 ## Community
 
-Superpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of the folks at [Prime Radiant](https://primeradiant.com).
+Governed-Superpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of the folks at [Prime Radiant](https://primeradiant.com).
 
-- **Discord**: [Join us](https://discord.gg/35wsABTejz) for community support, questions, and sharing what you're building with Superpowers
-- **Issues**: https://github.com/obra/superpowers/issues
-- **Release announcements**: [Sign up](https://primeradiant.com/superpowers/) to get notified about new versions
+- **Discord**: [Join us](https://discord.gg/35wsABTejz) for community support, questions, and sharing what you're building with Governed-Superpowers
+- **Issues**: https://github.com/obra/governed-superpowers/issues
+- **Release announcements**: [Sign up](https://primeradiant.com/governed-superpowers/) to get notified about new versions

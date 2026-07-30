@@ -1,6 +1,6 @@
 # SDD Task-Scoped Review Dispatch Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use governed-superpowers:subagent-driven-development (recommended) or governed-superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Scope SDD's per-task reviews to the task (diff-first reading, justified broadening, no redundant test runs) while final branch review stays broad.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Markdown skill files; Python setup helper + bash checks + story.md for the quorum eval.
 
-**Spec:** `docs/superpowers/specs/2026-06-09-sdd-task-scoped-review-dispatch-design.md` — read it before starting. Decisions already settled there: full re-reviews stay; the two review stages stay separate; coordinator keeps model judgment; `requesting-code-review/` stays broad.
+**Spec:** `docs/governed-superpowers/specs/2026-06-09-sdd-task-scoped-review-dispatch-design.md` — read it before starting. Decisions already settled there: full re-reviews stay; the two review stages stay separate; coordinator keeps model judgment; `requesting-code-review/` stays broad.
 
 **These are behavior-shaping prose files, not code.** There are no unit tests for them. Each task's verification steps are exact `grep` checks that the edit landed; behavioral verification is Task 6 (static) and Task 7 (live evals, maintainer-gated).
 
@@ -369,7 +369,7 @@ with:
 
 ```
 - [code-quality-reviewer-prompt.md](code-quality-reviewer-prompt.md) - Dispatch code quality reviewer subagent
-- Final whole-branch review: use superpowers:requesting-code-review's [code-reviewer.md](../requesting-code-review/code-reviewer.md)
+- Final whole-branch review: use governed-superpowers:requesting-code-review's [code-reviewer.md](../requesting-code-review/code-reviewer.md)
 ```
 
 - [ ] **Step 5: Example workflow verdict vocabulary.** Two replacements:
@@ -397,13 +397,13 @@ Code reviewer: ✅ Task quality: Approved
 - [ ] **Step 6: Integration section.** Replace (currently line 272):
 
 ```
-- **superpowers:requesting-code-review** - Code review template for reviewer subagents
+- **governed-superpowers:requesting-code-review** - Code review template for reviewer subagents
 ```
 
 with:
 
 ```
-- **superpowers:requesting-code-review** - Code review template for the final whole-branch review
+- **governed-superpowers:requesting-code-review** - Code review template for the final whole-branch review
 ```
 
 - [ ] **Step 7: Verify**
@@ -431,7 +431,7 @@ git commit -m "SDD controller: reviewer prompt budgets, ⚠️ handling, final-r
 
 ### Task 5: New eval scenario — per-task quality reviewer catches a planted defect
 
-Lives in the `evals/` **submodule** (separate repo, `superpowers-evals`). Work on a branch there; the parent submodule-pointer bump happens at finishing time per `evals/CLAUDE.md`.
+Lives in the `evals/` **submodule** (separate repo, `governed-superpowers-evals`). Work on a branch there; the parent submodule-pointer bump happens at finishing time per `evals/CLAUDE.md`.
 
 The fixture plan's Task 2 implementation snippet duplicates Task 1's formatting logic verbatim. The duplication is spec-compliant, so the spec reviewer should pass it — the per-task quality reviewer is the gate under test (DRY violation).
 
@@ -560,7 +560,7 @@ def scaffold_sdd_quality_defect_plan(workdir: Path) -> None:
     _git(["git", "config", "user.name", "Drill Test"], cwd=workdir)
 
     (workdir / "package.json").write_text(PACKAGE_JSON)
-    plans_dir = workdir / "docs" / "superpowers" / "plans"
+    plans_dir = workdir / "docs" / "governed-superpowers" / "plans"
     plans_dir.mkdir(parents=True, exist_ok=True)
     (plans_dir / "report-plan.md").write_text(PLAN_BODY)
 
@@ -602,7 +602,7 @@ tags: subagent-driven-development
 quorum_max_time: 90m
 ---
 
-You have a small plan at docs/superpowers/plans/report-plan.md — two report
+You have a small plan at docs/governed-superpowers/plans/report-plan.md — two report
 formatting functions. The plan's Task 2 implementation snippet duplicates
 Task 1's formatting logic verbatim instead of sharing it. The duplication is
 spec-compliant (the requirements only describe behavior), so the spec
@@ -612,8 +612,8 @@ the gate under test. You are spec-aware — name the skill.
 When the agent is ready for input, tell it to execute the plan with SDD. Use
 phrasing like:
 
-"I have a small plan at docs/superpowers/plans/report-plan.md — two report
-formatting functions. Use the superpowers:subagent-driven-development skill
+"I have a small plan at docs/governed-superpowers/plans/report-plan.md — two report
+formatting functions. Use the governed-superpowers:subagent-driven-development skill
 to execute it end-to-end — dispatch fresh subagents per task and run the
 two-stage review after each."
 
@@ -634,7 +634,7 @@ you are done.
 
 ## Acceptance Criteria
 
-- A `Skill` invocation naming `superpowers:subagent-driven-development`
+- A `Skill` invocation naming `governed-superpowers:subagent-driven-development`
   and at least one `Agent` (subagent dispatch) tool call appear in the
   session log.
 - The duplicated report-formatting logic did not survive to the end of
@@ -671,13 +671,13 @@ pre() {
     git-repo
     git-branch main
     requires-tool npm
-    file-exists 'docs/superpowers/plans/report-plan.md'
-    file-contains 'docs/superpowers/plans/report-plan.md' 'formatAdminReport'
-    file-contains 'docs/superpowers/plans/report-plan.md' 'repeat\(40\)'
+    file-exists 'docs/governed-superpowers/plans/report-plan.md'
+    file-contains 'docs/governed-superpowers/plans/report-plan.md' 'formatAdminReport'
+    file-contains 'docs/governed-superpowers/plans/report-plan.md' 'repeat\(40\)'
 }
 
 post() {
-    skill-called superpowers:subagent-driven-development
+    skill-called governed-superpowers:subagent-driven-development
     tool-called Agent
     command-succeeds 'npm test'
     file-contains 'src/report.js' 'export function formatUserReport'
@@ -730,7 +730,7 @@ Expected: all PASS (we added `setup.sh` only inside the evals submodule, which h
 
 - [ ] **Step 3: Cross-platform tool tables still coherent**
 
-Run: `grep -n "code-quality-reviewer" skills/using-superpowers/references/antigravity-tools.md skills/using-superpowers/references/gemini-tools.md`
+Run: `grep -n "code-quality-reviewer" skills/using-governed-superpowers/references/antigravity-tools.md skills/using-governed-superpowers/references/gemini-tools.md`
 Expected: both tables still list `code-quality-reviewer` as a reviewer template (the new prompt's "If you cannot run commands in this environment, name the test you would run" line keeps the read-only `research` mapping valid — no table edits needed).
 
 ---
@@ -739,11 +739,11 @@ Expected: both tables still list `code-quality-reviewer` as a reviewer template 
 
 Live quorum runs launch agent CLIs in permissive modes — **trusted-maintainer operation; Jesse launches these**, per `evals/CLAUDE.md`. Requires `ANTHROPIC_API_KEY`.
 
-- [ ] **Step 1: Baseline (skills as released on dev)** — from the main checkout (`/Users/jesse/git/superpowers/superpowers`, on dev), or any checkout without this branch's changes:
+- [ ] **Step 1: Baseline (skills as released on dev)** — from the main checkout (`/Users/jesse/git/governed-superpowers/governed-superpowers`, on dev), or any checkout without this branch's changes:
 
 ```bash
 cd evals
-export SUPERPOWERS_ROOT=/Users/jesse/git/superpowers/superpowers
+export SUPERPOWERS_ROOT=/Users/jesse/git/governed-superpowers/governed-superpowers
 uv run quorum run scenarios/sdd-rejects-extra-features --coding-agent claude
 uv run quorum run scenarios/sdd-go-fractals --coding-agent claude
 uv run quorum run scenarios/sdd-svelte-todo --coding-agent claude
@@ -754,7 +754,7 @@ uv run quorum run scenarios/spec-reviewer-catches-planted-flaws --coding-agent c
 
 ```bash
 cd evals
-export SUPERPOWERS_ROOT=/Users/jesse/git/superpowers/superpowers/.claude/worktrees/sdd-review-dispatch
+export SUPERPOWERS_ROOT=/Users/jesse/git/governed-superpowers/governed-superpowers/.claude/worktrees/sdd-review-dispatch
 uv run quorum run scenarios/sdd-rejects-extra-features --coding-agent claude
 uv run quorum run scenarios/sdd-go-fractals --coding-agent claude
 uv run quorum run scenarios/sdd-svelte-todo --coding-agent claude
@@ -771,4 +771,4 @@ Pass bar: all four pre-existing scenarios still pass after the change (no regres
 
 ## Finishing
 
-After all tasks pass: the evals submodule commit needs to land in `superpowers-evals` (PR to its `main`), then this branch bumps the `evals` submodule pointer — per `evals/CLAUDE.md`, the parent bump is part of propagation, not optional. Then use superpowers:finishing-a-development-branch. PRs against superpowers target `dev`.
+After all tasks pass: the evals submodule commit needs to land in `governed-superpowers-evals` (PR to its `main`), then this branch bumps the `evals` submodule pointer — per `evals/CLAUDE.md`, the parent bump is part of propagation, not optional. Then use governed-superpowers:finishing-a-development-branch. PRs against governed-superpowers target `dev`.

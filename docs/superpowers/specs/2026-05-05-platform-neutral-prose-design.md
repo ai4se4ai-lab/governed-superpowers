@@ -2,7 +2,7 @@
 
 ## Background
 
-Superpowers ships to multiple agent runtimes (Claude Code, Codex, Cursor, OpenCode, Copilot CLI, Gemini CLI). Skill content and supporting docs were written first for Claude Code and use "Claude" in places where any runtime's agent applies. OpenAI's vendored fork (openai/plugins#217) attempted a wholesale rewrite that was actively wrong in places — rewriting historical attribution paths, model names, and platform-specific install instructions — and we want to avoid that mistake while still removing platform-centric prose where it is genuinely incidental.
+Governed-Superpowers ships to multiple agent runtimes (Claude Code, Codex, Cursor, OpenCode, Copilot CLI, Gemini CLI). Skill content and supporting docs were written first for Claude Code and use "Claude" in places where any runtime's agent applies. OpenAI's vendored fork (openai/plugins#217) attempted a wholesale rewrite that was actively wrong in places — rewriting historical attribution paths, model names, and platform-specific install instructions — and we want to avoid that mistake while still removing platform-centric prose where it is genuinely incidental.
 
 The full effort is broken into phases by reference category. **This spec covers Phase A only:** generic third-person prose mentioning "Claude" in non-platform-specific contexts. Later phases (config-file references, marketing copy, tool-name references) are out of scope here and will get their own specs.
 
@@ -21,8 +21,8 @@ Plus one coined-term rename: **Claude Search Optimization (CSO) → Skill Discov
 - **Platform/runtime statements** — "In Claude Code:", install instructions, tool-mapping references. (Phase D candidate.)
 - **Config-file references** — CLAUDE.md, AGENTS.md, GEMINI.md priority lists and "where to put project conventions" callouts. (Phase B.)
 - **Tool-name references** — `Skill`, `Bash`, `Read`, `Task`, `TodoWrite`. Skills are written in Claude Code's tool vocabulary; the existing `references/{codex,copilot,gemini}-tools.md` files map them. (At the time this spec was written, the plan was to defer or skip these. Phase E ended up doing them — replacing tool names with action language across active skills and unifying the platform-tools refs around the same vocabulary.)
-- **Marketing copy** in README — "Superpowers for Claude Code", platform-named install sections. (Phase C.)
-- **Historical artifacts** — `docs/plans/*.md`, `docs/superpowers/specs/*.md`, `CREATION-LOG.md`. These are dated, point-in-time documents; rewriting them rewrites history.
+- **Marketing copy** in README — "Governed-Superpowers for Claude Code", platform-named install sections. (Phase C.)
+- **Historical artifacts** — `docs/plans/*.md`, `docs/governed-superpowers/specs/*.md`, `CREATION-LOG.md`. These are dated, point-in-time documents; rewriting them rewrites history.
 - **Model identifiers** — Claude Haiku / Sonnet / Opus. These are real product names.
 - **Filename / URL references** — `CLAUDE.md`, `claude.com`, `claude-plugin/`, paths under `~/.claude/`.
 - **`anthropic-best-practices.md` filename** — the file remains named after its source even though we rewrite the prose inside it.

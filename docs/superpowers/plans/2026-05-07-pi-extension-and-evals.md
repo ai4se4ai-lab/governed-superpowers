@@ -1,10 +1,10 @@
 # Pi Extension and Evals Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use governed-superpowers:subagent-driven-development (recommended) or governed-superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add first-class Pi package support for Superpowers and add Pi as a Drill eval backend.
+**Goal:** Add first-class Pi package support for Governed-Superpowers and add Pi as a Drill eval backend.
 
-**Architecture:** The Pi package is declared in the root `package.json` and loads existing `skills/` plus a small Pi extension. The extension injects the `using-superpowers` bootstrap into provider context as a user-role message on session startup and after compaction, with Pi-specific tool mapping. Drill gains a `pi` backend, Pi session-log normalization, and tests.
+**Architecture:** The Pi package is declared in the root `package.json` and loads existing `skills/` plus a small Pi extension. The extension injects the `using-governed-superpowers` bootstrap into provider context as a user-role message on session startup and after compaction, with Pi-specific tool mapping. Drill gains a `pi` backend, Pi session-log normalization, and tests.
 
 **Tech Stack:** Pi TypeScript extension API, Node built-in test runner, Drill Python eval harness, pytest.
 
@@ -18,10 +18,10 @@
 
 - [ ] **Step 1: Write failing package/extension tests**
 
-Create `tests/pi/test-pi-extension.mjs` with tests that import `extensions/superpowers.ts`, register fake Pi handlers, and assert:
+Create `tests/pi/test-pi-extension.mjs` with tests that import `extensions/governed-superpowers.ts`, register fake Pi handlers, and assert:
 - root `package.json` has `keywords` containing `pi-package`
 - root `package.json` has `pi.skills: ["./skills"]`
-- root `package.json` has `pi.extensions: ["./extensions/superpowers.ts"]`
+- root `package.json` has `pi.extensions: ["./extensions/governed-superpowers.ts"]`
 - the extension registers `resources_discover`, `session_start`, `session_compact`, `context`, and `agent_end`
 - startup `context` injects exactly one user-role bootstrap message
 - `agent_end` clears startup injection
@@ -32,17 +32,17 @@ Create `tests/pi/test-pi-extension.mjs` with tests that import `extensions/super
 
 Run: `node --experimental-strip-types --test tests/pi/test-pi-extension.mjs`
 
-Expected: FAIL because `extensions/superpowers.ts` does not exist and `package.json` lacks the `pi` manifest.
+Expected: FAIL because `extensions/governed-superpowers.ts` does not exist and `package.json` lacks the `pi` manifest.
 
 - [ ] **Step 3: Implement manifest fields**
 
 Update `package.json` with `description`, `keywords`, `pi.extensions`, and `pi.skills` while preserving existing `name`, `version`, `type`, and `main`.
 
-- [ ] **Step 4: Implement `extensions/superpowers.ts`**
+- [ ] **Step 4: Implement `extensions/governed-superpowers.ts`**
 
 Create a zero-runtime-dependency extension that:
 - locates the package root from `import.meta.url`
-- reads `skills/using-superpowers/SKILL.md`
+- reads `skills/using-governed-superpowers/SKILL.md`
 - strips YAML frontmatter
 - appends Pi-specific tool mapping
 - exposes `resources_discover` with the skills path
@@ -60,12 +60,12 @@ Expected: PASS.
 ### Task 2: Pi tool mapping reference
 
 **Files:**
-- Create: `skills/using-superpowers/references/pi-tools.md`
+- Create: `skills/using-governed-superpowers/references/pi-tools.md`
 - Modify: `tests/pi/test-pi-extension.mjs`
 
 - [ ] **Step 1: Write failing test for Pi reference doc**
 
-Add assertions that `skills/using-superpowers/references/pi-tools.md` exists and documents mappings for `Skill`, `Task`, `TodoWrite`, and built-in tool names.
+Add assertions that `skills/using-governed-superpowers/references/pi-tools.md` exists and documents mappings for `Skill`, `Task`, `TodoWrite`, and built-in tool names.
 
 - [ ] **Step 2: Run tests and verify RED**
 
@@ -75,7 +75,7 @@ Expected: FAIL because `pi-tools.md` does not exist.
 
 - [ ] **Step 3: Add Pi reference doc**
 
-Create `skills/using-superpowers/references/pi-tools.md` explaining Pi-native skills, optional `pi-subagents`, no canonical todo/tasklist plugin, and built-in lowercase tools.
+Create `skills/using-governed-superpowers/references/pi-tools.md` explaining Pi-native skills, optional `pi-subagents`, no canonical todo/tasklist plugin, and built-in lowercase tools.
 
 - [ ] **Step 4: Run tests and verify GREEN**
 

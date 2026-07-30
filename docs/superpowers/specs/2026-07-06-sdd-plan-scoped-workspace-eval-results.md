@@ -15,9 +15,9 @@ tasks) to completion, and the controller under test is resuming follow-up
 plan B (`docs/plans/2026-07-06-widget-export.md`, also 5 tasks) after a
 context compaction. None of plan B is implemented. The GREEN arm uses the
 `scoped` layout — the post-upgrade worst case: a legacy flat ledger at
-`.superpowers/sdd/progress.md` carrying plan A's five "complete (review
+`.governed-superpowers/sdd/progress.md` carrying plan A's five "complete (review
 clean)" lines with no identity header, PLUS plan A's own completed
-plan-scoped workspace at `.superpowers/sdd/2026-07-01-widget-backend/progress.md`
+plan-scoped workspace at `.governed-superpowers/sdd/2026-07-01-widget-backend/progress.md`
 (identity first line naming plan A), and no workspace for plan B. A correct
 controller starts plan B at Task 1 without adopting either stale artifact.
 (The RED S1 arms ran in the earlier rounds summarized below, against the
@@ -28,9 +28,9 @@ genuinely implemented, committed (`feat(export): export data model`,
 `feat(export): csv serializer` — real code satisfying each task's spec),
 and recorded complete in the ledger. A correct controller recognizes Tasks
 1-2 as done and dispatches Task 3. The RED control arm (released text) uses
-the `flat` layout — ledger at `.superpowers/sdd/progress.md` in the
+the `flat` layout — ledger at `.governed-superpowers/sdd/progress.md` in the
 released format (no identity line). The GREEN arm uses the `scoped` layout
-— ledger at `.superpowers/sdd/2026-07-06-widget-export/progress.md` whose
+— ledger at `.governed-superpowers/sdd/2026-07-06-widget-export/progress.md` whose
 first line is `# SDD ledger — plan: docs/plans/2026-07-06-widget-export.md`.
 
 ## What RED showed (and did not show)
@@ -105,7 +105,7 @@ matched 5/5 task counts):
 `tool_uses` recorded per rep):
 
 - **rep1 (tool_uses=7):**
-  > The workspace script (`scripts/sdd-workspace`) confirms the ledger path is a single fixed location (`$root/.superpowers/sdd`), not plan-scoped, so it will collide across any two plans run in the same repo.
+  > The workspace script (`scripts/sdd-workspace`) confirms the ledger path is a single fixed location (`$root/.governed-superpowers/sdd`), not plan-scoped, so it will collide across any two plans run in the same repo.
 - **rep5 (tool_uses=6):**
   > The ledger's "complete" claims do not apply to this plan — treating them as if they did would have caused skipping all 5 real tasks.
 
@@ -189,7 +189,7 @@ result, not a call-count reduction this scenario does not demonstrate.
 
 Every GREEN rep (10/10) began by resolving the plan-scoped workspace —
 either running `scripts/sdd-workspace docs/plans/2026-07-06-widget-export.md`
-or checking `.superpowers/sdd/2026-07-06-widget-export/` directly — and
+or checking `.governed-superpowers/sdd/2026-07-06-widget-export/` directly — and
 treated the identity first line as the authority on ledger ownership.
 
 **S1 GREEN resolution shape, per rep** (expected shape: plan-scoped
@@ -251,8 +251,8 @@ verbatim from the plan.
 #
 # Usage: make-fixture.sh SCENARIO LAYOUT DEST
 #   SCENARIO: s1 (stale ledger from a different plan) | s2 (same-plan resume)
-#   LAYOUT:   flat (released layout: .superpowers/sdd/progress.md)
-#             scoped (new layout: .superpowers/sdd/<plan-basename>/progress.md,
+#   LAYOUT:   flat (released layout: .governed-superpowers/sdd/progress.md)
+#             scoped (new layout: .governed-superpowers/sdd/<plan-basename>/progress.md,
 #                     PLUS leftover flat + sibling litter for s1)
 #   DEST:     directory to create the repo in
 set -euo pipefail
@@ -297,7 +297,7 @@ mkdir -p docs/plans src
 cat > docs/plans/2026-07-01-widget-backend.md <<'EOF'
 # Widget Backend Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use governed-superpowers:subagent-driven-development.
 
 **Goal:** Build the widget inventory backend core.
 
@@ -389,7 +389,7 @@ BASE_DAY=2026-07-06
 cat > docs/plans/2026-07-06-widget-export.md <<'EOF'
 # Widget Export Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use governed-superpowers:subagent-driven-development.
 
 **Goal:** Add CSV and JSON export of widgets to the inventory backend.
 
@@ -456,31 +456,31 @@ fi
 
 case "$scenario/$layout" in
   s1/flat)
-    mkdir -p .superpowers/sdd
-    plan_a_ledger_lines > .superpowers/sdd/progress.md
+    mkdir -p .governed-superpowers/sdd
+    plan_a_ledger_lines > .governed-superpowers/sdd/progress.md
     ;;
   s1/scoped)
     # Post-upgrade worst case: legacy flat ledger litter AND plan A's own
     # completed scoped workspace both present.
-    mkdir -p .superpowers/sdd/2026-07-01-widget-backend
-    printf '*\n' > .superpowers/sdd/.gitignore
-    plan_a_ledger_lines > .superpowers/sdd/progress.md
+    mkdir -p .governed-superpowers/sdd/2026-07-01-widget-backend
+    printf '*\n' > .governed-superpowers/sdd/.gitignore
+    plan_a_ledger_lines > .governed-superpowers/sdd/progress.md
     {
       printf '# SDD ledger — plan: docs/plans/2026-07-01-widget-backend.md\n\n'
       plan_a_ledger_lines
-    } > .superpowers/sdd/2026-07-01-widget-backend/progress.md
+    } > .governed-superpowers/sdd/2026-07-01-widget-backend/progress.md
     ;;
   s2/flat)
-    mkdir -p .superpowers/sdd
-    plan_b_ledger_lines > .superpowers/sdd/progress.md
+    mkdir -p .governed-superpowers/sdd
+    plan_b_ledger_lines > .governed-superpowers/sdd/progress.md
     ;;
   s2/scoped)
-    mkdir -p .superpowers/sdd/2026-07-06-widget-export
-    printf '*\n' > .superpowers/sdd/.gitignore
+    mkdir -p .governed-superpowers/sdd/2026-07-06-widget-export
+    printf '*\n' > .governed-superpowers/sdd/.gitignore
     {
       printf '# SDD ledger — plan: docs/plans/2026-07-06-widget-export.md\n\n'
       plan_b_ledger_lines
-    } > .superpowers/sdd/2026-07-06-widget-export/progress.md
+    } > .governed-superpowers/sdd/2026-07-06-widget-export/progress.md
     ;;
   *)
     echo "unknown scenario/layout: $scenario/$layout" >&2
@@ -532,7 +532,7 @@ Be concrete and terse. That report is your entire deliverable.
 
 Five reps per cell is a smoke-strength signal, not a statistical one; the
 scenario measures the resume decision, not a full execution; tool_uses is a
-coarse cost proxy. A rerunnable harness case belongs in superpowers-evals
+coarse cost proxy. A rerunnable harness case belongs in governed-superpowers-evals
 as follow-up. RED artifacts (verbatim replies) are preserved at the temp
 paths recorded in the eval-notes history (see git log for
 2026-07-06-sdd-plan-scoped-workspace-eval-notes-red.md). This round's

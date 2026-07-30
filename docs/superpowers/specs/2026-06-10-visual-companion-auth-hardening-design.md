@@ -168,7 +168,7 @@ vendored libraries.
 
 ### 6. Gitignore Durable Session State
 
-Add `.superpowers/` to the repo root `.gitignore` so persisted companion state
+Add `.governed-superpowers/` to the repo root `.gitignore` so persisted companion state
 and `.last-token` are not accidentally committed when using `--project-dir`.
 
 ### 7. Test Stability And Lint

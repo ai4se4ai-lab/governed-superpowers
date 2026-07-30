@@ -14,7 +14,7 @@ This phase fixes the ordering. No prose changes.
 ## Out of scope
 
 - Prose, marketplace names, plugin IDs, URLs — all factually correct as-is.
-- Visual weight of the Claude Code section (which has two sub-sections — official Anthropic marketplace and Superpowers marketplace). Both are real install paths; collapsing them would hide accurate info.
+- Visual weight of the Claude Code section (which has two sub-sections — official Anthropic marketplace and Governed-Superpowers marketplace). Both are real install paths; collapsing them would hide accurate info.
 - Section headings and content within each install block — only the ordering of the blocks changes.
 
 ## Substitution

@@ -1,10 +1,10 @@
 # Visual Companion Final Hardening Fixup Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use governed-superpowers:subagent-driven-development (recommended) or governed-superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Finish PR #1720's final hardening fixup with test-first changes, clean rebase state, and reviewer-ready evidence.
 
-**Spec:** `docs/superpowers/specs/2026-06-11-visual-companion-final-hardening-fixup-design.md`
+**Spec:** `docs/governed-superpowers/specs/2026-06-11-visual-companion-final-hardening-fixup-design.md`
 
 **Architecture:** Keep the companion zero-dependency and local-first. Add focused guards to the existing server and shell scripts: root screen selection reuses the `/files/*` containment guard, fallback token handling tracks token source, and lifecycle shutdown uses a per-start command-line instance id for ownership proof.
 
@@ -43,7 +43,7 @@
   - Add Windows fake-node assertion for the id argv.
 - Modify: `skills/brainstorming/visual-companion.md`
   - Add `--open` to platform commands that should preserve auto-open behavior.
-- Modify: `docs/superpowers/plans/2026-06-09-visual-companion-issues.md`
+- Modify: `docs/governed-superpowers/plans/2026-06-09-visual-companion-issues.md`
   - Reconcile shipped scope, WS Origin wording, default timeout, and deferred feature items.
 - Update outside tracked files: PR #1720 body
   - Record post-rebase diff state, RED/GREEN evidence, macOS/Windows verification, manual browser smoke, and external eval evidence.
@@ -250,7 +250,7 @@ Add these tests after the existing `/files/*` hardlink test:
 Run:
 
 ```bash
-cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
+cd /Users/drewritter/.codex/worktrees/59f6/governed-superpowers/tests/brainstorm-server
 node server.test.js
 ```
 
@@ -280,7 +280,7 @@ function getNewestScreen() {
 Run:
 
 ```bash
-cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
+cd /Users/drewritter/.codex/worktrees/59f6/governed-superpowers/tests/brainstorm-server
 node server.test.js
 ```
 
@@ -434,7 +434,7 @@ Add this test immediately after the persisted-token fallback test:
 Run:
 
 ```bash
-cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
+cd /Users/drewritter/.codex/worktrees/59f6/governed-superpowers/tests/brainstorm-server
 node lifecycle.test.js
 ```
 
@@ -492,7 +492,7 @@ In the `server.on('error', ...)` handler, replace the `EADDRINUSE` branch with:
 Run:
 
 ```bash
-cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
+cd /Users/drewritter/.codex/worktrees/59f6/governed-superpowers/tests/brainstorm-server
 node lifecycle.test.js
 ```
 
@@ -645,7 +645,7 @@ Keep the unrelated PID and missing PID tests.
 Run:
 
 ```bash
-cd /Users/drewritter/.codex/worktrees/59f6/superpowers
+cd /Users/drewritter/.codex/worktrees/59f6/governed-superpowers
 bash tests/brainstorm-server/stop-server.test.sh
 ```
 
@@ -759,7 +759,7 @@ In the stopped branch, change the cleanup line to:
 Run:
 
 ```bash
-cd /Users/drewritter/.codex/worktrees/59f6/superpowers
+cd /Users/drewritter/.codex/worktrees/59f6/governed-superpowers
 bash tests/brainstorm-server/stop-server.test.sh
 ```
 
@@ -814,7 +814,7 @@ After `const { stdout: initialStdout } = await waitForServer(server);`, add:
 Run:
 
 ```bash
-cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
+cd /Users/drewritter/.codex/worktrees/59f6/governed-superpowers/tests/brainstorm-server
 node auth.test.js
 ```
 
@@ -844,7 +844,7 @@ else
        "expected --brainstorm-server-id=<safe id>, got: $captured_argv"
 fi
 
-server_id_file=$(find "$TEST_DIR/project/.superpowers/brainstorm" -name server-instance-id -print 2>/dev/null | head -1)
+server_id_file=$(find "$TEST_DIR/project/.governed-superpowers/brainstorm" -name server-instance-id -print 2>/dev/null | head -1)
 server_id_value=""
 if [[ -n "$server_id_file" ]]; then
   server_id_value="$(tr -d '\r\n' < "$server_id_file")"
@@ -900,7 +900,7 @@ Change the direct Node launch in Test 6 to:
 Run:
 
 ```bash
-cd /Users/drewritter/.codex/worktrees/59f6/superpowers
+cd /Users/drewritter/.codex/worktrees/59f6/governed-superpowers
 bash tests/brainstorm-server/start-server.test.sh
 ```
 
@@ -921,7 +921,7 @@ git commit -m "Harden companion platform tests"
 
 **Files:**
 - Modify: `skills/brainstorming/visual-companion.md`
-- Modify: `docs/superpowers/plans/2026-06-09-visual-companion-issues.md`
+- Modify: `docs/governed-superpowers/plans/2026-06-09-visual-companion-issues.md`
 - Update: PR #1720 body through `gh pr edit`
 
 - [ ] **Step 1: Keep platform start commands aligned with auto-open behavior**
@@ -940,7 +940,7 @@ Do not add `--open` to remote bind examples where auto-open is intentionally ski
 
 - [ ] **Step 2: Reconcile issue catalog disposition rows**
 
-In `docs/superpowers/plans/2026-06-09-visual-companion-issues.md`, replace the disposition rows for A2, D1, D2, D3, and D4 with:
+In `docs/governed-superpowers/plans/2026-06-09-visual-companion-issues.md`, replace the disposition rows for A2, D1, D2, D3, and D4 with:
 
 ```markdown
 | A2 | Host allowlist; browser WS Origin check | PRs #1110/#1553 | Host allowlist dropped; WS Origin check retained after auth for browser confused-deputy defense |
@@ -983,7 +983,7 @@ In the suggested grouping section, replace item 4 with:
 Run:
 
 ```bash
-git diff -- skills/brainstorming/visual-companion.md docs/superpowers/plans/2026-06-09-visual-companion-issues.md
+git diff -- skills/brainstorming/visual-companion.md docs/governed-superpowers/plans/2026-06-09-visual-companion-issues.md
 ```
 
 Expected: diff only updates auto-open command consistency, shipped/deferred dispositions, WS Origin wording, and the 4 hour timeout statement.
@@ -993,7 +993,7 @@ Expected: diff only updates auto-open command consistency, shipped/deferred disp
 Run:
 
 ```bash
-git add skills/brainstorming/visual-companion.md docs/superpowers/plans/2026-06-09-visual-companion-issues.md
+git add skills/brainstorming/visual-companion.md docs/governed-superpowers/plans/2026-06-09-visual-companion-issues.md
 git commit -m "Align visual companion docs with shipped scope"
 ```
 
@@ -1008,7 +1008,7 @@ git commit -m "Align visual companion docs with shipped scope"
 Run:
 
 ```bash
-cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
+cd /Users/drewritter/.codex/worktrees/59f6/governed-superpowers/tests/brainstorm-server
 node server.test.js
 node auth.test.js
 node lifecycle.test.js
@@ -1023,7 +1023,7 @@ Expected: all focused tests pass; symlink-only tests may report skipped only whe
 Run:
 
 ```bash
-cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
+cd /Users/drewritter/.codex/worktrees/59f6/governed-superpowers/tests/brainstorm-server
 npm test
 ```
 
@@ -1047,7 +1047,7 @@ Expected: all commands exit 0.
 Copy or fetch the rebased branch on `ballmer`, then run:
 
 ```bash
-cd superpowers
+cd governed-superpowers
 npm --prefix tests/brainstorm-server ci
 npm --prefix tests/brainstorm-server test
 bash tests/brainstorm-server/windows-lifecycle.test.sh
@@ -1071,11 +1071,11 @@ Expected: first command exits 0. PR JSON no longer reports `DIRTY` or `CONFLICTI
 Run:
 
 ```bash
-git -C /Users/drewritter/.codex/worktrees/59f6/superpowers-evals rev-parse HEAD
-git -C /Users/drewritter/.codex/worktrees/59f6/superpowers-evals status --short --branch
+git -C /Users/drewritter/.codex/worktrees/59f6/governed-superpowers-evals rev-parse HEAD
+git -C /Users/drewritter/.codex/worktrees/59f6/governed-superpowers-evals status --short --branch
 ```
 
-If the eval worktree is not at that path, run the same commands in `/Users/drewritter/prime-rad/superpowers-evals`.
+If the eval worktree is not at that path, run the same commands in `/Users/drewritter/prime-rad/governed-superpowers-evals`.
 
 Record the exact eval scenario path, command, result artifact path, and RED/GREEN outcome from the already-run eval evidence. Do not claim the eval submodule is included in PR #1720.
 
@@ -1119,7 +1119,7 @@ Expected: PR points at the pushed head SHA, merge state is no longer conflict-bl
 
 ## Self-Review Checklist
 
-- [ ] Every requirement in `docs/superpowers/specs/2026-06-11-visual-companion-final-hardening-fixup-design.md` maps to one of the tasks above.
+- [ ] Every requirement in `docs/governed-superpowers/specs/2026-06-11-visual-companion-final-hardening-fixup-design.md` maps to one of the tasks above.
 - [ ] The plan contains no vague or incomplete steps.
 - [ ] Tests are added before production fixes in Tasks 1, 2, and 3.
 - [ ] The docs task does not add deferred features.

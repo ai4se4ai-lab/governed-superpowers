@@ -1,4 +1,4 @@
-# Superpowers Release Notes
+# Governed-Superpowers Release Notes
 
 ## v6.2.0 (2026-07-23)
 
@@ -6,7 +6,7 @@
 
 Two structural changes to how SDD tracks progress and closes out review findings, both developed against live eval campaigns.
 
-- **The workspace is now plan-scoped.** `.superpowers/sdd/` had no plan identity and no end-of-life: a follow-up plan in the same working tree could read the previous plan's ledger as its own progress (observed in the wild, with multiple contamination rounds and ad-hoc workarounds). `sdd-workspace` now requires the plan file and resolves a per-plan directory, `.superpowers/sdd/<plan-basename>/`; `task-brief` and `review-package` write into their plan's directory (`review-package` gains the plan file as its first argument); the ledger names its plan on its first line; and the workspace is deleted once the final review is clean — git history is the durable record. Baseline evals showed controllers already refused foreign ledgers, but at a cost of 6–13 tool calls of cross-plan git forensics per resume; plan-scoping makes the answer structural instead. (25/25 baseline and GREEN eval runs documented in `docs/specs/` and `docs/plans/`.)
+- **The workspace is now plan-scoped.** `.governed-superpowers/sdd/` had no plan identity and no end-of-life: a follow-up plan in the same working tree could read the previous plan's ledger as its own progress (observed in the wild, with multiple contamination rounds and ad-hoc workarounds). `sdd-workspace` now requires the plan file and resolves a per-plan directory, `.governed-superpowers/sdd/<plan-basename>/`; `task-brief` and `review-package` write into their plan's directory (`review-package` gains the plan file as its first argument); the ledger names its plan on its first line; and the workspace is deleted once the final review is clean — git history is the durable record. Baseline evals showed controllers already refused foreign ledgers, but at a cost of 6–13 tool calls of cross-plan git forensics per resume; plan-scoping makes the answer structural instead. (25/25 baseline and GREEN eval runs documented in `docs/specs/` and `docs/plans/`.)
 - **The review-fix loop resumes the implementer.** The lifecycle restructure gives fix rounds resume-the-implementer semantics instead of fresh dispatches, adds a scoped re-review prompt (`re-review-prompt.md`) so the re-reviewer checks the fixes rather than re-reading the whole task, and installs a five-round circuit breaker with controller adjudication when it trips. SKILL.md reorganizes by lifecycle, and its Red Flags convert to the house rationalization-table form.
 
 ### Skills
@@ -48,9 +48,9 @@ A branch-wide compression campaign: recap sections, social proof, and benefits-s
 
 ### Lower Per-Session Token Cost
 
-The `using-superpowers` bootstrap is injected into every session, so its size is paid for constantly. This release trims it and the per-harness references it points to, without dropping behavior-shaping content.
+The `using-governed-superpowers` bootstrap is injected into every session, so its size is paid for constantly. This release trims it and the per-harness references it points to, without dropping behavior-shaping content.
 
-- **Compressed the `using-superpowers` bootstrap.** Replaced the graphviz skill-flow diagram with the prose it encoded, folded the standalone Instruction-Priority section into User Instructions, dropped the per-platform "How to Access Skills" walkthrough, and trimmed the Platform Adaptation pointer to the harnesses that still ship a reference file. The full Red Flags rationalization table and the user-instruction precedence rules are unchanged.
+- **Compressed the `using-governed-superpowers` bootstrap.** Replaced the graphviz skill-flow diagram with the prose it encoded, folded the standalone Instruction-Priority section into User Instructions, dropped the per-platform "How to Access Skills" walkthrough, and trimmed the Platform Adaptation pointer to the harnesses that still ship a reference file. The full Red Flags rationalization table and the user-instruction precedence rules are unchanged.
 - **Pruned the per-harness tool-mapping references.** The verbose action-to-tool tables restated guidance modern agents already follow. Each reference file is trimmed to the harness-specific notes that still carry weight — subagent dispatch, task tracking, instructions-file paths — and `claude-code-tools.md` and `copilot-tools.md`, which had nothing harness-specific left, are deleted.
 
 ### Codex
@@ -66,7 +66,7 @@ The `using-superpowers` bootstrap is injected into every session, so its size is
 
 ### Subagent-Driven Development
 
-- **SDD scratch files moved out of `.git/`.** Claude Code treats `.git/` as a protected path and denies agent writes there, so an implementer subagent writing its report into `.git/sdd/` got blocked mid-run. Task briefs, implementer reports, review diffs, and the progress ledger now live in a self-ignoring `.superpowers/sdd/` directory in the working tree — kept out of `git status` and out of commits, and resolved per worktree by a shared `sdd-workspace` helper. One caveat: because the workspace is git-ignored working-tree scratch, `git clean -fdx` will delete the progress ledger; recover from `git log` if that happens. (#1780)
+- **SDD scratch files moved out of `.git/`.** Claude Code treats `.git/` as a protected path and denies agent writes there, so an implementer subagent writing its report into `.git/sdd/` got blocked mid-run. Task briefs, implementer reports, review diffs, and the progress ledger now live in a self-ignoring `.governed-superpowers/sdd/` directory in the working tree — kept out of `git status` and out of commits, and resolved per worktree by a shared `sdd-workspace` helper. One caveat: because the workspace is git-ignored working-tree scratch, `git clean -fdx` will delete the progress ledger; recover from `git log` if that happens. (#1780)
 
 ## v6.0.2 (2026-06-16)
 
@@ -78,12 +78,12 @@ The `using-superpowers` bootstrap is injected into every session, so its size is
 
 ### Codex Fixes
 
-- **Version display in the brainstorm companion** — packaged Codex plugins ship without a root `package.json`, so the visual companion reported its version as "unknown". `readSuperpowersVersion()` now falls back to `.codex-plugin/plugin.json` when `package.json` is absent.
+- **Version display in the brainstorm companion** — packaged Codex plugins ship without a root `package.json`, so the visual companion reported its version as "unknown". `readGoverned-SuperpowersVersion()` now falls back to `.codex-plugin/plugin.json` when `package.json` is absent.
 - **Cleaner Codex plugin sync** — the sync-to-codex script now excludes `.gitmodules` and `.pre-commit-config.yaml`, keeping repo metadata out of the packaged Codex plugin.
 
 ## v6.0.0 (2026-06-16)
 
-Superpowers 6.0 is a big release. The headline is a rewrite of how `subagent-driven-development` reviews each task — cheaper, stricter, and harder to game. 
+Governed-Superpowers 6.0 is a big release. The headline is a rewrite of how `subagent-driven-development` reviews each task — cheaper, stricter, and harder to game. 
 
 While these numbers won't hold on every harness and for every workload, in our evals, Claude Code and Codex produce similar high-quality results roughly twice as fast and while spending almost 50% fewer tokens.
 
@@ -92,14 +92,14 @@ It also adds three new harnesses (Kimi Code, Pi, and Antigravity), gives the bra
 ### Visible Changes
 
 - **The two per-task reviewer prompts became one.** `spec-reviewer-prompt.md` and `code-quality-reviewer-prompt.md` are gone, replaced by a single `task-reviewer-prompt.md`. If you dispatch the old files directly, switch to the new one.
-- **The legacy global worktree directory is gone.** `using-git-worktrees` and `finishing-a-development-branch` no longer use `~/.config/superpowers/worktrees/`. Worktrees now land in the project — an existing `.worktrees/` or `worktrees/` if you have one, otherwise a fresh `.worktrees/` — unless you say otherwise.
+- **The legacy global worktree directory is gone.** `using-git-worktrees` and `finishing-a-development-branch` no longer use `~/.config/governed-superpowers/worktrees/`. Worktrees now land in the project — an existing `.worktrees/` or `worktrees/` if you have one, otherwise a fresh `.worktrees/` — unless you say otherwise.
 
 ### New Harness Support
 
-Superpowers now runs on three more harnesses. Each ships its own bootstrap, a tool-mapping reference, and tests, and each gets its own install section in the README.
+Governed-Superpowers now runs on three more harnesses. Each ships its own bootstrap, a tool-mapping reference, and tests, and each gets its own install section in the README.
 
 - **Kimi Code** — a plugin manifest, install docs, and manifest tests; install from Kimi's marketplace or straight from the repo. (initial manifest by @qer)
-- **Pi** — a session-start extension that registers the skills and injects the `using-superpowers` bootstrap. Pi has native skills, so it needs no compatibility shim.
+- **Pi** — a session-start extension that registers the skills and injects the `using-governed-superpowers` bootstrap. Pi has native skills, so it needs no compatibility shim.
 - **Antigravity (`agy`)** — installs the plugin directly and bootstraps from the first message; verified end-to-end against the standard "make a react todo list" acceptance test.
 
 ### Subagent-Driven Development
@@ -145,7 +145,7 @@ The visual companion is a small web server the agent opens alongside the convers
 
 The skills used to speak Claude Code's dialect — "use the Task tool," "put it in CLAUDE.md." This release rewrites that vocabulary in terms of what you're actually doing ("dispatch a subagent," "your instructions file") and adds a per-harness reference that maps each action to the right tool, checked against each runtime. Prose that named "Claude" now says "your agent."
 
-- **A tool reference per harness** at `skills/using-superpowers/references/`, covering Claude Code, Codex, Copilot, Gemini, Pi, and Antigravity.
+- **A tool reference per harness** at `skills/using-governed-superpowers/references/`, covering Claude Code, Codex, Copilot, Gemini, Pi, and Antigravity.
 - **`finishing-a-development-branch` went forge-neutral** — it no longer hardcodes `gh pr create`, so agents push with whatever forge tooling they have. (#1609)
 - **One rename:** "Claude Search Optimization" is now "Skill Discovery Optimization," since the technique isn't Claude-specific.
 
@@ -165,14 +165,14 @@ Skill-behavior testing moved out of `tests/` into a new `evals/` submodule built
 - **systematic-debugging no longer forces every session into extended thinking.** One bullet held the exact keyword Claude Code scans for, quietly tripping the switch on every session that loaded the skill. A hyphen breaks the keyword; the text still reads. (#1283, by @Nick Galatis)
 - **The Windows SessionStart hook stopped printing a write error every session** — each `printf` now routes through `cat` to absorb the broken pipe, and the output is otherwise unchanged. (#1612, reported by @silvertakana)
 - **Windows foreground mode** tracks the right process and clears its owner PID on MSYS2. (by @nestorluiscamachopaz)
-- **The `using-superpowers` bootstrap** no longer lists "debugging" as a skill that doesn't exist. (reported by @mhat)
+- **The `using-governed-superpowers` bootstrap** no longer lists "debugging" as a skill that doesn't exist. (reported by @mhat)
 - **The TDD skill** links the testing anti-patterns reference. (#1532, #1529; link fix #1474 by @Stable Genius)
 - **`using-git-worktrees`** fixes its step numbering and drops stale Cursor references. (#1522, and by @fuleinist)
 - **The Codex review skill** swaps a private in-joke for plain guidance. (#1531)
 
 ### Documentation & Contributor Guidelines
 
-- **A guide to porting Superpowers to a new harness** (`docs/porting-to-a-new-harness.md`) lays out the three pieces every integration needs and the one rule that makes or breaks it: load the bootstrap at session start.
+- **A guide to porting Governed-Superpowers to a new harness** (`docs/porting-to-a-new-harness.md`) lays out the three pieces every integration needs and the one rule that makes or breaks it: load the bootstrap at session start.
 - **Every PR and issue now discloses how it was made** — model, harness, version, and installed plugins, or a note that it was written by hand. We weigh a contribution differently depending on what produced it. PRs also target `dev`, not `main`. The PR template, all three issue templates, and a new platform-support template carry this.
 
 ### Contributors
@@ -183,8 +183,8 @@ Thanks to @mattvanhorn, @nawfal, @Nick Galatis, @silvertakana, @nestorluiscamach
 
 ### Removals
 
-- **Legacy slash commands removed** — `/brainstorm`, `/execute-plan`, and `/write-plan` are gone. They were deprecated stubs that did nothing but tell the user to invoke the corresponding skill. Invoke `superpowers:brainstorming`, `superpowers:executing-plans`, and `superpowers:writing-plans` directly instead. (#1188)
-- **`superpowers:code-reviewer` named agent removed** — the agent was the plugin's only named agent and was used by exactly two skills, while every other reviewer/implementer subagent in the repo dispatches `general-purpose` with a prompt template alongside its skill. The agent's persona and checklist have been merged into `skills/requesting-code-review/code-reviewer.md` as a self-contained Task-dispatch template. Anyone dispatching `Task (superpowers:code-reviewer)` should switch to `Task (general-purpose)` with the prompt template instead. (PR #1299)
+- **Legacy slash commands removed** — `/brainstorm`, `/execute-plan`, and `/write-plan` are gone. They were deprecated stubs that did nothing but tell the user to invoke the corresponding skill. Invoke `governed-superpowers:brainstorming`, `governed-superpowers:executing-plans`, and `governed-superpowers:writing-plans` directly instead. (#1188)
+- **`governed-superpowers:code-reviewer` named agent removed** — the agent was the plugin's only named agent and was used by exactly two skills, while every other reviewer/implementer subagent in the repo dispatches `general-purpose` with a prompt template alongside its skill. The agent's persona and checklist have been merged into `skills/requesting-code-review/code-reviewer.md` as a self-contained Task-dispatch template. Anyone dispatching `Task (governed-superpowers:code-reviewer)` should switch to `Task (general-purpose)` with the prompt template instead. (PR #1299)
 - **Integration sections removed from skills** — these were a legacy of the time before agents had native skills systems and didn't help with steering.
 
 ### Worktree Skills Rewrite
@@ -194,7 +194,7 @@ Thanks to @mattvanhorn, @nawfal, @Nick Galatis, @silvertakana, @nestorluiscamach
 - **Environment detection** — both skills check `GIT_DIR != GIT_COMMON` before doing anything; if already in a linked worktree, creation is skipped entirely. A submodule guard prevents false detection.
 - **Consent before creating worktrees** — `using-git-worktrees` no longer creates worktrees implicitly; the skill asks the user first. Fixes #991 (subagent-driven-development was auto-creating worktrees without consent).
 - **Native tool preference (Step 1a)** — when the harness exposes its own worktree tool (e.g. Codex), the skill defers to it. The user's stated preference is respected when expressed.
-- **Provenance-based cleanup** — `finishing-a-development-branch` only cleans up worktrees inside `.worktrees/` (created by superpowers); anything outside is left alone. Fixes #940 (Option 2 was incorrectly cleaning up worktrees), #999 (merge-then-remove ordering), and #238 (`cd` to repo root before `git worktree remove`).
+- **Provenance-based cleanup** — `finishing-a-development-branch` only cleans up worktrees inside `.worktrees/` (created by governed-superpowers); anything outside is left alone. Fixes #940 (Option 2 was incorrectly cleaning up worktrees), #999 (merge-then-remove ordering), and #238 (`cd` to repo root before `git worktree remove`).
 - **Detached HEAD handling** — the finishing menu collapses to two options when there is no branch to merge from.
 - **Hardcoded `/Users/jesse` paths** in skill examples replaced with generic placeholders. (#858, PR #1122)
 
@@ -204,11 +204,11 @@ Two new sections at the top of `CLAUDE.md` (symlinked to `AGENTS.md`) speak dire
 
 - **Pre-submission checklist** — read the PR template, search for existing PRs, verify a real problem exists, confirm the change belongs in core, and show the human partner the complete diff before submitting.
 - **What we will not accept** — third-party dependencies, "compliance" rewrites of skill content, project-specific configuration, bulk PRs, speculative fixes, domain-specific skills, fork-specific changes, fabricated content, and bundled unrelated changes.
-- **New harness PRs require a session transcript** — most past new-harness integrations copied skill files or wrapped with `npx skills` instead of loading the `using-superpowers` bootstrap at session start. The acceptance test ("Let's make a react todo list" must auto-trigger `brainstorming` in a clean session) and a complete transcript are now required.
+- **New harness PRs require a session transcript** — most past new-harness integrations copied skill files or wrapped with `npx skills` instead of loading the `using-governed-superpowers` bootstrap at session start. The acceptance test ("Let's make a react todo list" must auto-trigger `brainstorming` in a clean session) and a complete transcript are now required.
 
 ### Codex Plugin Mirror Tooling
 
-New `sync-to-codex-plugin` script mirrors superpowers into the OpenAI Codex plugin marketplace as `prime-radiant-inc/openai-codex-plugins`. Path/user-agnostic so any team member can run it. (PR #1165)
+New `sync-to-codex-plugin` script mirrors governed-superpowers into the OpenAI Codex plugin marketplace as `prime-radiant-inc/openai-codex-plugins`. Path/user-agnostic so any team member can run it. (PR #1165)
 
 - Clones the fork fresh into a temp directory per run, regenerates overlays inline, and opens a PR; auto-detects upstream from the script's own location and preflights `rsync`/`git`/`gh auth`/`python3`.
 - `--bootstrap` flag for first-time setup; `EXCLUDES` patterns anchored to source root; `assets/` excluded.
@@ -269,13 +269,13 @@ New `sync-to-codex-plugin` script mirrors superpowers into the OpenAI Codex plug
 
 ### GitHub Copilot CLI Support
 
-- **SessionStart context injection** — Copilot CLI v1.0.11 added support for `additionalContext` in sessionStart hook output. The session-start hook now detects the `COPILOT_CLI` environment variable and emits the SDK-standard `{ "additionalContext": "..." }` format, giving Copilot CLI users the full superpowers bootstrap at session start. (Original fix by @culinablaz in PR #910)
+- **SessionStart context injection** — Copilot CLI v1.0.11 added support for `additionalContext` in sessionStart hook output. The session-start hook now detects the `COPILOT_CLI` environment variable and emits the SDK-standard `{ "additionalContext": "..." }` format, giving Copilot CLI users the full governed-superpowers bootstrap at session start. (Original fix by @culinablaz in PR #910)
 - **Tool mapping** — added `references/copilot-tools.md` with the full Claude Code to Copilot CLI tool equivalence table
-- **Skill and README updates** — added Copilot CLI to the `using-superpowers` skill's platform instructions and README installation section
+- **Skill and README updates** — added Copilot CLI to the `using-governed-superpowers` skill's platform instructions and README installation section
 
 ### OpenCode Fixes
 
-- **Skills path consistency** — the bootstrap text no longer advertises a misleading `configDir/skills/superpowers/` path that didn't match the runtime path. The agent should use the native `skill` tool, not navigate to files by path. Tests now use consistent paths derived from a single source of truth. (#847, #916)
+- **Skills path consistency** — the bootstrap text no longer advertises a misleading `configDir/skills/governed-superpowers/` path that didn't match the runtime path. The agent should use the native `skill` tool, not navigate to files by path. Tests now use consistent paths derived from a single source of truth. (#847, #916)
 - **Bootstrap as user message** — moved bootstrap injection from `experimental.chat.system.transform` to `experimental.chat.messages.transform`, prepending to the first user message instead of adding a system message. Avoids token bloat from system messages repeated every turn (#750) and fixes compatibility with Qwen and other models that break on multiple system messages (#894).
 
 ## v5.0.6 (2026-03-24)
@@ -330,7 +330,7 @@ Dramatically reduces token usage and speeds up spec and plan reviews by eliminat
 ### OpenCode
 
 - **One-line plugin install** — OpenCode plugin now auto-registers the skills directory via a `config` hook. No symlinks or `skills.paths` config needed. Install is just adding one line to `opencode.json`. (PR #753)
-- **Added `package.json`** so OpenCode can install superpowers as an npm package from git.
+- **Added `package.json`** so OpenCode can install governed-superpowers as an npm package from git.
 
 ### Bug Fixes
 
@@ -392,8 +392,8 @@ Dramatically reduces token usage and speeds up spec and plan reviews by eliminat
 **Gemini CLI extension**
 
 - Native Gemini CLI extension support via `gemini-extension.json` and `GEMINI.md` at repo root
-- `GEMINI.md` @imports `using-superpowers` skill and tool mapping table at session start
-- Gemini CLI tool mapping reference (`skills/using-superpowers/references/gemini-tools.md`) — translates Claude Code tool names (Read, Write, Edit, Bash, etc.) to Gemini CLI equivalents (read_file, write_file, replace, etc.)
+- `GEMINI.md` @imports `using-governed-superpowers` skill and tool mapping table at session start
+- Gemini CLI tool mapping reference (`skills/using-governed-superpowers/references/gemini-tools.md`) — translates Claude Code tool names (Read, Write, Edit, Bash, etc.) to Gemini CLI equivalents (read_file, write_file, replace, etc.)
 - Documents Gemini CLI limitations: no subagent support, skills fall back to `executing-plans`
 - Extension root at repo root for cross-platform compatibility (avoids Windows symlink issues)
 - Install instructions added to README
@@ -471,15 +471,15 @@ Dramatically reduces token usage and speeds up spec and plan reviews by eliminat
 
 **Specs and plans directory restructured**
 
-- Specs (brainstorming output) now save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
-- Plans (writing-plans output) now save to `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+- Specs (brainstorming output) now save to `docs/governed-superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+- Plans (writing-plans output) now save to `docs/governed-superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - User preferences for spec/plan locations override these defaults
 - All internal skill references, test files, and example paths updated to match
 - Migration: move existing files from `docs/plans/` to new locations if desired
 
 **Subagent-driven development mandatory on capable harnesses**
 
-Writing-plans no longer offers a choice between subagent-driven and executing-plans. On harnesses with subagent support (Claude Code, Codex), subagent-driven-development is required. Executing-plans is reserved for harnesses without subagent capability, and now tells the user that Superpowers works better on a subagent-capable platform.
+Writing-plans no longer offers a choice between subagent-driven and executing-plans. On harnesses with subagent support (Claude Code, Codex), subagent-driven-development is required. Executing-plans is reserved for harnesses without subagent capability, and now tells the user that Governed-Superpowers works better on a subagent-capable platform.
 
 **Executing-plans no longer batches**
 
@@ -495,7 +495,7 @@ Removed the "execute 3 tasks then stop for review" pattern. Plans now execute co
 
 Optional browser-based companion for brainstorming sessions. When a topic would benefit from visuals, the brainstorming skill offers to show mockups, diagrams, comparisons, and other content in a browser window alongside terminal conversation.
 
-- `lib/brainstorm-server/` — WebSocket server with browser helper library, session management scripts, and dark/light themed frame template ("Superpowers Brainstorming" with GitHub link)
+- `lib/brainstorm-server/` — WebSocket server with browser helper library, session management scripts, and dark/light themed frame template ("Governed-Superpowers Brainstorming" with GitHub link)
 - `skills/brainstorming/visual-companion.md` — Progressive disclosure guide for server workflow, screen authoring, and feedback collection
 - Brainstorming skill adds a visual companion decision point to its process flow: after exploring project context, the skill evaluates whether upcoming questions involve visual content and offers the companion in its own message
 - Per-question decision: even after accepting, each question is evaluated for whether browser or terminal is more appropriate
@@ -511,7 +511,7 @@ Automated review loops for spec and plan documents using subagent dispatch:
 - Writing-plans includes chunk-based plan review loop after each section
 - Review loops repeat until approved or escalate after 5 iterations
 - End-to-end tests in `tests/claude-code/test-document-review-system.sh`
-- Design spec and implementation plan in `docs/superpowers/`
+- Design spec and implementation plan in `docs/governed-superpowers/`
 
 **Architecture guidance across the skill pipeline**
 
@@ -533,17 +533,17 @@ Design-for-isolation and file-size-awareness guidance added to brainstorming, wr
 
 **Instruction priority hierarchy**
 
-Added explicit priority ordering to using-superpowers:
+Added explicit priority ordering to using-governed-superpowers:
 
 1. User's explicit instructions (CLAUDE.md, AGENTS.md, direct requests) — highest priority
-2. Superpowers skills — override default system behavior
+2. Governed-Superpowers skills — override default system behavior
 3. Default system prompt — lowest priority
 
 If CLAUDE.md or AGENTS.md says "don't use TDD" and a skill says "always use TDD," the user's instructions win.
 
 **SUBAGENT-STOP gate**
 
-Added `<SUBAGENT-STOP>` block to using-superpowers. Subagents dispatched for specific tasks now skip the skill instead of activating the 1% rule and invoking full skill workflows.
+Added `<SUBAGENT-STOP>` block to using-governed-superpowers. Subagents dispatched for specific tasks now skip the skill instead of activating the 1% rule and invoking full skill workflows.
 
 **Multi-platform improvements**
 
@@ -565,7 +565,7 @@ Added `<SUBAGENT-STOP>` block to using-superpowers. Subagents dispatched for spe
 
 **Cursor support**
 
-Superpowers now works with Cursor's plugin system. Includes a `.cursor-plugin/plugin.json` manifest and Cursor-specific installation instructions in the README. The SessionStart hook output now includes an `additional_context` field alongside the existing `hookSpecificOutput.additionalContext` for Cursor hook compatibility.
+Governed-Superpowers now works with Cursor's plugin system. Includes a `.cursor-plugin/plugin.json` manifest and Cursor-specific installation instructions in the README. The SessionStart hook output now includes an `additional_context` field alongside the existing `hookSpecificOutput.additionalContext` for Cursor hook compatibility.
 
 ### Fixed
 
@@ -583,7 +583,7 @@ This fixes SessionStart failures on Windows with spaces in paths, missing WSL, `
 
 ## v4.3.0 (2026-02-12)
 
-This fix should dramatically improve superpowers skills compliance and should reduce the chances of Claude entering its native plan mode unintentionally.
+This fix should dramatically improve governed-superpowers skills compliance and should reduce the chances of Claude entering its native plan mode unintentionally.
 
 ### Changed
 
@@ -597,7 +597,7 @@ Models were skipping the design phase and jumping straight to implementation ski
 - Anti-pattern callout for "this is too simple to need a design" — the exact rationalization models use to skip the process
 - Design section sizing based on section complexity, not project complexity
 
-**Using-superpowers workflow graph intercepts EnterPlanMode**
+**Using-governed-superpowers workflow graph intercepts EnterPlanMode**
 
 Added an `EnterPlanMode` intercept to the skill flow graph. When the model is about to enter Claude's native plan mode, it checks whether brainstorming has happened and routes through the brainstorming skill instead. Plan mode is never entered.
 
@@ -605,7 +605,7 @@ Added an `EnterPlanMode` intercept to the skill flow graph. When the model is ab
 
 **SessionStart hook now runs synchronously**
 
-Changed `async: true` to `async: false` in hooks.json. When async, the hook could fail to complete before the model's first turn, meaning using-superpowers instructions weren't in context for the first message.
+Changed `async: true` to `async: false` in hooks.json. When async, the hook could fail to complete before the model's first turn, meaning using-governed-superpowers instructions weren't in context for the first message.
 
 ## v4.2.0 (2026-02-05)
 
@@ -613,7 +613,7 @@ Changed `async: true` to `async: false` in hooks.json. When async, the hook coul
 
 **Codex: Replaced bootstrap CLI with native skill discovery**
 
-The `superpowers-codex` bootstrap CLI, Windows `.cmd` wrapper, and related bootstrap content file have been removed. Codex now uses native skill discovery via `~/.agents/skills/superpowers/` symlink, so the old `use_skill`/`find_skills` CLI tools are no longer needed.
+The `governed-superpowers-codex` bootstrap CLI, Windows `.cmd` wrapper, and related bootstrap content file have been removed. Codex now uses native skill discovery via `~/.agents/skills/governed-superpowers/` symlink, so the old `use_skill`/`find_skills` CLI tools are no longer needed.
 
 Installation is now just clone + symlink (documented in INSTALL.md). No Node.js dependency required. The old `~/.codex/skills/` path is deprecated.
 
@@ -627,7 +627,7 @@ Fix: hooks.json now calls session-start.sh directly. Claude Code 2.1.x handles t
 
 **Windows: SessionStart hook runs async to prevent terminal freeze (#404, #413, #414, #419)**
 
-The synchronous SessionStart hook blocked the TUI from entering raw mode on Windows, freezing all keyboard input. Running the hook async prevents the freeze while still injecting superpowers context.
+The synchronous SessionStart hook blocked the TUI from entering raw mode on Windows, freezing all keyboard input. Running the hook async prevents the freeze while still injecting governed-superpowers context.
 
 **Windows: Fixed O(n^2) `escape_for_json` performance**
 
@@ -635,7 +635,7 @@ The character-by-character loop using `${input:$i:1}` was O(n^2) in bash due to 
 
 **Codex: Fixed Windows/PowerShell invocation (#285, #243)**
 
-- Windows doesn't respect shebangs, so directly invoking the extensionless `superpowers-codex` script triggered an "Open with" dialog. All invocations now prefixed with `node`.
+- Windows doesn't respect shebangs, so directly invoking the extensionless `governed-superpowers-codex` script triggered an "Open with" dialog. All invocations now prefixed with `node`.
 - Fixed `~/` path expansion on Windows — PowerShell doesn't expand `~` when passed as an argument to `node`. Changed to `$HOME` which expands correctly in both bash and PowerShell.
 
 **Codex: Fixed path resolution in installer**
@@ -699,9 +699,9 @@ Changes:
 
 **OpenCode: Switched to native skills system**
 
-Superpowers for OpenCode now uses OpenCode's native `skill` tool instead of custom `use_skill`/`find_skills` tools. This is a cleaner integration that works with OpenCode's built-in skill discovery.
+Governed-Superpowers for OpenCode now uses OpenCode's native `skill` tool instead of custom `use_skill`/`find_skills` tools. This is a cleaner integration that works with OpenCode's built-in skill discovery.
 
-**Migration required:** Skills must be symlinked to `~/.config/opencode/skills/superpowers/` (see updated installation docs).
+**Migration required:** Skills must be symlinked to `~/.config/opencode/skills/governed-superpowers/` (see updated installation docs).
 
 ### Fixes
 
@@ -727,7 +727,7 @@ Fix: hooks.json now calls session-start.sh directly. Claude Code 2.1.x handles t
 
 ### Improvements
 
-**Strengthened using-superpowers skill for explicit skill requests**
+**Strengthened using-governed-superpowers skill for explicit skill requests**
 
 Addressed a failure mode where Claude would skip invoking a skill even when the user explicitly requested it by name (e.g., "subagent-driven-development, please"). Claude would think "I know what that means" and start working directly instead of loading the skill.
 
@@ -749,7 +749,7 @@ New test suite in `tests/explicit-skill-requests/` that verifies Claude correctl
 
 Added `disable-model-invocation: true` to all three slash commands (`/brainstorm`, `/execute-plan`, `/write-plan`). Claude can no longer invoke these commands via the Skill tool—they're restricted to manual user invocation only.
 
-The underlying skills (`superpowers:brainstorming`, `superpowers:executing-plans`, `superpowers:writing-plans`) remain available for Claude to invoke autonomously. This change prevents confusion when Claude would invoke a command that just redirects to a skill anyway.
+The underlying skills (`governed-superpowers:brainstorming`, `governed-superpowers:executing-plans`, `governed-superpowers:writing-plans`) remain available for Claude to invoke autonomously. This change prevents confusion when Claude would invoke a command that just redirects to a skill anyway.
 
 ## v4.0.1 (2025-12-23)
 
@@ -757,11 +757,11 @@ The underlying skills (`superpowers:brainstorming`, `superpowers:executing-plans
 
 **Clarified how to access skills in Claude Code**
 
-Fixed a confusing pattern where Claude would invoke a skill via the Skill tool, then try to Read the skill file separately. The `using-superpowers` skill now explicitly states that the Skill tool loads skill content directly—no need to read files.
+Fixed a confusing pattern where Claude would invoke a skill via the Skill tool, then try to Read the skill file separately. The `using-governed-superpowers` skill now explicitly states that the Skill tool loads skill content directly—no need to read files.
 
-- Added "How to Access Skills" section to `using-superpowers`
+- Added "How to Access Skills" section to `using-governed-superpowers`
 - Changed "read the skill" → "invoke the skill" in instructions
-- Updated slash commands to use fully qualified skill names (e.g., `superpowers:brainstorming`)
+- Updated slash commands to use fully qualified skill names (e.g., `governed-superpowers:brainstorming`)
 
 **Added GitHub thread reply guidance to receiving-code-review** (h/t @ralphbean)
 
@@ -833,7 +833,7 @@ Rewrote key skills using DOT/GraphViz flowcharts as the authoritative process de
 
 **The Description Trap** (documented in `writing-skills`): Discovered that skill descriptions override flowchart content when descriptions contain workflow summaries. Claude follows the short description instead of reading the detailed flowchart. Fix: descriptions must be trigger-only ("Use when X") with no process details.
 
-**Skill priority in using-superpowers**
+**Skill priority in using-governed-superpowers**
 
 When multiple skills apply, process skills (brainstorming, debugging) now explicitly come before implementation skills. "Build X" triggers brainstorming first, then domain skills.
 
@@ -852,7 +852,7 @@ Description changed to imperative: "You MUST use this before any creative work�
 ### Other Improvements
 
 - **render-graphs.js** - Tool to extract DOT diagrams from skills and render to SVG
-- **Rationalizations table** in using-superpowers - Scannable format including new entries: "I need more context first", "Let me explore first", "This feels productive"
+- **Rationalizations table** in using-governed-superpowers - Scannable format including new entries: "I need more context first", "Let me explore first", "This feels productive"
 - **docs/testing.md** - Guide to testing skills with Claude Code integration tests
 
 ---
@@ -874,7 +874,7 @@ Description changed to imperative: "You MUST use this before any creative work�
 
 - **OpenCode Bootstrap Refactor**: Switched from `chat.message` hook to `session.created` event for bootstrap injection
   - Bootstrap now injects at session creation via `session.prompt()` with `noReply: true`
-  - Explicitly tells the model that using-superpowers is already loaded to prevent redundant skill loading
+  - Explicitly tells the model that using-governed-superpowers is already loaded to prevent redundant skill loading
   - Consolidated bootstrap content generation into shared `getBootstrapContent()` helper
   - Cleaner single-implementation approach (removed fallback pattern)
 
@@ -889,7 +889,7 @@ Description changed to imperative: "You MUST use this before any creative work�
   - Message insertion pattern for skill persistence across context compaction
   - Automatic context injection via chat.message hook
   - Auto re-injection on session.compacted events
-  - Three-tier skill priority: project > personal > superpowers
+  - Three-tier skill priority: project > personal > governed-superpowers
   - Project-local skills support (`.opencode/skills/`)
   - Shared core module (`lib/skills-core.js`) for code reuse with Codex
   - Automated test suite with proper isolation (`tests/opencode/`)
@@ -914,7 +914,7 @@ Description changed to imperative: "You MUST use this before any creative work�
 
 ### Improvements
 
-- Optimized superpowers bootstrap to eliminate redundant skill execution. The `using-superpowers` skill content is now provided directly in session context, with clear guidance to use the Skill tool only for other skills. This reduces overhead and prevents the confusing loop where agents would execute `using-superpowers` manually despite already having the content from session start.
+- Optimized governed-superpowers bootstrap to eliminate redundant skill execution. The `using-governed-superpowers` skill content is now provided directly in session context, with clear guidance to use the Skill tool only for other skills. This reduces overhead and prevents the confusing loop where agents would execute `using-governed-superpowers` manually despite already having the content from session start.
 
 ## v3.4.0 (2025-10-30)
 
@@ -938,10 +938,10 @@ Description changed to imperative: "You MUST use this before any creative work�
 ### New Features
 
 **Experimental Codex Support**
-- Added unified `superpowers-codex` script with bootstrap/use-skill/find-skills commands
+- Added unified `governed-superpowers-codex` script with bootstrap/use-skill/find-skills commands
 - Cross-platform Node.js implementation (works on Windows, macOS, Linux)
-- Namespaced skills: `superpowers:skill-name` for superpowers skills, `skill-name` for personal
-- Personal skills override superpowers skills when names match
+- Namespaced skills: `governed-superpowers:skill-name` for governed-superpowers skills, `skill-name` for personal
+- Personal skills override governed-superpowers skills when names match
 - Clean skill display: shows name/description without raw frontmatter
 - Helpful context: shows supporting files directory for each skill
 - Tool mapping for Codex: TodoWrite→update_plan, subagents→manual fallback, etc.
@@ -952,20 +952,20 @@ Description changed to imperative: "You MUST use this before any creative work�
 - Single unified script instead of separate tools
 - Tool substitution system for Codex-specific equivalents
 - Simplified subagent handling (manual work instead of delegation)
-- Updated terminology: "Superpowers skills" instead of "Core skills"
+- Updated terminology: "Governed-Superpowers skills" instead of "Core skills"
 
 ### Files Added
 - `.codex/INSTALL.md` - Installation guide for Codex users
-- `.codex/superpowers-bootstrap.md` - Bootstrap instructions with Codex adaptations
-- `.codex/superpowers-codex` - Unified Node.js executable with all functionality
+- `.codex/governed-superpowers-bootstrap.md` - Bootstrap instructions with Codex adaptations
+- `.codex/governed-superpowers-codex` - Unified Node.js executable with all functionality
 
-**Note:** Codex support is experimental. The integration provides core superpowers functionality but may require refinement based on user feedback.
+**Note:** Codex support is experimental. The integration provides core governed-superpowers functionality but may require refinement based on user feedback.
 
 ## v3.2.3 (2025-10-23)
 
 ### Improvements
 
-**Updated using-superpowers skill to use Skill tool instead of Read tool**
+**Updated using-governed-superpowers skill to use Skill tool instead of Read tool**
 - Changed skill invocation instructions from Read tool to Skill tool
 - Updated description: "using Read tool" → "using Skill tool"
 - Updated step 3: "Use the Read tool" → "Use the Skill tool to read and run"
@@ -974,13 +974,13 @@ Description changed to imperative: "You MUST use this before any creative work�
 The Skill tool is the proper mechanism for invoking skills in Claude Code. This update corrects the bootstrap instructions to guide agents toward the correct tool.
 
 ### Files Changed
-- Updated: `skills/using-superpowers/SKILL.md` - Changed tool references from Read to Skill
+- Updated: `skills/using-governed-superpowers/SKILL.md` - Changed tool references from Read to Skill
 
 ## v3.2.2 (2025-10-21)
 
 ### Improvements
 
-**Strengthened using-superpowers skill against agent rationalization**
+**Strengthened using-governed-superpowers skill against agent rationalization**
 - Added EXTREMELY-IMPORTANT block with absolute language about mandatory skill checking
   - "If even 1% chance a skill applies, you MUST read it"
   - "You do not have a choice. You cannot rationalize your way out."
@@ -996,23 +996,23 @@ The Skill tool is the proper mechanism for invoking skills in Claude Code. This 
 These changes address observed agent behavior where they rationalize around skill usage despite clear instructions. The forceful language and pre-emptive counter-arguments aim to make non-compliance harder.
 
 ### Files Changed
-- Updated: `skills/using-superpowers/SKILL.md` - Added three layers of enforcement to prevent skill-skipping rationalization
+- Updated: `skills/using-governed-superpowers/SKILL.md` - Added three layers of enforcement to prevent skill-skipping rationalization
 
 ## v3.2.1 (2025-10-20)
 
 ### New Features
 
 **Code reviewer agent now included in plugin**
-- Added `superpowers:code-reviewer` agent to plugin's `agents/` directory
+- Added `governed-superpowers:code-reviewer` agent to plugin's `agents/` directory
 - Agent provides systematic code review against plans and coding standards
 - Previously required users to have personal agent configuration
-- All skill references updated to use namespaced `superpowers:code-reviewer`
+- All skill references updated to use namespaced `governed-superpowers:code-reviewer`
 - Fixes #55
 
 ### Files Changed
 - New: `agents/code-reviewer.md` - Agent definition with review checklist and output format
-- Updated: `skills/requesting-code-review/SKILL.md` - References to `superpowers:code-reviewer`
-- Updated: `skills/subagent-driven-development/SKILL.md` - References to `superpowers:code-reviewer`
+- Updated: `skills/requesting-code-review/SKILL.md` - References to `governed-superpowers:code-reviewer`
+- Updated: `skills/subagent-driven-development/SKILL.md` - References to `governed-superpowers:code-reviewer`
 
 ## v3.2.0 (2025-10-18)
 
@@ -1028,8 +1028,8 @@ These changes address observed agent behavior where they rationalize around skil
 ### Breaking Changes
 
 **Skill reference namespace standardization**
-- All internal skill references now use `superpowers:` namespace prefix
-- Updated format: `superpowers:test-driven-development` (previously just `test-driven-development`)
+- All internal skill references now use `governed-superpowers:` namespace prefix
+- Updated format: `governed-superpowers:test-driven-development` (previously just `test-driven-development`)
 - Affects all REQUIRED SUB-SKILL, RECOMMENDED SUB-SKILL, and REQUIRED BACKGROUND references
 - Aligns with how skills are invoked using the Skill tool
 - Files updated: brainstorming, executing-plans, subagent-driven-development, systematic-debugging, testing-skills-with-subagents, writing-plans, writing-skills
@@ -1045,7 +1045,7 @@ These changes address observed agent behavior where they rationalize around skil
 
 ### Bug Fixes
 
-- **Fixed command syntax in README** (#44) - Updated all command references to use correct namespaced syntax (`/superpowers:brainstorm` instead of `/brainstorm`). Plugin-provided commands are automatically namespaced by Claude Code to avoid conflicts between plugins.
+- **Fixed command syntax in README** (#44) - Updated all command references to use correct namespaced syntax (`/governed-superpowers:brainstorm` instead of `/brainstorm`). Plugin-provided commands are automatically namespaced by Claude Code to avoid conflicts between plugins.
 
 ## v3.1.0 (2025-10-17)
 
@@ -1128,13 +1128,13 @@ We now use Anthropic's first-party skills system!
 
 ---
 
-# Superpowers v2.0.0 Release Notes
+# Governed-Superpowers v2.0.0 Release Notes
 
 ## Overview
 
-Superpowers v2.0 makes skills more accessible, maintainable, and community-driven through a major architectural shift.
+Governed-Superpowers v2.0 makes skills more accessible, maintainable, and community-driven through a major architectural shift.
 
-The headline change is **skills repository separation**: all skills, scripts, and documentation have moved from the plugin into a dedicated repository ([obra/superpowers-skills](https://github.com/obra/superpowers-skills)). This transforms superpowers from a monolithic plugin into a lightweight shim that manages a local clone of the skills repository. Skills auto-update on session start. Users fork and contribute improvements via standard git workflows. The skills library versions independently from the plugin.
+The headline change is **skills repository separation**: all skills, scripts, and documentation have moved from the plugin into a dedicated repository ([obra/governed-superpowers-skills](https://github.com/obra/governed-superpowers-skills)). This transforms governed-superpowers from a monolithic plugin into a lightweight shim that manages a local clone of the skills repository. Skills auto-update on session start. Users fork and contribute improvements via standard git workflows. The skills library versions independently from the plugin.
 
 Beyond infrastructure, this release adds nine new skills focused on problem-solving, research, and architecture. We rewrote the core **using-skills** documentation with imperative tone and clearer structure, making it easier for Claude to understand when and how to use skills. **find-skills** now outputs paths you can paste directly into the Read tool, eliminating friction in the skills discovery workflow.
 
@@ -1144,11 +1144,11 @@ Users experience seamless operation: the plugin handles cloning, forking, and up
 
 ### Skills Repository Separation
 
-**The biggest change:** Skills no longer live in the plugin. They've been moved to a separate repository at [obra/superpowers-skills](https://github.com/obra/superpowers-skills).
+**The biggest change:** Skills no longer live in the plugin. They've been moved to a separate repository at [obra/governed-superpowers-skills](https://github.com/obra/governed-superpowers-skills).
 
 **What this means for you:**
 
-- **First install:** Plugin automatically clones skills to `~/.config/superpowers/skills/`
+- **First install:** Plugin automatically clones skills to `~/.config/governed-superpowers/skills/`
 - **Forking:** During setup, you'll be offered the option to fork the skills repo (if `gh` is installed)
 - **Updates:** Skills auto-update on session start (fast-forward when possible)
 - **Contributing:** Work on branches, commit locally, submit PRs to upstream
@@ -1157,21 +1157,21 @@ Users experience seamless operation: the plugin handles cloning, forking, and up
 **Migration:**
 
 If you have an existing installation:
-1. Your old `~/.config/superpowers/.git` will be backed up to `~/.config/superpowers/.git.bak`
-2. Old skills will be backed up to `~/.config/superpowers/skills.bak`
-3. Fresh clone of obra/superpowers-skills will be created at `~/.config/superpowers/skills/`
+1. Your old `~/.config/governed-superpowers/.git` will be backed up to `~/.config/governed-superpowers/.git.bak`
+2. Old skills will be backed up to `~/.config/governed-superpowers/skills.bak`
+3. Fresh clone of obra/governed-superpowers-skills will be created at `~/.config/governed-superpowers/skills/`
 
 ### Removed Features
 
-- **Personal superpowers overlay system** - Replaced with git branch workflow
-- **setup-personal-superpowers hook** - Replaced by initialize-skills.sh
+- **Personal governed-superpowers overlay system** - Replaced with git branch workflow
+- **setup-personal-governed-superpowers hook** - Replaced by initialize-skills.sh
 
 ## New Features
 
 ### Skills Repository Infrastructure
 
 **Automatic Clone & Setup** (`lib/initialize-skills.sh`)
-- Clones obra/superpowers-skills on first run
+- Clones obra/governed-superpowers-skills on first run
 - Offers fork creation if GitHub CLI is installed
 - Sets up upstream/origin remotes correctly
 - Handles migration from old installation
@@ -1242,21 +1242,21 @@ If you have an existing installation:
 - Moved "skills behind" warning to end of output
 
 **Environment Variables**
-- `SUPERPOWERS_SKILLS_ROOT` set to `~/.config/superpowers/skills`
+- `SUPERPOWERS_SKILLS_ROOT` set to `~/.config/governed-superpowers/skills`
 - Used consistently throughout all paths
 
 ## Bug Fixes
 
 - Fixed duplicate upstream remote addition when forking
 - Fixed find-skills double "skills/" prefix in output
-- Removed obsolete setup-personal-superpowers call from session-start
+- Removed obsolete setup-personal-governed-superpowers call from session-start
 - Fixed path references throughout hooks and commands
 
 ## Documentation
 
 ### README
 - Updated for new skills repository architecture
-- Prominent link to superpowers-skills repo
+- Prominent link to governed-superpowers-skills repo
 - Updated auto-update description
 - Fixed skill names and references
 - Updated Meta skills list
@@ -1276,12 +1276,12 @@ If you have an existing installation:
 - `.claude-plugin/marketplace.json` - Local testing config
 
 **Removed:**
-- `skills/` directory (82 files) - Now in obra/superpowers-skills
-- `scripts/` directory - Now in obra/superpowers-skills/skills/using-skills/
-- `hooks/setup-personal-superpowers.sh` - Obsolete
+- `skills/` directory (82 files) - Now in obra/governed-superpowers-skills
+- `scripts/` directory - Now in obra/governed-superpowers-skills/skills/using-skills/
+- `hooks/setup-personal-governed-superpowers.sh` - Obsolete
 
 **Modified:**
-- `hooks/session-start.sh` - Use skills from ~/.config/superpowers/skills
+- `hooks/session-start.sh` - Use skills from ~/.config/governed-superpowers/skills
 - `commands/brainstorm.md` - Updated paths to SUPERPOWERS_SKILLS_ROOT
 - `commands/write-plan.md` - Updated paths to SUPERPOWERS_SKILLS_ROOT
 - `commands/execute-plan.md` - Updated paths to SUPERPOWERS_SKILLS_ROOT
@@ -1292,7 +1292,7 @@ If you have an existing installation:
 This release includes:
 - 20+ commits for skills repository separation
 - PR #1: Amplifier-inspired problem-solving and research skills
-- PR #2: Personal superpowers overlay system (later replaced)
+- PR #2: Personal governed-superpowers overlay system (later replaced)
 - Multiple skill refinements and documentation improvements
 
 ## Upgrade Instructions
@@ -1301,8 +1301,8 @@ This release includes:
 
 ```bash
 # In Claude Code
-/plugin marketplace add obra/superpowers-marketplace
-/plugin install superpowers@superpowers-marketplace
+/plugin marketplace add obra/governed-superpowers-marketplace
+/plugin install governed-superpowers@governed-superpowers-marketplace
 ```
 
 The plugin handles everything automatically.
@@ -1311,12 +1311,12 @@ The plugin handles everything automatically.
 
 1. **Backup your personal skills** (if you have any):
    ```bash
-   cp -r ~/.config/superpowers/skills ~/superpowers-skills-backup
+   cp -r ~/.config/governed-superpowers/skills ~/governed-superpowers-skills-backup
    ```
 
 2. **Update the plugin:**
    ```bash
-   /plugin update superpowers
+   /plugin update governed-superpowers
    ```
 
 3. **On next session start:**
@@ -1340,7 +1340,7 @@ The plugin handles everything automatically.
 
 ### For Contributors
 
-- Skills repository is now at https://github.com/obra/superpowers-skills
+- Skills repository is now at https://github.com/obra/governed-superpowers-skills
 - Fork → Branch → PR workflow
 - See skills/meta/writing-skills/SKILL.md for TDD approach to documentation
 
@@ -1356,6 +1356,6 @@ None at this time.
 
 ---
 
-**Full Changelog:** https://github.com/obra/superpowers/compare/dd013f6...main
-**Skills Repository:** https://github.com/obra/superpowers-skills
-**Issues:** https://github.com/obra/superpowers/issues
+**Full Changelog:** https://github.com/obra/governed-superpowers/compare/dd013f6...main
+**Skills Repository:** https://github.com/obra/governed-superpowers-skills
+**Issues:** https://github.com/obra/governed-superpowers/issues

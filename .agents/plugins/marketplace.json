@@ -1,11 +1,11 @@
 {
-  "name": "superpowers-dev",
+  "name": "governed-superpowers-dev",
   "interface": {
-    "displayName": "Superpowers Dev"
+    "displayName": "Governed-Superpowers Dev"
   },
   "plugins": [
     {
-      "name": "superpowers",
+      "name": "governed-superpowers",
       "source": {
         "source": "url",
         "url": "./"

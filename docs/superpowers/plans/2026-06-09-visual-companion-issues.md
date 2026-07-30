@@ -18,7 +18,7 @@ grounded against the current code, not the PR author's description.
 - **E1 (terminal-vs-HTML hard gate) is a workshop item.** We'll design it
   together; it is not specced here.
 - **E2 (storage location, #975/#977) is deferred** for now.
-- **Remote serving is a first-class scenario.** Superpowers is general-purpose;
+- **Remote serving is a first-class scenario.** Governed-Superpowers is general-purpose;
   users connect from remote (SSH tunnel, Tailscale, `--host 0.0.0.0`). The
   security fix MUST protect those users, not just loopback. **Decision: a
   per-session secret key**, not a Host allowlist. A Host allowlist only
@@ -252,7 +252,7 @@ skips the offer entirely when opt-out is set.
 **Design choice open.** Mechanism isn't settled:
 - Env var (e.g. `SUPERPOWERS_VISUAL_COMPANION=off`) the skill is told to read —
   simplest, matches what the issue asks for, lives in `.zshrc`.
-- A plugin-settings file (`.claude/superpowers.local.md` frontmatter) — more
+- A plugin-settings file (`.claude/governed-superpowers.local.md` frontmatter) — more
   structured, per-project capable, but heavier and project-scoped.
 - Reliability caveat from the issue: a separate "no-companion" skill competes on
   trigger words and isn't reliable — rejected.
@@ -315,7 +315,7 @@ this is behavior-shaping skill content and not specced here.
 
 ### E2 — Move session state out of the working tree (issue #975 / PR #977) — DEFERRED
 
-Today `--project-dir` writes session state to `<project>/.superpowers/brainstorm/`
+Today `--project-dir` writes session state to `<project>/.governed-superpowers/brainstorm/`
 (`start-server.sh:80-84`) and the skill tells the user to gitignore it
 (`visual-companion.md:58`). The ask is a `--state-dir` / `SUPERPOWERS_STATE_DIR`
 default outside the repo (XDG), keeping `--project-dir` as an alias.

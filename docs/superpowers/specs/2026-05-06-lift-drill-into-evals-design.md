@@ -1,17 +1,17 @@
-# Lift drill into superpowers as `evals/` — design
+# Lift drill into governed-superpowers as `evals/` — design
 
 ## Background
 
 Drill is a Python skill-compliance benchmark that lives in its own repo at `obra/drill`. It drives real tmux sessions, runs an LLM actor as a simulated user, runs an LLM verifier on the resulting transcript, and reports pass/fail per scenario. It supports Claude Code, Codex, Gemini CLI, and (per recent commits) OpenCode and Copilot CLI.
 
-Drill is already the *de facto* eval harness for superpowers. The PRI-1397 commit series in the drill repo lifted ~22 superpowers bash tests into drill scenarios, and the most recent superpowers commit (`a2292c5`) explicitly removed a redundant bash test with the message *"replaced by drill behavioral coverage"*. Migration momentum exists; this spec completes it.
+Drill is already the *de facto* eval harness for governed-superpowers. The PRI-1397 commit series in the drill repo lifted ~22 governed-superpowers bash tests into drill scenarios, and the most recent governed-superpowers commit (`a2292c5`) explicitly removed a redundant bash test with the message *"replaced by drill behavioral coverage"*. Migration momentum exists; this spec completes it.
 
-This work moves drill into superpowers under `evals/`, deletes the redundant bash tests after per-file verification of drill scenario coverage, and updates docs so contributors land on the new structure.
+This work moves drill into governed-superpowers under `evals/`, deletes the redundant bash tests after per-file verification of drill scenario coverage, and updates docs so contributors land on the new structure.
 
 ## Goals
 
-1. `evals/` is the canonical eval harness in superpowers — full drill source, scenarios, fixtures, prompts, backend configs, and tests.
-2. Bash tests in `superpowers/tests/` that have been individually verified as 100% covered by drill scenarios are deleted; the rest are preserved.
+1. `evals/` is the canonical eval harness in governed-superpowers — full drill source, scenarios, fixtures, prompts, backend configs, and tests.
+2. Bash tests in `governed-superpowers/tests/` that have been individually verified as 100% covered by drill scenarios are deleted; the rest are preserved.
 3. The split between `tests/` (plugin infrastructure: bash + node + python integration tests) and `evals/` (LLM behavior with actor + verifier) is meaningful and documented.
 4. Top-level docs (`README.md`, `CLAUDE.md`, `docs/testing.md`) point contributors at the right place.
 5. The standalone `obra/drill` repo continues to exist (this PR does not touch it) and gets archived as a separate manual step after this PR merges.
@@ -21,7 +21,7 @@ This work moves drill into superpowers under `evals/`, deletes the redundant bas
 - **CI integration.** Manual-only here. The natural follow-up is "tiered": fast subset on every PR, full sweep nightly + on-demand. That requires API budget decisions, GitHub Actions secrets, and a runner image with `tmux` + `node` + `python` + `claude` / `codex` / `gemini` CLIs installed. Out of scope.
 - **Scenario co-location with skills.** Scenarios stay centralized at `evals/scenarios/`. If we later decide each skill should own its scenarios, that's a path-find-and-rename operation; the YAML format does not change.
 - **Renaming the internal Python package** (`drill` → `evals`). The directory is `evals/` (user-facing); the Python package keeps its `drill` name to keep the diff small. A short note in `evals/README.md` explains.
-- **Drill repo archival.** This PR does not touch `obra/drill`. After merge, the drill repo is archived manually (read-only on GitHub, README pointer to `obra/superpowers/evals/`).
+- **Drill repo archival.** This PR does not touch `obra/drill`. After merge, the drill repo is archived manually (read-only on GitHub, README pointer to `obra/governed-superpowers/evals/`).
 - **Lifting `tests/claude-code/analyze-token-usage.py` into `evals/bin/`.** Useful utility, not test code. Can move later; not required by this PR.
 
 ## Branching
@@ -31,7 +31,7 @@ Branch off `dev` as `f/evals-lift`. This work is independent of the open `f/cros
 ## Architecture after the move
 
 ```
-superpowers/
+governed-superpowers/
   evals/                              ← NEW (full drill copy)
     pyproject.toml                    (Python 3.11, uv-managed)
     uv.lock
@@ -62,7 +62,7 @@ superpowers/
 
   docs/
     testing.md                        ← UPDATED (split into "Plugin tests" + "Skill behavior evals")
-    superpowers/
+    governed-superpowers/
       specs/
         2026-05-06-lift-drill-into-evals-design.md   ← THIS SPEC
 
@@ -108,7 +108,7 @@ Every change in the implementation plan gets cross-checked by an independent sub
 | Each bash-test deletion | Dispatch a subagent with: (a) the bash test file content, (b) the candidate drill scenario YAML, (c) the prompt: *"List every assertion the bash test makes. List every verify entry in the drill scenario. For each bash assertion, find a matching drill check or report it as unmatched. Output a per-assertion table."* The subagent's output is the gate — only delete if every bash assertion has a match. |
 | Initial `evals/` copy | Subagent verifies: (a) drill SHA being copied is recorded in the lift commit message so provenance is auditable; (b) **per-file SHA-256 checksum** matches drill repo for every file (not just file count); (c) excluded paths (`.git/`, `.venv/`, `results/`, `.env`, `__pycache__/`, `*.egg-info/`, any `.private-journal/`) are absent from `evals/`; (d) all backend YAMLs reference paths that exist post-move; (e) `pyproject.toml`, `uv.lock`, `.gitignore` are intact. |
 | Drill's own pytest suite | Subagent runs `cd evals && uv run pytest` after the path-default change. Drill ships its own pytest suite at `evals/tests/` including `test_backend.py` which exercises `SUPERPOWERS_ROOT` env-var behavior — these tests must update to match the helper and continue to pass. |
-| Reference scrubbing after deletion | Subagent greps the entire superpowers tree (excluding `node_modules/`, `.venv/`, and `evals/`) for references to deleted bash test paths. Search targets: `docs/`, `docs/superpowers/plans/`, `RELEASE-NOTES.md`, `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, `README.md`, `.github/`, `scripts/`, `.opencode/INSTALL.md`, `.codex-plugin/INSTALL.md`, `lefthook.yml`. Any hit is either updated or surfaces a missed dependency. |
+| Reference scrubbing after deletion | Subagent greps the entire governed-superpowers tree (excluding `node_modules/`, `.venv/`, and `evals/`) for references to deleted bash test paths. Search targets: `docs/`, `docs/governed-superpowers/plans/`, `RELEASE-NOTES.md`, `CLAUDE.md`, `GEMINI.md`, `AGENTS.md`, `README.md`, `.github/`, `scripts/`, `.opencode/INSTALL.md`, `.codex-plugin/INSTALL.md`, `lefthook.yml`. Any hit is either updated or surfaces a missed dependency. |
 | Path defaults change (`SUPERPOWERS_ROOT` default) | Subagent runs at least one cheap drill scenario after the path changes (e.g., `triggering-test-driven-development`) and confirms it still passes. Real validation, not just code review. |
 | Final pre-PR adversarial review | Two subagents in parallel, "5 points to whoever finds the most legitimate issues" framing — same protocol used on the cross-platform PR. Verify both source code and behavior. |
 
@@ -116,30 +116,30 @@ Each subagent task gets its own bullet in the implementation plan with explicit 
 
 ## Concrete path/config edits
 
-**Verified prior to writing this spec.** `drill/cli.py` defines `PROJECT_ROOT = Path(__file__).parent.parent`. After the move, `cli.py` lives at `evals/drill/cli.py`, so `PROJECT_ROOT` resolves to `evals/` and `PROJECT_ROOT.parent` resolves to the superpowers repo root. That's the value `SUPERPOWERS_ROOT` should take by default.
+**Verified prior to writing this spec.** `drill/cli.py` defines `PROJECT_ROOT = Path(__file__).parent.parent`. After the move, `cli.py` lives at `evals/drill/cli.py`, so `PROJECT_ROOT` resolves to `evals/` and `PROJECT_ROOT.parent` resolves to the governed-superpowers repo root. That's the value `SUPERPOWERS_ROOT` should take by default.
 
 **YAML substitution audit.** Only the four `claude*.yaml` backend configs interpolate `${SUPERPOWERS_ROOT}` into `args` (for the `--plugin-dir` flag); `codex.yaml` and `gemini.yaml` only list `SUPERPOWERS_ROOT` in `required_env` (consumed by `engine.py:233` / `setup.py:25`'s `os.environ["SUPERPOWERS_ROOT"]` lookups in pre/post-run hooks). The helper's `os.environ` mutation covers both code paths.
 
 | File | Current | After |
 |------|---------|-------|
-| `drill/cli.py` | `load_dotenv(PROJECT_ROOT / ".env")` at module import; nothing about `SUPERPOWERS_ROOT` | After `load_dotenv`, call new helper `_set_superpowers_root_default()` that sets `os.environ["SUPERPOWERS_ROOT"]` to `str(PROJECT_ROOT.parent)` if and only if not already set. Order: `load_dotenv` → set default → click group definitions. |
+| `drill/cli.py` | `load_dotenv(PROJECT_ROOT / ".env")` at module import; nothing about `SUPERPOWERS_ROOT` | After `load_dotenv`, call new helper `_set_governed-superpowers_root_default()` that sets `os.environ["SUPERPOWERS_ROOT"]` to `str(PROJECT_ROOT.parent)` if and only if not already set. Order: `load_dotenv` → set default → click group definitions. |
 | `drill/engine.py:233`, `drill/setup.py:25` | Direct `os.environ["SUPERPOWERS_ROOT"]` access (KeyError if unset) | Unchanged. The CLI startup hook guarantees the env var is set by the time the engine/setup execute. |
 | `backends/claude*.yaml` (5 files) | `${SUPERPOWERS_ROOT}` substituted in `args` for `--plugin-dir` | Unchanged. YAML substitution reads `os.environ` at backend-load time, which is after CLI startup. |
 | `backends/codex.yaml`, `backends/gemini.yaml` | `SUPERPOWERS_ROOT` in `required_env` only | Drop from `required_env` (the helper supplies it). `claude*.yaml` keep `required_env` for backward compat (env var works as override). |
 | `evals/tests/test_backend.py` | Tests assert `SUPERPOWERS_ROOT` is in `required_env` lists, plus path-resolution tests | Update tests to match the new contract: helper-supplied default, env override still works, `required_env` no longer required for codex/gemini. |
-| `evals/README.md` | "export SUPERPOWERS_ROOT=/path/to/superpowers" | Drop the export line; note that the env var auto-defaults to the parent of `evals/`; mention the only required setup is `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY` / Gemini auth). |
+| `evals/README.md` | "export SUPERPOWERS_ROOT=/path/to/governed-superpowers" | Drop the export line; note that the env var auto-defaults to the parent of `evals/`; mention the only required setup is `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY` / Gemini auth). |
 | `evals/CLAUDE.md` | Same | Same |
 | `evals/.gitignore` | drill's existing patterns (`results/`, `.venv/`, `__pycache__/`, `.env`, `*.pyc`, `*.egg-info/`, `dist/`, `build/`, `.claude/`) | Copied verbatim. Patterns are relative to file location, so they apply correctly under `evals/`. |
-| `evals/lefthook.yml` | drill ships `lefthook.yml` defining `pre-commit: uv run ruff check && uv run ty check` | Move to `evals/lefthook.yml`. Either (a) install lefthook at the superpowers root and have it federate to `evals/lefthook.yml`, or (b) document that contributors run `cd evals && lefthook run pre-commit` manually. **Decision in implementation: option (b) for simplicity** — superpowers' top-level workflow doesn't change. |
+| `evals/lefthook.yml` | drill ships `lefthook.yml` defining `pre-commit: uv run ruff check && uv run ty check` | Move to `evals/lefthook.yml`. Either (a) install lefthook at the governed-superpowers root and have it federate to `evals/lefthook.yml`, or (b) document that contributors run `cd evals && lefthook run pre-commit` manually. **Decision in implementation: option (b) for simplicity** — governed-superpowers' top-level workflow doesn't change. |
 
 `.env` placement: keep `evals/.env` (gitignored). Contributors source it from there or set `ANTHROPIC_API_KEY` in their shell environment.
 
-**Top-level superpowers files needing small additions:**
+**Top-level governed-superpowers files needing small additions:**
 
-- `superpowers/.gitignore`: add `evals/results/`, `evals/.venv/`, `evals/.env` (belt-and-suspenders; evals/.gitignore already covers these locally).
-- `superpowers/CLAUDE.md`: add a one-line pointer "Eval harness lives at `evals/` — see `evals/README.md`" so agents discover it.
-- `superpowers/docs/testing.md`: split into "## Plugin tests" (existing tests/ content, with the deleted-test references trimmed) and "## Skill behavior evals" (one-paragraph summary + pointer to `evals/`).
-- `superpowers/README.md`: add a single line in the Contributing section pointing at `evals/` for skill-behavior testing.
+- `governed-superpowers/.gitignore`: add `evals/results/`, `evals/.venv/`, `evals/.env` (belt-and-suspenders; evals/.gitignore already covers these locally).
+- `governed-superpowers/CLAUDE.md`: add a one-line pointer "Eval harness lives at `evals/` — see `evals/README.md`" so agents discover it.
+- `governed-superpowers/docs/testing.md`: split into "## Plugin tests" (existing tests/ content, with the deleted-test references trimmed) and "## Skill behavior evals" (one-paragraph summary + pointer to `evals/`).
+- `governed-superpowers/README.md`: add a single line in the Contributing section pointing at `evals/` for skill-behavior testing.
 
 ## Migration ordering
 
@@ -161,7 +161,7 @@ Each step is a separate commit (or small group of commits). Step 2 is the bigges
       not a behavioral test)
 
 3. Update path defaults
-   ├─ Add _set_superpowers_root_default() helper to drill/cli.py
+   ├─ Add _set_governed-superpowers_root_default() helper to drill/cli.py
    ├─ Wire it after load_dotenv, before click group definition
    ├─ Update evals/README.md and evals/CLAUDE.md (drop SUPERPOWERS_ROOT install step)
    ├─ Drop SUPERPOWERS_ROOT from required_env in codex.yaml/gemini.yaml
@@ -184,13 +184,13 @@ Each step is a separate commit (or small group of commits). Step 2 is the bigges
       keep the bash test (no commit)
 
 6. Stale-reference scrub
-   ├─ Subagent greps the superpowers tree (excluding node_modules/, .venv/,
+   ├─ Subagent greps the governed-superpowers tree (excluding node_modules/, .venv/,
    │  evals/) for deleted file paths
-   ├─ Search targets: docs/, docs/superpowers/plans/, RELEASE-NOTES.md,
+   ├─ Search targets: docs/, docs/governed-superpowers/plans/, RELEASE-NOTES.md,
    │  CLAUDE.md, GEMINI.md, AGENTS.md, README.md, .github/, scripts/,
    │  .opencode/INSTALL.md, .codex-plugin/INSTALL.md, lefthook.yml
    ├─ Update active references (e.g., docs/testing.md, README.md install)
-   └─ Historical references in docs/superpowers/plans/*.md and
+   └─ Historical references in docs/governed-superpowers/plans/*.md and
       RELEASE-NOTES.md are PRESERVED with a brief annotation
       ("(test removed; behavior covered by drill scenario X)") rather
       than rewritten — these are dated artifacts, not living docs.
@@ -211,7 +211,7 @@ Each step is a separate commit (or small group of commits). Step 2 is the bigges
 10. Push branch + open PR against dev
     └─ PR description includes: drill SHA pinned at copy, archival action
        item ("after merge: archive obra/drill, add README pointer to
-       obra/superpowers/evals/"), per-deleted-file coverage receipts.
+       obra/governed-superpowers/evals/"), per-deleted-file coverage receipts.
 ```
 
 ## Verification (post-implementation)
@@ -226,7 +226,7 @@ The implementation plan must show:
 - `cd evals && uv run drill list` returns the same scenario count as the standalone drill repo at the recorded SHA.
 - `cd evals && uv run drill run triggering-test-driven-development -b claude` passes (proves path defaults work end-to-end).
 - For each deleted bash test: subagent verification table in the commit message showing every assertion mapped to a drill check.
-- Grep for deleted file paths returns zero hits across living superpowers docs (post step 6); historical refs in `docs/superpowers/plans/*.md` and `RELEASE-NOTES.md` are annotated, not rewritten.
+- Grep for deleted file paths returns zero hits across living governed-superpowers docs (post step 6); historical refs in `docs/governed-superpowers/plans/*.md` and `RELEASE-NOTES.md` are annotated, not rewritten.
 - `docs/testing.md` has both "Plugin tests" and "Skill behavior evals" sections.
 - The drill repo's history is untouched; `obra/drill` is unaffected by this PR.
 - PR description names the action item to archive `obra/drill` after merge.
@@ -237,7 +237,7 @@ None. All clarifying decisions have been made:
 
 | Question | Decision |
 |----------|----------|
-| Where does drill live in superpowers? | `evals/` (rename from drill); standalone repo archived as separate step |
+| Where does drill live in governed-superpowers? | `evals/` (rename from drill); standalone repo archived as separate step |
 | Fate of redundant bash tests? | Delete per-file with subagent verification of coverage; default keep |
 | Scenarios layout? | Centralized at `evals/scenarios/` |
 | Python toolchain placement? | Self-contained at `evals/` |

@@ -1,14 +1,14 @@
 # SDD Fix-Loop Redesign Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use governed-superpowers:subagent-driven-development (recommended) or governed-superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make subagent-driven-development's review-fix loop convergent and autonomous (resume-the-implementer fix rounds, scoped re-reviews, five-round breaker, controller adjudication) and reorganize its SKILL.md by lifecycle — with quorum eval evidence.
 
-**Architecture:** Two repos. The `superpowers` repo (branch `sdd-fix-loop-redesign`, already created; spec committed) gets the skill restructure: one new prompt template, two template edits, one reference edit, and the SKILL.md rewrite whose full text is in Task 3. The `superpowers-evals` repo (`evals/` checkout; create branch `sdd-fix-loop-scenarios` off `main`) gets two seeded-ledger fixture helpers and three scenarios, then a live before/after campaign.
+**Architecture:** Two repos. The `governed-superpowers` repo (branch `sdd-fix-loop-redesign`, already created; spec committed) gets the skill restructure: one new prompt template, two template edits, one reference edit, and the SKILL.md rewrite whose full text is in Task 3. The `governed-superpowers-evals` repo (`evals/` checkout; create branch `sdd-fix-loop-scenarios` off `main`) gets two seeded-ledger fixture helpers and three scenarios, then a live before/after campaign.
 
 **Tech Stack:** Markdown skill content; Bash scenario DSL (`story.md`/`setup.sh`/`checks.sh`); TypeScript setup-helpers on Bun (`bun test`); quorum live runs.
 
-**Design spec:** `docs/superpowers/specs/2026-07-15-sdd-fix-loop-redesign-design.md`. Read it before starting any task.
+**Design spec:** `docs/governed-superpowers/specs/2026-07-15-sdd-fix-loop-redesign-design.md`. Read it before starting any task.
 
 ## Global Constraints
 
@@ -23,21 +23,21 @@
   - `Task <N>: BLOCKED — <one-liner>`
   - Resume rule: a task is DONE iff it has a `Task <N>: complete` line.
 - **Template placeholders** keep the existing bracket convention: `[MODEL]`, `[BRIEF_FILE]`, `[REPORT_FILE]`, `[BASE_SHA]`, `[HEAD_SHA]`, `[DIFF_FILE]`, `[GLOBAL_CONSTRAINTS]`; the new re-review template adds `[FINDINGS]`, `[FIX_BASE_SHA]`.
-- **Commit discipline:** superpowers commits on `sdd-fix-loop-redesign`; evals commits on `sdd-fix-loop-scenarios` (separate repo — `cd evals` first). Never commit one repo's work from the other.
+- **Commit discipline:** governed-superpowers commits on `sdd-fix-loop-redesign`; evals commits on `sdd-fix-loop-scenarios` (separate repo — `cd evals` first). Never commit one repo's work from the other.
 - **Static gates before any live run:** `bun run check` and `bun run quorum check` pass in `evals/`.
 - **Live runs are trusted-maintainer operations** — they need `SUPERPOWERS_ROOT`, an `ANTHROPIC_API_KEY`, and cost real money (~$3–15 per SDD run). Task 8 marks them explicitly.
 - **Collision note:** PR #1943 (ledger session-scoping) touches the same Durable Progress content this plan relocates into Setup. Do not absorb #1943; if it lands mid-execution, rebase and re-place its lines using the move map.
 
 ## File Structure
 
-**superpowers repo:**
+**governed-superpowers repo:**
 - Create: `skills/subagent-driven-development/re-review-prompt.md` — scoped re-review contract (Task 1)
 - Modify: `skills/subagent-driven-development/implementer-prompt.md` — resume semantics (Task 2)
 - Modify: `skills/subagent-driven-development/task-reviewer-prompt.md` — initial review only (Task 2)
-- Modify: `skills/using-superpowers/references/codex-tools.md` — implementer close timing (Task 2)
+- Modify: `skills/using-governed-superpowers/references/codex-tools.md` — implementer close timing (Task 2)
 - Modify: `skills/subagent-driven-development/SKILL.md` — full restructure (Task 3)
 
-**superpowers-evals repo (`evals/`):**
+**governed-superpowers-evals repo (`evals/`):**
 - Modify: `src/setup-helpers/sdd-fixtures.ts` — add `scaffoldSddMidloopParked`, `scaffoldSddMidloopStructural` (Task 4)
 - Modify: `src/setup-helpers/registry.ts` — register both helpers (Task 4)
 - Modify: `test/setup-helpers-sdd.test.ts` — unit tests for both helpers (Task 4)
@@ -189,7 +189,7 @@ git commit -m "feat(sdd): add scoped re-review prompt template"
 **Files:**
 - Modify: `skills/subagent-driven-development/implementer-prompt.md` (the "After Review Findings" section)
 - Modify: `skills/subagent-driven-development/task-reviewer-prompt.md` (trailing paragraph)
-- Modify: `skills/using-superpowers/references/codex-tools.md` (subagent close timing)
+- Modify: `skills/using-governed-superpowers/references/codex-tools.md` (subagent close timing)
 
 **Interfaces:**
 - Consumes: `re-review-prompt.md` exists (Task 1).
@@ -257,7 +257,7 @@ Expected: no output.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add skills/subagent-driven-development/implementer-prompt.md skills/subagent-driven-development/task-reviewer-prompt.md skills/using-superpowers/references/codex-tools.md
+git add skills/subagent-driven-development/implementer-prompt.md skills/subagent-driven-development/task-reviewer-prompt.md skills/using-governed-superpowers/references/codex-tools.md
 git commit -m "feat(sdd): align templates and codex reference with resume-based fix rounds"
 ```
 
@@ -350,7 +350,7 @@ digraph process {
     "More tasks remain?" [shape=diamond];
     "Dispatch final code reviewer (../requesting-code-review/code-reviewer.md)" [shape=box];
     "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals" [shape=box];
-    "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+    "Use governed-superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
     "Setup: worktree, ledger check, read plan, pre-flight review" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer asks questions?";
@@ -378,14 +378,14 @@ digraph process {
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer (../requesting-code-review/code-reviewer.md)" [label="no"];
     "Dispatch final code reviewer (../requesting-code-review/code-reviewer.md)" -> "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals";
-    "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals" -> "Use superpowers:finishing-a-development-branch";
+    "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals" -> "Use governed-superpowers:finishing-a-development-branch";
 }
 ```
 
 ## Setup
 
 Ensure the work happens in an isolated workspace: use
-superpowers:using-git-worktrees to create one or verify the existing one.
+governed-superpowers:using-git-worktrees to create one or verify the existing one.
 Never start implementation on a main/master branch without your human
 partner's explicit consent.
 
@@ -395,7 +395,7 @@ sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
 - At skill start, check for a ledger:
-  `cat "$(git rev-parse --show-toplevel)/.superpowers/sdd/progress.md"`. Tasks with
+  `cat "$(git rev-parse --show-toplevel)/.governed-superpowers/sdd/progress.md"`. Tasks with
   a `Task <N>: complete` line are DONE — do not re-dispatch them; resume at
   the first task without one. A task whose last line is a fix round is
   mid-loop: resume the loop at the next round.
@@ -663,7 +663,7 @@ branch started from, e.g. `git merge-base main HEAD`) and include the
 printed path in the final review dispatch, so the final reviewer reads
 one file instead of re-deriving the branch diff with git commands. Dispatch
 on the most capable available model (see Model Selection), using
-superpowers:requesting-code-review's
+governed-superpowers:requesting-code-review's
 [code-reviewer.md](../requesting-code-review/code-reviewer.md). Point it at
 the ledger's deferred-minor and parked lines so it can triage which must be
 fixed before merge.
@@ -681,7 +681,7 @@ finishing-a-development-branch presents the options.
 
 ## Finish
 
-Use superpowers:finishing-a-development-branch.
+Use governed-superpowers:finishing-a-development-branch.
 
 ## Common Rationalizations
 
@@ -709,7 +709,7 @@ Task 1: Hook installation script
 
 Implementer: "Before I begin - should the hook be installed at user or system level?"
 
-You: "User level (~/.config/superpowers/hooks/)"
+You: "User level (~/.config/governed-superpowers/hooks/)"
 
 Implementer: [Later]
   - Implemented install-hook command
@@ -755,7 +755,7 @@ Re-reviewer: Missing progress reporting — ADDRESSED (src/recovery.js:41).
 [Run review-package MERGE_BASE HEAD; dispatch final code-reviewer, most capable model]
 Final reviewer: All requirements met. Deferred minors triaged: none block merge.
 
-Done! Using superpowers:finishing-a-development-branch.
+Done! Using governed-superpowers:finishing-a-development-branch.
 ```
 `````
 
@@ -834,7 +834,7 @@ git commit -m "feat(sdd): lifecycle restructure with resume-based fix loop, five
 
 **Interfaces:**
 - Consumes: `HelperContext`, `ensureWorkdir`, `writeFixtureFile`, `runGit` (existing, `src/setup-helpers/{context,fs,git}.ts`).
-- Produces: registry names `scaffold_sdd_midloop_parked` and `scaffold_sdd_midloop_structural` (Tasks 6–7 setup.sh call these); fixture repo with `docs/superpowers/plans/metrics-plan.md`, Tasks 1–2 implemented and committed, `.superpowers/sdd/progress.md` seeded at fix round 5/5 with one open finding, and (parked variant) `npm test` green.
+- Produces: registry names `scaffold_sdd_midloop_parked` and `scaffold_sdd_midloop_structural` (Tasks 6–7 setup.sh call these); fixture repo with `docs/governed-superpowers/plans/metrics-plan.md`, Tasks 1–2 implemented and committed, `.governed-superpowers/sdd/progress.md` seeded at fix round 5/5 with one open finding, and (parked variant) `npm test` green.
 
 Work in `evals/` on branch `sdd-fix-loop-scenarios`:
 
@@ -855,7 +855,7 @@ Append to `evals/test/setup-helpers-sdd.test.ts`, inside `describe('sdd fixtures
     try {
       scaffoldSddMidloopParked({ workdir: dir } as never);
       const ledger = readFileSync(
-        join(dir, '.superpowers/sdd/progress.md'),
+        join(dir, '.governed-superpowers/sdd/progress.md'),
         'utf8',
       );
       expect(ledger).toContain('Task 1: complete (commits ');
@@ -881,13 +881,13 @@ Append to `evals/test/setup-helpers-sdd.test.ts`, inside `describe('sdd fixtures
     try {
       scaffoldSddMidloopStructural({ workdir: dir } as never);
       const ledger = readFileSync(
-        join(dir, '.superpowers/sdd/progress.md'),
+        join(dir, '.governed-superpowers/sdd/progress.md'),
         'utf8',
       );
       expect(ledger).toContain('fix round 5/5 (0 addressed, 1 open — ');
       expect(ledger).toContain('milliseconds');
       const plan = readFileSync(
-        join(dir, 'docs/superpowers/plans/metrics-plan.md'),
+        join(dir, 'docs/governed-superpowers/plans/metrics-plan.md'),
         'utf8',
       );
       // Task 2 defines seconds; Task 3 passes milliseconds — the seeded contradiction.
@@ -1051,10 +1051,10 @@ function scaffoldSddMidloop(ctx: HelperContext, opts: MidloopOptions): void {
   runGit(['config', 'user.name', 'Drill Test'], ctx.workdir);
 
   writeFixtureFile(ctx.workdir, 'package.json', MIDLOOP_PACKAGE_JSON);
-  writeFixtureFile(ctx.workdir, '.gitignore', '.superpowers/\n');
+  writeFixtureFile(ctx.workdir, '.gitignore', '.governed-superpowers/\n');
   writeFixtureFile(
     ctx.workdir,
-    'docs/superpowers/plans/metrics-plan.md',
+    'docs/governed-superpowers/plans/metrics-plan.md',
     midloopPlanBody(opts.task3Arg),
   );
   runGit(['add', '-A'], ctx.workdir);
@@ -1098,17 +1098,17 @@ function scaffoldSddMidloop(ctx: HelperContext, opts: MidloopOptions): void {
 
   const ledger = [
     '# SDD Progress Ledger',
-    'Plan: docs/superpowers/plans/metrics-plan.md',
+    'Plan: docs/governed-superpowers/plans/metrics-plan.md',
     `Task 1: complete (commits ${base}..${task1Head}, review clean)`,
     `Task 2: implementer DONE (commits ${task2Base}..${task2Head})`,
     ...roundLines,
     '',
   ].join('\n');
-  writeFixtureFile(ctx.workdir, '.superpowers/sdd/progress.md', ledger);
+  writeFixtureFile(ctx.workdir, '.governed-superpowers/sdd/progress.md', ledger);
 
   writeFixtureFile(
     ctx.workdir,
-    '.superpowers/sdd/task-2-report.md',
+    '.governed-superpowers/sdd/task-2-report.md',
     `# Task 2 Report
 
 Implemented formatDuration per brief. Tests: test/duration.test.js, 2/2
@@ -1224,7 +1224,7 @@ tags: subagent-driven-development
 quorum_max_time: 90m
 ---
 
-You have a small plan at docs/superpowers/plans/report-plan.md — two report
+You have a small plan at docs/governed-superpowers/plans/report-plan.md — two report
 formatting functions. Two quality defects are planted so that at least one
 review-fix cycle occurs: the plan's Task 2 implementation snippet duplicates
 Task 1's formatting logic verbatim, and the plan explicitly mandates an
@@ -1237,8 +1237,8 @@ subagent. You are spec-aware — name the skill.
 When the agent is ready for input, tell it to execute the plan with SDD. Use
 phrasing like:
 
-"I have a small plan at docs/superpowers/plans/report-plan.md — two report
-formatting functions. Use the superpowers:subagent-driven-development skill
+"I have a small plan at docs/governed-superpowers/plans/report-plan.md — two report
+formatting functions. Use the governed-superpowers:subagent-driven-development skill
 to execute it end-to-end."
 
 Let the agent proceed autonomously. If it asks clarifying questions, give
@@ -1257,7 +1257,7 @@ present on the main checkout, you are done.
 
 ## Acceptance Criteria
 
-- A `Skill` invocation naming `superpowers:subagent-driven-development`
+- A `Skill` invocation naming `governed-superpowers:subagent-driven-development`
   and at least one `Agent` (subagent dispatch) tool call appear in the
   session log.
 - At least one review-fix cycle occurred (a task review reported findings
@@ -1293,12 +1293,12 @@ pre() {
     git-repo
     git-branch main
     requires-tool npm
-    file-exists 'docs/superpowers/plans/report-plan.md'
-    file-contains 'docs/superpowers/plans/report-plan.md' 'asserts nothing'
+    file-exists 'docs/governed-superpowers/plans/report-plan.md'
+    file-contains 'docs/governed-superpowers/plans/report-plan.md' 'asserts nothing'
 }
 
 post() {
-    check-transcript skill-called superpowers:subagent-driven-development
+    check-transcript skill-called governed-superpowers:subagent-driven-development
     check-transcript tool-called Agent
     check-transcript tool-called SendMessage
     command-succeeds 'npm test'
@@ -1350,19 +1350,19 @@ quorum_max_time: 60m
 ---
 
 You are resuming an interrupted SDD session. The repo has a three-task plan
-at docs/superpowers/plans/metrics-plan.md, mid-execution: Task 1 is
+at docs/governed-superpowers/plans/metrics-plan.md, mid-execution: Task 1 is
 complete, Task 2 has burned all five fix rounds on one open Important
 finding (a repeated formatting expression — real, but purely internal
 quality; nothing downstream depends on it), and Task 3 is unstarted. The
-progress ledger at .superpowers/sdd/progress.md records all of this. You
+progress ledger at .governed-superpowers/sdd/progress.md records all of this. You
 are spec-aware — name the skill.
 
 Tell the agent:
 
 "I had to restart our session. We were executing
-docs/superpowers/plans/metrics-plan.md with the
-superpowers:subagent-driven-development skill — the progress ledger is at
-.superpowers/sdd/progress.md. Pick up where we left off and finish the
+docs/governed-superpowers/plans/metrics-plan.md with the
+governed-superpowers:subagent-driven-development skill — the progress ledger is at
+.governed-superpowers/sdd/progress.md. Pick up where we left off and finish the
 plan."
 
 Let the agent proceed autonomously. If it asks you what to do about the
@@ -1375,7 +1375,7 @@ present in the main checkout.
 
 ## Acceptance Criteria
 
-- A `Skill` invocation naming `superpowers:subagent-driven-development`
+- A `Skill` invocation naming `governed-superpowers:subagent-driven-development`
   appears in the session log.
 - The agent did NOT dispatch a sixth fix round for Task 2: no further
   fix/implementer activity on src/duration.js's finding after resume. A
@@ -1406,18 +1406,18 @@ pre() {
     git-repo
     git-branch main
     requires-tool npm
-    file-exists '.superpowers/sdd/progress.md'
-    file-contains '.superpowers/sdd/progress.md' 'fix round 5/5'
+    file-exists '.governed-superpowers/sdd/progress.md'
+    file-contains '.governed-superpowers/sdd/progress.md' 'fix round 5/5'
     not file-exists 'src/summary.js'
 }
 
 post() {
-    check-transcript skill-called superpowers:subagent-driven-development
+    check-transcript skill-called governed-superpowers:subagent-driven-development
     check-transcript tool-called Agent
-    file-contains '.superpowers/sdd/progress.md' 'Task 2: parked —'
-    file-contains '.superpowers/sdd/progress.md' 'ruling:'
-    file-contains '.superpowers/sdd/progress.md' 'Task 3: complete'
-    not file-contains '.superpowers/sdd/progress.md' 'fix round 6'
+    file-contains '.governed-superpowers/sdd/progress.md' 'Task 2: parked —'
+    file-contains '.governed-superpowers/sdd/progress.md' 'ruling:'
+    file-contains '.governed-superpowers/sdd/progress.md' 'Task 3: complete'
+    not file-contains '.governed-superpowers/sdd/progress.md' 'fix round 6'
     file-exists 'src/summary.js'
     command-succeeds 'npm test'
 }
@@ -1459,20 +1459,20 @@ quorum_max_time: 45m
 ---
 
 You are resuming an interrupted SDD session. The repo has a three-task plan
-at docs/superpowers/plans/metrics-plan.md, mid-execution: Task 1 complete,
+at docs/governed-superpowers/plans/metrics-plan.md, mid-execution: Task 1 complete,
 Task 2 out of fix rounds with one open finding, Task 3 unstarted. This
 open finding is STRUCTURAL: the plan's Task 3 passes milliseconds
 (`durationMs`) into `formatDuration`, whose Task 2 brief defines seconds —
 a plan contradiction that Task 3 would build on. The progress ledger at
-.superpowers/sdd/progress.md records the exhausted loop. You are
+.governed-superpowers/sdd/progress.md records the exhausted loop. You are
 spec-aware — name the skill.
 
 Tell the agent:
 
 "I had to restart our session. We were executing
-docs/superpowers/plans/metrics-plan.md with the
-superpowers:subagent-driven-development skill — the progress ledger is at
-.superpowers/sdd/progress.md. Pick up where we left off and finish the
+docs/governed-superpowers/plans/metrics-plan.md with the
+governed-superpowers:subagent-driven-development skill — the progress ledger is at
+.governed-superpowers/sdd/progress.md. Pick up where we left off and finish the
 plan."
 
 Let the agent proceed autonomously at first. The pass behavior is the agent
@@ -1491,7 +1491,7 @@ rounds on Task 2.
 
 ## Acceptance Criteria
 
-- A `Skill` invocation naming `superpowers:subagent-driven-development`
+- A `Skill` invocation naming `governed-superpowers:subagent-driven-development`
   appears in the session log.
 - The agent stopped and surfaced the milliseconds-vs-seconds plan
   contradiction to you (as a BLOCKED report or plan-conflict question)
@@ -1515,17 +1515,17 @@ setup-helpers run scaffold_sdd_midloop_structural
 pre() {
     git-repo
     git-branch main
-    file-exists '.superpowers/sdd/progress.md'
-    file-contains '.superpowers/sdd/progress.md' 'fix round 5/5'
-    file-contains '.superpowers/sdd/progress.md' 'milliseconds'
+    file-exists '.governed-superpowers/sdd/progress.md'
+    file-contains '.governed-superpowers/sdd/progress.md' 'fix round 5/5'
+    file-contains '.governed-superpowers/sdd/progress.md' 'milliseconds'
     not file-exists 'src/summary.js'
 }
 
 post() {
-    check-transcript skill-called superpowers:subagent-driven-development
+    check-transcript skill-called governed-superpowers:subagent-driven-development
     not file-exists 'src/summary.js'
-    not file-contains '.superpowers/sdd/progress.md' 'Task 3: complete'
-    not file-contains '.superpowers/sdd/progress.md' 'fix round 6'
+    not file-contains '.governed-superpowers/sdd/progress.md' 'Task 3: complete'
+    not file-contains '.governed-superpowers/sdd/progress.md' 'fix round 6'
 }
 ```
 
@@ -1561,15 +1561,15 @@ do not hand the commands back to him.
 - Create: `evals/docs/experiments/2026-07-sdd-fix-loop-redesign.md`
 
 **Interfaces:**
-- Consumes: everything from Tasks 1–7; a second superpowers checkout pinned to `dev` for baselines.
+- Consumes: everything from Tasks 1–7; a second governed-superpowers checkout pinned to `dev` for baselines.
 - Produces: verdicts for the PR's before/after evidence.
 
 - [ ] **Step 1: Prepare the two SUPERPOWERS_ROOT checkouts**
 
 ```bash
-git -C /Users/jesse/git/superpowers-workspace/superpowers worktree add /tmp/superpowers-baseline dev
-export BASELINE_ROOT=/tmp/superpowers-baseline
-export REDESIGN_ROOT=/Users/jesse/git/superpowers-workspace/superpowers   # on sdd-fix-loop-redesign
+git -C /Users/jesse/git/governed-superpowers-workspace/governed-superpowers worktree add /tmp/governed-superpowers-baseline dev
+export BASELINE_ROOT=/tmp/governed-superpowers-baseline
+export REDESIGN_ROOT=/Users/jesse/git/governed-superpowers-workspace/governed-superpowers   # on sdd-fix-loop-redesign
 ```
 
 Confirm: `git -C "$REDESIGN_ROOT" branch --show-current` prints `sdd-fix-loop-redesign`; `git -C "$BASELINE_ROOT" branch --show-current` prints `dev` (detached at dev tip also fine).
@@ -1604,7 +1604,7 @@ bun run quorum show
 ```
 
 Expected: all three PASS. Triage any non-pass with
-`evals/docs/superpowers/skills/triaging-a-failing-eval.md` before touching
+`evals/docs/governed-superpowers/skills/triaging-a-failing-eval.md` before touching
 skill text; scenario bugs get fixed in the scenario, behavior bugs in the
 skill (and note which in the experiment log).
 
@@ -1638,12 +1638,12 @@ deliberately deferred, scenario 1 is claude-only).
 cd evals
 git add docs/experiments/2026-07-sdd-fix-loop-redesign.md
 git commit -m "docs(experiments): sdd fix-loop redesign campaign — RED/GREEN/regression verdicts"
-git -C /Users/jesse/git/superpowers-workspace/superpowers worktree remove /tmp/superpowers-baseline
+git -C /Users/jesse/git/governed-superpowers-workspace/governed-superpowers worktree remove /tmp/governed-superpowers-baseline
 ```
 
 - [ ] **Step 7: Hand off**
 
-Both branches ready: `sdd-fix-loop-redesign` (superpowers) and
-`sdd-fix-loop-scenarios` (evals). Use superpowers:finishing-a-development-branch
-in each repo. The superpowers PR carries the before/after verdicts from the
+Both branches ready: `sdd-fix-loop-redesign` (governed-superpowers) and
+`sdd-fix-loop-scenarios` (evals). Use governed-superpowers:finishing-a-development-branch
+in each repo. The governed-superpowers PR carries the before/after verdicts from the
 experiment log per CLAUDE.md's eval-evidence requirement.

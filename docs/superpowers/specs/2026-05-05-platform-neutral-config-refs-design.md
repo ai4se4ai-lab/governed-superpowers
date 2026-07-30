@@ -15,13 +15,13 @@ Two specific lines in active skills:
 
 ## Out of scope
 
-- **`skills/using-superpowers/SKILL.md:22, 26`** — instruction-priority list. The list already names all three (CLAUDE.md, GEMINI.md, AGENTS.md) inclusively, which is correct: the section is making a real claim about *what counts as user instruction* on a multi-platform plugin. No change needed.
+- **`skills/using-governed-superpowers/SKILL.md:22, 26`** — instruction-priority list. The list already names all three (CLAUDE.md, GEMINI.md, AGENTS.md) inclusively, which is correct: the section is making a real claim about *what counts as user instruction* on a multi-platform plugin. No change needed.
 - **Historical / example artifacts**:
   - `skills/systematic-debugging/CREATION-LOG.md` — attribution path (`~/.claude/CLAUDE.md`) is a historical fact.
   - `skills/writing-skills/examples/CLAUDE_MD_TESTING.md` — the entire file is a worked example testing CLAUDE.md content variants. The filename, body, and the reference from `testing-skills-with-subagents.md` all stay; normalizing them defeats the example.
 - **Platform-tooling references** — Phase D candidates:
-  - `skills/using-superpowers/SKILL.md:40` (Gemini CLI tool mapping note about GEMINI.md)
-  - `skills/using-superpowers/references/gemini-tools.md` (`save_memory` persists to GEMINI.md)
+  - `skills/using-governed-superpowers/SKILL.md:40` (Gemini CLI tool mapping note about GEMINI.md)
+  - `skills/using-governed-superpowers/references/gemini-tools.md` (`save_memory` persists to GEMINI.md)
 
 ## Substitution rules
 
@@ -64,11 +64,11 @@ After each commit:
 
 After both commits:
 
-- `grep -rn "CLAUDE\.md" skills/` should return only the documented carve-outs (CREATION-LOG, CLAUDE_MD_TESTING and its inbound reference, the priority list in using-superpowers).
+- `grep -rn "CLAUDE\.md" skills/` should return only the documented carve-outs (CREATION-LOG, CLAUDE_MD_TESTING and its inbound reference, the priority list in using-governed-superpowers).
 
 ## Non-goals
 
-- Do not touch the priority list ordering in `using-superpowers/SKILL.md`. Reordering CLAUDE.md / GEMINI.md / AGENTS.md is an aesthetic change, not a substitution, and out of scope here.
+- Do not touch the priority list ordering in `using-governed-superpowers/SKILL.md`. Reordering CLAUDE.md / GEMINI.md / AGENTS.md is an aesthetic change, not a substitution, and out of scope here.
 - Do not rename `examples/CLAUDE_MD_TESTING.md` or change its content.
 - Do not modify Gemini-CLI-specific tooling references (Phase D candidates).
 
