@@ -158,8 +158,8 @@ Every discrete requirement written into a spec — a testable "must"/"shall"/"wi
 
 | source | meaning | `ref` field |
 |---|---|---|
-| `human` | verbatim user input given during this session | omitted or `"user message"` |
-| `ai_assumption` | agent-inferred, with nothing else grounding it — the default when no other source applies | omitted |
+| `human` | verbatim user input given during this session | `null` |
+| `ai_assumption` | agent-inferred, with nothing else grounding it — the default when no other source applies | `null` |
 | `skill_doc` | grounded in a skill file or other project doc | file path, e.g. `skills/brainstorming/SKILL.md:107-110` |
 | `tool_output` | grounded in output from graphify or another tool/plugin | the command run, e.g. `graphify explain "brainstorming_skill"` |
 | `existing_codebase` | grounded in an existing pattern found in the repo | file:line, e.g. `skills/brainstorming/visual-companion.md:12` |
@@ -169,7 +169,7 @@ User messages are always `human`, verbatim — no classification judgment needed
 
 **Marker format:** standard sequential markdown footnotes (`[^1]`, `[^2]`, ...) in document order, in the spec file itself. No source-type encoding in the marker — the source lives only in the sidecar.
 
-**When to tag:** as each requirement is drafted (during "Propose approaches" and "Present design"), decide its source and show the marker inline in the chat presentation with the source spelled out, so the user can review provenance before approving — e.g. `"The CLI must support --dry-run.[^3: ai_assumption]"`. If a requirement is revised after initial tagging (a "no, revise" or "changes requested" loop), re-evaluate its source against the new wording; if the original grounding no longer applies, re-tag it, typically reverting to `ai_assumption` unless the user's edit itself supplied new grounding.
+**When to tag:** as each requirement is drafted (during "Propose approaches" and "Present design"), decide its source and show the marker inline in the chat presentation with the source spelled out, so the user can review provenance before approving — e.g. `"The CLI must support --dry-run.[^3: ai_assumption]"` (this annotated form is for the chat message only — the written spec file itself gets the plain `[^3]` marker; the source lives in the sidecar as usual). If a requirement is revised after initial tagging (a "no, revise" or "changes requested" loop), re-evaluate its source against the new wording; if the original grounding no longer applies, re-tag it, typically reverting to `ai_assumption` unless the user's edit itself supplied new grounding.
 
 **Sidecar file:** every written spec gets a same-basename sidecar, swapping `.md` for `.annotations.json` — e.g. `docs/governed-superpowers/specs/YYYY-MM-DD-<topic>-design.md` pairs with `docs/governed-superpowers/specs/YYYY-MM-DD-<topic>-design.annotations.json`. It's a flat JSON object keyed by marker number as a string:
 
@@ -183,7 +183,7 @@ User messages are always `human`, verbatim — no classification judgment needed
   "2": {
     "source": "existing_codebase",
     "ref": "skills/brainstorming/SKILL.md:107-110",
-    "text": "Write the validated design (spec) to docs/.../specs/YYYY-MM-DD-<topic>-design.md"
+    "text": "Write the validated design to a spec file, named with today's date and topic."
   }
 }
 ```
