@@ -149,3 +149,45 @@ A question about a UI topic is not automatically a visual question. "What does p
 
 If they agree to the companion, read the detailed guide before proceeding:
 `skills/brainstorming/visual-companion.md`
+
+## Provenance Tagging
+
+Every discrete requirement written into a spec — a testable "must"/"shall"/"will" statement about what the system does — gets tagged with exactly one provenance source. Architecture rationale, trade-off discussion, and narrative connective text are left untagged.
+
+**Source taxonomy:**
+
+| source | meaning | `ref` field |
+|---|---|---|
+| `human` | verbatim user input given during this session | omitted or `"user message"` |
+| `ai_assumption` | agent-inferred, with nothing else grounding it — the default when no other source applies | omitted |
+| `skill_doc` | grounded in a skill file or other project doc | file path, e.g. `skills/brainstorming/SKILL.md:107-110` |
+| `tool_output` | grounded in output from graphify or another tool/plugin | the command run, e.g. `graphify explain "brainstorming_skill"` |
+| `existing_codebase` | grounded in an existing pattern found in the repo | file:line, e.g. `skills/brainstorming/visual-companion.md:12` |
+| `external_reference` | grounded in a web search or fetched external doc | URL |
+
+User messages are always `human`, verbatim — no classification judgment needed. Everything else is tagged as it's written, defaulting to `ai_assumption` when nothing else grounds it.
+
+**Marker format:** standard sequential markdown footnotes (`[^1]`, `[^2]`, ...) in document order, in the spec file itself. No source-type encoding in the marker — the source lives only in the sidecar.
+
+**When to tag:** as each requirement is drafted (during "Propose approaches" and "Present design"), decide its source and show the marker inline in the chat presentation with the source spelled out, so the user can review provenance before approving — e.g. `"The CLI must support --dry-run.[^3: ai_assumption]"`. If a requirement is revised after initial tagging (a "no, revise" or "changes requested" loop), re-evaluate its source against the new wording; if the original grounding no longer applies, re-tag it, typically reverting to `ai_assumption` unless the user's edit itself supplied new grounding.
+
+**Sidecar file:** every written spec gets a same-basename sidecar, swapping `.md` for `.annotations.json` — e.g. `docs/governed-superpowers/specs/YYYY-MM-DD-<topic>-design.md` pairs with `docs/governed-superpowers/specs/YYYY-MM-DD-<topic>-design.annotations.json`. It's a flat JSON object keyed by marker number as a string:
+
+```json
+{
+  "1": {
+    "source": "human",
+    "ref": null,
+    "text": "every requirement must be tagged with a provenance source"
+  },
+  "2": {
+    "source": "existing_codebase",
+    "ref": "skills/brainstorming/SKILL.md:107-110",
+    "text": "Write the validated design (spec) to docs/.../specs/YYYY-MM-DD-<topic>-design.md"
+  }
+}
+```
+
+`text` is the literal, full requirement sentence copied verbatim from the spec — not a paraphrase. Write the `.md` and its `.annotations.json` together, as one atomic step; if either write fails, neither is considered committed.
+
+**Self-review check:** every `[^N]` marker in the spec must have a matching key in the sidecar, and every sidecar key must have a matching marker in the spec — no orphans either direction. Fix any gap inline (default `ai_assumption` if no better source applies), same as the other self-review checks — no separate re-review loop.
