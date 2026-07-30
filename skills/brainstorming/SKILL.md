@@ -26,8 +26,8 @@ You MUST create a task for each of these items and complete them in order:
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `docs/governed-superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
-7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
+6. **Write design doc** — save to `docs/governed-superpowers/specs/YYYY-MM-DD-<topic>-design.md` with its `spec.annotations.json` sidecar, and commit both (see Provenance Tagging below)
+7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope, and provenance marker/sidecar consistency (see below)
 8. **User reviews written spec** — ask user to review the spec file before proceeding
 9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
@@ -78,6 +78,7 @@ digraph brainstorming {
 - Present options conversationally with your recommendation and reasoning
 - Lead with your recommended option and explain why
 - YAGNI ruthlessly - remove unnecessary features from every approach and design
+- Tag each requirement with a provenance source as you draft it — see Provenance Tagging below
 
 **Presenting the design:**
 
@@ -86,6 +87,7 @@ digraph brainstorming {
 - Ask after each section whether it looks right so far
 - Cover: architecture, components, data flow, error handling, testing
 - Be ready to go back and clarify if something doesn't make sense
+- Show each requirement's provenance marker inline in chat as you present it — see Provenance Tagging below
 
 **Design for isolation and clarity:**
 
@@ -106,8 +108,9 @@ digraph brainstorming {
 
 - Write the validated design (spec) to `docs/governed-superpowers/specs/YYYY-MM-DD-<topic>-design.md`
   - (User preferences for spec location override this default)
+- Write the matching `spec.annotations.json` sidecar alongside it, in the same write — see Provenance Tagging below
 - Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design document to git
+- Commit the design document and its sidecar to git
 
 **Spec Self-Review:**
 After writing the spec document, look at it with fresh eyes:
@@ -116,6 +119,7 @@ After writing the spec document, look at it with fresh eyes:
 2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
 3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
 4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
+5. **Provenance check:** Does every requirement's footnote marker resolve to an entry in the `.annotations.json` sidecar, and does every sidecar entry have a matching marker in the spec? Fix any gap inline (default `ai_assumption`) — see Provenance Tagging below.
 
 Fix any issues inline. No need to re-review — just fix and move on.
 
