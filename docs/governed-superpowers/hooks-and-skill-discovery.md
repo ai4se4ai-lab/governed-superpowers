@@ -119,7 +119,7 @@ A comment at `hooks/session-start:33-34` explains why the branching is
 necessary rather than emitting all three fields: "Claude Code reads BOTH
 `additional_context` and `hookSpecificOutput` without deduplication, so we
 must emit only the field the current platform consumes." (See
-`https://github.com/obra/governed-superpowers/issues/571` for the related
+`https://github.com/srvmind/governed-superpowers/issues/571` for the related
 heredoc-hang bug that's why `printf` is used instead of a heredoc,
 `hooks/session-start:36`.)
 

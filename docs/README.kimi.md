@@ -17,13 +17,13 @@ Go to `Marketplace` > `Governed-Superpowers` and install it.
 You can also install from this repository:
 
 ```text
-/plugins install https://github.com/obra/governed-superpowers
+/plugins install https://github.com/srvmind/governed-superpowers
 ```
 
 For unreleased validation against `dev`, pin the branch explicitly:
 
 ```text
-/plugins install https://github.com/obra/governed-superpowers/tree/dev
+/plugins install https://github.com/srvmind/governed-superpowers/tree/dev
 ```
 
 Kimi Code applies plugin changes to new sessions. After installing, updating, enabling, disabling, or reloading a plugin, start a fresh session with `/new`.
@@ -78,7 +78,7 @@ Select Governed-Superpowers and update it from there. Start a fresh session with
 Kimi Code installs the latest GitHub release for a bare repository URL when one exists. To test unreleased changes before the next Governed-Superpowers release, install the branch explicitly:
 
 ```text
-/plugins install https://github.com/obra/governed-superpowers/tree/dev
+/plugins install https://github.com/srvmind/governed-superpowers/tree/dev
 ```
 
 ### Skills not triggering

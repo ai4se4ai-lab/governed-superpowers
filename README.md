@@ -46,7 +46,7 @@ The Governed-Superpowers marketplace provides Governed-Superpowers and some othe
 - Register the marketplace:
 
   ```bash
-  /plugin marketplace add obra/governed-superpowers-marketplace
+  /plugin marketplace add srvmind/governed-superpowers-marketplace
   ```
 
 - Install the plugin from this marketplace:
@@ -60,7 +60,7 @@ The Governed-Superpowers marketplace provides Governed-Superpowers and some othe
 Install Governed-Superpowers as a plugin from this repository:
 
 ```bash
-agy plugin install https://github.com/obra/governed-superpowers
+agy plugin install https://github.com/srvmind/governed-superpowers
 ```
 
 Antigravity runs the plugin's session-start hook, so Governed-Superpowers is active from
@@ -107,7 +107,7 @@ Governed-Superpowers is available via the [official Codex plugin marketplace](ht
 - Register the marketplace:
 
   ```bash
-  droid plugin marketplace add https://github.com/obra/governed-superpowers
+  droid plugin marketplace add https://github.com/srvmind/governed-superpowers
   ```
 
 - Install the plugin:
@@ -121,7 +121,7 @@ Governed-Superpowers is available via the [official Codex plugin marketplace](ht
 - Install the extension:
 
   ```bash
-  gemini extensions install https://github.com/obra/governed-superpowers
+  gemini extensions install https://github.com/srvmind/governed-superpowers
   ```
 
 - Update later:
@@ -135,7 +135,7 @@ Governed-Superpowers is available via the [official Codex plugin marketplace](ht
 - Register the marketplace:
 
   ```bash
-  copilot plugin marketplace add obra/governed-superpowers-marketplace
+  copilot plugin marketplace add srvmind/governed-superpowers-marketplace
   ```
 
 - Install the plugin:
@@ -159,7 +159,7 @@ Governed-Superpowers is available in Kimi Code's plugin marketplace.
 - Or install directly from this repository:
 
   ```text
-  /plugins install https://github.com/obra/governed-superpowers
+  /plugins install https://github.com/srvmind/governed-superpowers
   ```
 
 - Detailed docs: [docs/README.kimi.md](docs/README.kimi.md)
@@ -172,7 +172,7 @@ already use it in another harness.
 - Tell OpenCode:
 
   ```
-  Fetch and follow instructions from https://raw.githubusercontent.com/obra/governed-superpowers/refs/heads/main/.opencode/INSTALL.md
+  Fetch and follow instructions from https://raw.githubusercontent.com/srvmind/governed-superpowers/refs/heads/main/.opencode/INSTALL.md
   ```
 
 - Detailed docs: [docs/README.opencode.md](docs/README.opencode.md)
@@ -182,7 +182,7 @@ already use it in another harness.
 Install Governed-Superpowers as a Pi package from this repository:
 
 ```bash
-pi install git:github.com/obra/governed-superpowers
+pi install git:github.com/srvmind/governed-superpowers
 ```
 
 For local development, run Pi with this checkout loaded as a temporary package:
@@ -274,8 +274,8 @@ Because skills and plugins don't provide any feedback to creators, we have no id
 
 ## Community
 
-Governed-Superpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of the folks at [Prime Radiant](https://primeradiant.com).
+Governed-Superpowers is built by [Majid Babaei](https://blog.fsck.com) and the rest of the folks at [Prime Radiant](https://primeradiant.com).
 
 - **Discord**: [Join us](https://discord.gg/35wsABTejz) for community support, questions, and sharing what you're building with Governed-Superpowers
-- **Issues**: https://github.com/obra/governed-superpowers/issues
+- **Issues**: https://github.com/srvmind/governed-superpowers/issues
 - **Release announcements**: [Sign up](https://primeradiant.com/governed-superpowers/) to get notified about new versions
