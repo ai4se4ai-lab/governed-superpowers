@@ -395,9 +395,9 @@
     "semantic_hash": "052a1484fd0d50e0b430f3256259b5c6"
   },
   "CLAUDE.md": {
-    "mtime": 1785444745.5506732,
-    "ast_hash": "0ee1457e5b7bbaffd953c61dca4b5cef",
-    "semantic_hash": ""
+    "mtime": 1785439213.9892755,
+    "ast_hash": "438b43756c9da898bc467f3e01c9aa62",
+    "semantic_hash": "438b43756c9da898bc467f3e01c9aa62"
   },
   "CODE_OF_CONDUCT.md": {
     "mtime": 1785438821.5870783,
@@ -615,9 +615,9 @@
     "semantic_hash": "54f6929464fe069eaec549fc55693212"
   },
   "skills/brainstorming/SKILL.md": {
-    "mtime": 1785451781.4945383,
-    "ast_hash": "4d528bb00b87ac52faec02e97ce98cc1",
-    "semantic_hash": ""
+    "mtime": 1785439160.4359353,
+    "ast_hash": "4d2aa91bd38fd30b466d18403b349561",
+    "semantic_hash": "4d2aa91bd38fd30b466d18403b349561"
   },
   "skills/brainstorming/scripts/frame-template.html": {
     "mtime": 1785439214.3041553,
@@ -868,25 +868,5 @@
     "mtime": 1785438821.6025963,
     "ast_hash": "8c39dc35e79dce44358f7602116c33d5",
     "semantic_hash": "8c39dc35e79dce44358f7602116c33d5"
-  },
-  "docs/governed-superpowers/brainstorming-design-doc-flow.md": {
-    "mtime": 1785449777.5096939,
-    "ast_hash": "cbb14b85e27f455b1da732f5b8f553b5",
-    "semantic_hash": ""
-  },
-  "docs/governed-superpowers/hooks-and-skill-discovery.md": {
-    "mtime": 1785449187.8141565,
-    "ast_hash": "d57b36d3b1a7ec602a05038d84b33c85",
-    "semantic_hash": ""
-  },
-  "docs/governed-superpowers/plans/2026-07-30-requirement-provenance-tagging.md": {
-    "mtime": 1785452188.9285872,
-    "ast_hash": "ab3778e58ee0dbff5de0733cc040f778",
-    "semantic_hash": ""
-  },
-  "docs/governed-superpowers/specs/2026-07-30-requirement-provenance-tagging-design.md": {
-    "mtime": 1785452174.0605345,
-    "ast_hash": "8bfde7da585b60007cbb32843553b324",
-    "semantic_hash": ""
   }
 }

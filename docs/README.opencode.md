@@ -8,7 +8,7 @@ Add governed-superpowers to the `plugin` array in your `opencode.json` (global o
 
 ```json
 {
-  "plugin": ["governed-superpowers@git+https://github.com/obra/governed-superpowers.git"]
+  "plugin": ["governed-superpowers@git+https://github.com/srvmind/governed-superpowers.git"]
 }
 ```
 
@@ -91,7 +91,7 @@ To pin a specific version, use a branch or tag:
 
 ```json
 {
-  "plugin": ["governed-superpowers@git+https://github.com/obra/governed-superpowers.git#v5.0.3"]
+  "plugin": ["governed-superpowers@git+https://github.com/srvmind/governed-superpowers.git#v5.0.3"]
 }
 ```
 
@@ -134,7 +134,7 @@ the plugin, try installing with system npm and pointing OpenCode at the local
 package:
 
 ```powershell
-npm install governed-superpowers@git+https://github.com/obra/governed-superpowers.git --prefix "$HOME\.config\opencode"
+npm install governed-superpowers@git+https://github.com/srvmind/governed-superpowers.git --prefix "$HOME\.config\opencode"
 ```
 
 Then use the installed package path in `opencode.json`:
@@ -158,6 +158,6 @@ Then use the installed package path in `opencode.json`:
 
 ## Getting Help
 
-- Report issues: https://github.com/obra/governed-superpowers/issues
-- Main documentation: https://github.com/obra/governed-superpowers
+- Report issues: https://github.com/srvmind/governed-superpowers/issues
+- Main documentation: https://github.com/srvmind/governed-superpowers
 - OpenCode docs: https://opencode.ai/docs/

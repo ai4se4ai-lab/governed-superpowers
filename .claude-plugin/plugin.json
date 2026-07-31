@@ -3,11 +3,11 @@
   "description": "Core skills library for Claude Code: TDD, debugging, collaboration patterns, and proven techniques",
   "version": "6.2.0",
   "author": {
-    "name": "Jesse Vincent",
-    "email": "jesse@fsck.com"
+    "name": "Majid Babaei",
+    "email": "majid@srvmind.com"
   },
-  "homepage": "https://github.com/obra/governed-superpowers",
-  "repository": "https://github.com/obra/governed-superpowers",
+  "homepage": "https://github.com/srvmind/governed-superpowers",
+  "repository": "https://github.com/srvmind/governed-superpowers",
   "license": "MIT",
   "keywords": [
     "skills",

@@ -1,123 +1,114 @@
-# Graph Report - governed-superpowers  (2026-07-30)
+# Graph Report - .  (2026-07-30)
 
 ## Corpus Check
-- 163 files · ~206,667 words
+- 174 files · ~200,345 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 715 nodes · 928 edges · 104 communities (54 shown, 50 thin omitted)
+- 677 nodes · 894 edges · 100 communities (50 shown, 50 thin omitted)
 - Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 42 edges (avg confidence: 0.74)
 - Token cost: 0 input · 0 output
 
-## Graph Freshness
-- Built from commit: `160d9b64`
-- Run `git rev-parse HEAD` and compare to check if the graph is stale.
-- Run `graphify update .` after code changes (no API cost).
-
 ## Community Hubs (Navigation)
-- server.cjs
-- test-sync-to-codex-plugin.sh
-- Governed-Superpowers Main Documentation
-- branding.test.js
-- lifecycle.test.js
-- server.test.js
-- setup.sh
+- Visual Brainstorming Server
+- Codex Plugin Sync
+- GitHub Templates
+- Brainstorm Server Branding Tests
+- Lifecycle Management Tests
+- WebSocket Server Tests
+- OpenCode Integration Tests
+- Root Cause Analysis
+- Authentication Tests
+- Codex Plugin Build
+- Package Configuration
+- Claude Code Test Helpers
+- Shell Linting
+- Codex Plugin Packaging
+- SDD Fix Loop Design
+- Bootstrap Caching Tests
+- Task-Scoped Review
+- Pi Extension
+- Writing Skills Documentation
+- Shell Lint Tests
+- Worktree Management
+- Test Infrastructure
+- Session Start Hook
+- SDD Implementer
+- SDD Review Prompts
+- Skill Infrastructure
+- Platform Support
+- Parallel Agents
+- Gemini Integration
+- Plan Execution
+- Code Review Workflow
 - Systematic Debugging
-- auth.test.js
-- sync-to-codex-plugin.sh
-- package.json
-- test-helpers.sh
-- lint-shell.sh
-- test-package-codex-plugin.sh
-- Subagent-Driven Development
-- test-bootstrap-caching.mjs
-- Task-scoped review dispatch
-- superpowers.ts
-- writing-skills skill
-- test-lint-shell.sh
-- Visual Brainstorming Refactor Implementation Plan
-- windows-lifecycle.test.sh
-- test-pi-extension.mjs
-- bump-version.sh
-- helper.js
-- render-graphs.js
-- helper.test.js
-- stop-server.test.sh
-- package-codex-plugin.sh
-- brainstorm-server/package.json
-- analyze-token-usage.py
-- test-find-polluter.sh
-- stop-server.sh
-- ws-protocol.test.js
-- test-session-start.sh
-- Worktree Rototill Implementation Plan
-- Visual companion
-- Using Governed-Superpowers
-- start-server.test.sh
-- test-sdd-workspace.sh
-- Skills Improvements from User Feedback
-- Drill (eval harness)
-- Review Loop Pattern
-- OpenCode Support Design Plan
-- superpowers.js
-- test-worktree-path-policy.sh
-- Bug Report Template
-- Platform-Neutral Config Refs Design
-- SDD plan-scoped workspace
-- session-start
-- start-server.sh
-- writing-plans skill
-- test-antigravity-tools.sh
-- Issue Template Configuration
+- TDD Workflow
+- Verification Patterns
+- Plan Writing
+- Explicit Skill Requests
+- Antigravity Tools
+- Codex Tools
+- Gemini Tools
+- Pi Tools
+- Windows Compatibility
+- Visual Companion Design
+- Zero-Dep Server Design
+- Codex Compatibility Design
+- Worktree Rototill Design
+- Platform-Neutral Prose
+- Positive Instruction Redesign
+- Strict Cost SDD
+- Visual Companion Auth
+- Visual Companion Final Hardening
+- SDD Workspace Design
+- SDD Fix Loop Redesign
+- Testing Infrastructure Docs
+- Visual Companion Feature
+- Finishing Dev Branch
+- Receiving Code Review
+- Code Reviewer Prompts
+- Porting to New Harness
+- Kimi Documentation
+- OpenCode Documentation
+- OpenCode Support Design
+- Skills Improvement Plan
+- Visual Brainstorming Plan
+- Document Review System Plan
+- Visual Refactor Plan
+- Zero-Dep Server Plan
+- Codex Compatibility Plan
+- Worktree Rototill Plan
+- Drill Lift Plan
+- Pi Extension Plan
+- SDD Review Dispatch Plan
+- Visual Companion Issues
+- Visual Auth Hardening Plan
+- Final Hardening Plan
+- SDD Workspace Plan
+- SDD Fix Loop Plan
+- Funding Config
+- Pre-commit Config
+- Agent Docs
+- Claude Project Docs
 - Code of Conduct
-- Plan-Scoped Workspace Pattern
-- Resume-Based Fix Loop Pattern
-- executing-plans skill
-- review-package
-- sdd-workspace
-- task-brief
-- find-polluter.sh
-- Evidence Before Claims Iron Law
-- antigravity/run-tests.sh
-- run-skill-tests.sh
-- test-marketplace-manifest.sh
-- run-all.sh
-- run-extended-multiturn-test.sh
-- run-haiku-test.sh
-- run-multiturn-test.sh
-- run-test.sh
-- kimi/run-tests.sh
-- test-plugin-manifest.sh
-- opencode/run-tests.sh
-- Funding Configuration
-- Pre-commit Configuration
-- AGENTS.md Reference
-- Governed-Superpowers App Icon
-- Superpowers Small Logo
-- Lift Drill Into Evals Implementation Plan
-- Pi Extension and Evals Implementation Plan
-- run-hook.cmd (polyglot dispatcher)
-- Gemini Bootstrap Configuration
+- Main README
 - Release Notes
-- dispatching-parallel-agents skill
-- receiving-code-review skill
-- Scarcity Persuasion Principle
-- Match the Form to the Failure
-- Skill Discovery Optimization (SDO)
-- Claude Code Skills Tests
-- Action-Oriented Test Prompt
-- After Planning Flow Test Prompt
-- Brainstorming Skill Request Test
-- Claude Suggested It Test Prompt
-- Mid-Conversation Execute Plan Test
-- SDD Abbreviation Understanding Test
-- Subagent-Driven Development Request Test
-- Skip Formalities Test Prompt
-- Systematic Debugging Request Test
-- Hooks and Skill Discovery in governed-superpowers
-- Requirement provenance tagging for brainstorming specs
-- How brainstorming produces its design doc
-- Requirement Provenance Tagging Implementation Plan
+- Condition-Based Waiting
+- Defense in Depth
+- Test Pressure Cases
+- Writing Good Tests
+- Persuasion Principles
+- Testing with Subagents
+- RED-GREEN-REFACTOR
+- Test Prompts
+- Visual Assets
+- Marketplace Config
+- OpenCode Plugin
+- Pi Extension TypeScript
+- Version Bumping
+- Gemini Extension
+- Hook Scripts
+- Brainstorm Helper
 
 ## God Nodes (most connected - your core abstractions)
 1. `main()` - 21 edges
@@ -163,222 +154,206 @@
 - **Test-Driven Development Applied to Documentation** — skills_writing_skills_tdd_mapping, skills_writing_skills_red_green_refactor, skills_writing_skills_testing_subagents [EXTRACTED 1.00]
 - **Explicit Skill Request Test Suite** — tests_explicit_skill_requests_action_oriented, tests_explicit_skill_requests_after_planning, tests_explicit_skill_requests_claude_suggested, tests_explicit_skill_requests_sdd_abbreviation, tests_explicit_skill_requests_mid_conversation, tests_explicit_skill_requests_brainstorming, tests_explicit_skill_requests_skip_formalities, tests_explicit_skill_requests_sdd_please, tests_explicit_skill_requests_systematic_debugging [EXTRACTED 1.00]
 
-## Communities (104 total, 50 thin omitted)
+## Communities (100 total, 50 thin omitted)
 
-### Community 0 - "server.cjs"
+### Community 0 - "Visual Brainstorming Server"
 Cohesion: 0.06
 Nodes (56): bootstrapPage(), brandMarkup(), broadcast(), browserLauncherForPlatform(), chmodOwnerOnly(), RFC-6455, clients, companionUrl() (+48 more)
 
-### Community 1 - "test-sync-to-codex-plugin.sh"
+### Community 1 - "Codex Plugin Sync"
 Cohesion: 0.14
 Nodes (25): add_openai_agent_metadata_fixture(), assert_branch_absent(), assert_contains(), assert_current_branch(), assert_equals(), assert_file_equals(), assert_matches(), assert_not_contains() (+17 more)
 
-### Community 2 - "Governed-Superpowers Main Documentation"
+### Community 2 - "GitHub Templates"
 Cohesion: 0.08
 Nodes (27): Pull Request Template, OpenCode Installation Guide, Acceptance Test, Antigravity, Bootstrap Mechanism, Brainstorming Skill, Claude Code, Contributor Guidelines for AI Agents (+19 more)
 
-### Community 3 - "branding.test.js"
+### Community 3 - "Brainstorm Server Branding Tests"
 Cohesion: 0.19
 Nodes (24): assert, assertBrandedFallbackText(), assertBrandedWithLogo(), assertFramedLogoSupportsDarkTheme(), assertFramedScreenUsesBrandHeader(), assertHeaderAvoidsNarrowOverlap(), assertLogoKeepsTransparentBackground(), assertTelemetryImage() (+16 more)
 
-### Community 4 - "lifecycle.test.js"
+### Community 4 - "Lifecycle Management Tests"
 Cohesion: 0.16
 Nodes (21): assert, firstServerStarted(), fs, httpStatus(), isWindowsLikeShell(), killAndWait(), makeShellTempDir(), newestSessionDir() (+13 more)
 
-### Community 5 - "server.test.js"
+### Community 5 - "WebSocket Server Tests"
 Cohesion: 0.15
 Nodes (20): assert, assertStartedOnExpectedPort(), cleanup(), CONTENT_DIR, ensureSymlinkWorks(), fetch(), fs, http (+12 more)
 
-### Community 6 - "setup.sh"
+### Community 6 - "OpenCode Integration Tests"
 Cohesion: 0.12
 Nodes (15): HOME, OPENCODE_CONFIG_DIR, setup.sh script, XDG_CONFIG_HOME, run_missing_file_check(), run_present_file_check(), test-bootstrap-caching.sh script, test-plugin-loading.sh script (+7 more)
 
-### Community 7 - "Systematic Debugging"
+### Community 7 - "Root Cause Analysis"
 Cohesion: 0.14
 Nodes (21): Backward Tracing to Original Trigger, Condition-Based Waiting, Condition-Based Waiting vs Arbitrary Delays, Systematic Debugging Creation Log, Defense-in-Depth Validation, Four-Layer Defense-in-Depth Validation, Root Cause Tracing, Systematic Debugging (+13 more)
 
-### Community 8 - "auth.test.js"
+### Community 8 - "Authentication Tests"
 Cohesion: 0.16
 Nodes (20): assert, assertSecurityHeaders(), assertStartedOnExpectedPort(), cleanup(), CONTENT_DIR, EXPECTED_SECURITY_HEADERS, fs, get() (+12 more)
 
-### Community 9 - "sync-to-codex-plugin.sh"
+### Community 9 - "Codex Plugin Build"
 Cohesion: 0.21
 Nodes (17): append_git_ignored_directory_excludes(), append_git_ignored_file_excludes(), apply_to_preview_checkout(), confirm(), copy_local_destination_overlay(), copy_preserved_destination_metadata(), die(), ignored_directory_has_tracked_descendants() (+9 more)
 
-### Community 10 - "package.json"
+### Community 10 - "Package Configuration"
 Cohesion: 0.12
 Nodes (16): description, keywords, main, name, pi, extensions, skills, type (+8 more)
 
-### Community 11 - "test-helpers.sh"
+### Community 11 - "Claude Code Test Helpers"
 Cohesion: 0.15
 Nodes (8): assert_contains(), assert_order(), cleanup_test_project(), test-helpers.sh script, test-subagent-driven-development-integration.sh script, test-subagent-driven-development.sh script, run_and_check(), test-worktree-native-preference.sh script
 
-### Community 12 - "lint-shell.sh"
+### Community 12 - "Shell Linting"
 Cohesion: 0.37
 Nodes (11): add_shell_file(), collect_all_shell_files(), collect_changed_shell_files(), collect_requested_shell_files(), die(), ensure_git_work_tree(), is_shell_file(), require_tool() (+3 more)
 
-### Community 13 - "test-package-codex-plugin.sh"
+### Community 13 - "Codex Plugin Packaging"
 Cohesion: 0.32
 Nodes (8): assert_contains(), assert_equals(), assert_not_matches(), extract_archive(), fail(), pass(), test-package-codex-plugin.sh script, write_metadata_fixture()
 
-### Community 14 - "Subagent-Driven Development"
+### Community 14 - "SDD Fix Loop Design"
 Cohesion: 0.21
 Nodes (12): Fix Loop Escalation Strategy, Fresh Subagent Per Task Pattern, Ledger-Based Recovery from Context Loss, Model Selection by Task Complexity, Task Review Loop (spec + quality), Implementer Subagent Prompt Template, Scoped Re-Review Prompt Template, Subagent-Driven Development (+4 more)
 
-### Community 15 - "test-bootstrap-caching.mjs"
+### Community 15 - "Bootstrap Caching Tests"
 Cohesion: 0.17
 Nodes (5): afterFirst, afterSecond, firstOutput, result, secondOutput
 
-### Community 16 - "Task-scoped review dispatch"
+### Community 16 - "Task-Scoped Review"
 Cohesion: 0.20
 Nodes (11): Cost iteration results, Task-scoped review dispatch, Positive-instruction design doctrine, L1 Plan-side crispness, L2 Controller tier, L3 Reviewer tier, Strict-cost SDD experiment ladder, Fix loop mechanism (+3 more)
 
-### Community 17 - "superpowers.ts"
+### Community 17 - "Pi Extension"
 Cohesion: 0.27
 Nodes (10): bootstrapSkillPath, extensionDir, firstNonCompactionSummaryIndex(), getBootstrapContent(), messageContainsBootstrap(), packageRoot, piToolMapping(), skillsDir (+2 more)
 
-### Community 18 - "writing-skills skill"
+### Community 18 - "Writing Skills Documentation"
 Cohesion: 0.22
 Nodes (11): Anthropic Skill Authoring Best Practices, Bulletproofing Skills Against Rationalization, Authority Persuasion Principle, Commitment Persuasion Principle, CLAUDE.md Testing Methodology, Persuasion Principles for Skill Design, Progressive Disclosure Pattern, RED-GREEN-REFACTOR for Skills (+3 more)
 
-### Community 19 - "test-lint-shell.sh"
+### Community 19 - "Shell Lint Tests"
 Cohesion: 0.38
 Nodes (8): assert_contains(), assert_not_contains(), configure_git_identity(), fail(), make_fixture_repo(), pass(), test-lint-shell.sh script, write_stub_tool()
 
-### Community 20 - "Visual Brainstorming Refactor Implementation Plan"
+### Community 20 - "Worktree Management"
 Cohesion: 0.20
 Nodes (10): Browser Displays Terminal Commands Architecture, Per-Session Secret Key Authentication, WebSocket RFC 6455 Implementation, Visual Brainstorming Refactor Implementation Plan, Zero-Dependency Brainstorm Server Implementation Plan, Visual Companion Issue Catalog, Visual Companion Auth Hardening Implementation Plan, Visual Companion Final Hardening Fixup Implementation Plan (+2 more)
 
-### Community 21 - "windows-lifecycle.test.sh"
+### Community 21 - "Test Infrastructure"
 Cohesion: 0.31
 Nodes (6): fail(), http_check(), pass(), windows-lifecycle.test.sh script, skip(), wait_for_server_info()
 
-### Community 22 - "test-pi-extension.mjs"
+### Community 22 - "Session Start Hook"
 Cohesion: 0.20
 Nodes (5): __dirname, extensionPath, packageJsonPath, piToolsPath, repoRoot
 
-### Community 23 - "bump-version.sh"
+### Community 23 - "SDD Implementer"
 Cohesion: 0.39
 Nodes (5): cmd_audit(), cmd_bump(), cmd_check(), bump-version.sh script, write_json_field()
 
-### Community 24 - "helper.js"
+### Community 24 - "SDD Review Prompts"
 Cohesion: 0.42
 Nodes (7): connect(), nextReconnectDelay(), reloadAfterRecovery(), sessionKey(), setStatus(), showTombstone(), websocketUrl()
 
-### Community 25 - "render-graphs.js"
+### Community 25 - "Skill Infrastructure"
 Cohesion: 0.33
 Nodes (8): combineGraphs(), { execSync }, extractDotBlocks(), extractGraphBody(), fs, main(), path, renderToSvg()
 
-### Community 26 - "helper.test.js"
+### Community 26 - "Platform Support"
 Cohesion: 0.22
 Nodes (6): assert, fs, HELPER, moduleShim, path, src
 
-### Community 27 - "stop-server.test.sh"
+### Community 27 - "Parallel Agents"
 Cohesion: 0.36
 Nodes (6): bad(), ok(), stop-server.test.sh script, track_dir(), track_pid(), untrack_pid()
 
-### Community 28 - "package-codex-plugin.sh"
+### Community 28 - "Gemini Integration"
 Cohesion: 0.39
 Nodes (5): die(), metadata_root_from_dir(), prepare_metadata_root(), package-codex-plugin.sh script, usage()
 
-### Community 29 - "brainstorm-server/package.json"
+### Community 29 - "Plan Execution"
 Cohesion: 0.25
 Nodes (7): dependencies, ws, name, scripts, test, version, ws
 
-### Community 30 - "analyze-token-usage.py"
+### Community 30 - "Code Review Workflow"
 Cohesion: 0.36
 Nodes (7): analyze_main_session(), calculate_cost(), format_tokens(), main(), Analyze a session file and return token usage broken down by agent., Format token count with thousands separators., Calculate estimated cost in dollars.
 
-### Community 31 - "test-find-polluter.sh"
+### Community 31 - "Systematic Debugging"
 Cohesion: 0.39
 Nodes (5): assert_contains(), fail(), pass(), setup_project(), test-find-polluter.sh script
 
-### Community 32 - "stop-server.sh"
+### Community 32 - "TDD Workflow"
 Cohesion: 0.43
 Nodes (4): command_has_server_id(), is_brainstorm_server(), mark_stopped(), stop-server.sh script
 
-### Community 33 - "ws-protocol.test.js"
+### Community 33 - "Verification Patterns"
 Cohesion: 0.33
 Nodes (6): assert, crypto, RFC-6455, path, runTests(), SERVER_PATH
 
-### Community 34 - "test-session-start.sh"
+### Community 34 - "Plan Writing"
 Cohesion: 0.52
 Nodes (4): assert_command_output(), fail(), pass(), test-session-start.sh script
 
-### Community 35 - "Worktree Rototill Implementation Plan"
+### Community 35 - "Explicit Skill Requests"
 Cohesion: 0.33
 Nodes (6): Detect-and-Defer Pattern, Provenance-Based Cleanup, Codex App Compatibility Implementation Plan, Worktree Rototill Implementation Plan, Codex App Compatibility Design, Worktree Rototill Design
 
-### Community 36 - "Visual companion"
+### Community 36 - "Antigravity Tools"
 Cohesion: 0.40
 Nodes (6): Visual companion auth hardening, Visual companion final hardening fixup, Frame template HTML, brainstorming skill, Spec document reviewer prompt template, Visual companion
 
-### Community 37 - "Using Governed-Superpowers"
+### Community 37 - "Codex Tools"
 Cohesion: 0.33
 Nodes (6): Antigravity CLI Tool Mapping, Codex Tool Mapping, Gemini CLI Tool Mapping, Pi Tool Mapping, Using Governed-Superpowers, Skill Invocation Priority (Process before Implementation)
 
-### Community 38 - "start-server.test.sh"
+### Community 38 - "Gemini Tools"
 Cohesion: 0.53
 Nodes (4): fail(), make_fake_uname(), pass(), start-server.test.sh script
 
-### Community 39 - "test-sdd-workspace.sh"
+### Community 39 - "Pi Tools"
 Cohesion: 0.53
 Nodes (4): fail(), main(), pass(), test-sdd-workspace.sh script
 
-### Community 40 - "Skills Improvements from User Feedback"
+### Community 40 - "Windows Compatibility"
 Cohesion: 0.60
 Nodes (5): Background Process Accumulation, Configuration Change Verification Gap, Context Bloat in Subagent Prompts, Skills Improvements from User Feedback, Mock-Interface Drift
 
-### Community 41 - "Drill (eval harness)"
+### Community 41 - "Visual Companion Design"
 Cohesion: 0.40
 Nodes (5): Drill (eval harness), evals/ directory, Subagent-gated verification protocol, Plugin tests (tests/ directory), Skill behavior evals (evals/ directory)
 
-### Community 42 - "Review Loop Pattern"
+### Community 42 - "Zero-Dep Server Design"
 Cohesion: 0.50
 Nodes (4): Review Loop Pattern, Document Review System Implementation Plan, SDD Task-Scoped Review Dispatch Implementation Plan, Document Review System Design
 
-### Community 43 - "OpenCode Support Design Plan"
+### Community 43 - "Codex Compatibility Design"
 Cohesion: 0.83
 Nodes (4): OpenCode Support Design Plan, OpenCode Support Implementation Plan, OpenCode Plugin, Shared Skills Core Module
 
-### Community 46 - "test-worktree-path-policy.sh"
+### Community 46 - "Platform-Neutral Prose"
 Cohesion: 0.83
 Nodes (3): assert_contains(), assert_not_contains(), test-worktree-path-policy.sh script
 
-### Community 47 - "Bug Report Template"
+### Community 47 - "Positive Instruction Redesign"
 Cohesion: 0.67
 Nodes (3): Bug Report Template, Feature Request Template, Platform Support Request Template
 
-### Community 48 - "Platform-Neutral Config Refs Design"
+### Community 48 - "Strict Cost SDD"
 Cohesion: 1.00
 Nodes (3): Platform-Neutral Config Refs Design, Platform-Neutral Prose Design, Platform-Neutral README Design
 
-### Community 49 - "SDD plan-scoped workspace"
+### Community 49 - "Visual Companion Auth"
 Cohesion: 0.67
 Nodes (3): Plan-scoped workspace eval GREEN results, Plan-scoped workspace eval RED outcome, SDD plan-scoped workspace
 
-### Community 52 - "writing-plans skill"
+### Community 52 - "SDD Fix Loop Redesign"
 Cohesion: 0.67
 Nodes (3): Plan Document Reviewer Prompt Template, writing-plans skill, Task Right-Sizing Principle
 
-### Community 100 - "Hooks and Skill Discovery in governed-superpowers"
-Cohesion: 0.17
-Nodes (11): 1. There are no PreToolUse / PostToolUse hooks in this repo, 2. How the SessionStart hook is wired up and dispatched, 3. How a skill's SKILL.md gets discovered and injected into context, Claude Code / Cursor / Copilot CLI (hook-based harnesses), Dispatch flow, File map, Hook input/output contract, Hooks and Skill Discovery in governed-superpowers (+3 more)
-
-### Community 101 - "Requirement provenance tagging for brainstorming specs"
-Cohesion: 0.17
-Nodes (11): Data flow, Design, Error handling, File format, Prior art check, Problem, Requirement provenance tagging for brainstorming specs, Scope of tagging (+3 more)
-
-### Community 102 - "How brainstorming produces its design doc"
-Cohesion: 0.25
-Nodes (7): How brainstorming produces its design doc, Related file: the visual companion, What the graph shows, What the output file looks like, What triggers the write, Where the write instruction lives, Where user messages become doc content
-
-### Community 103 - "Requirement Provenance Tagging Implementation Plan"
-Cohesion: 0.33
-Nodes (5): Requirement Provenance Tagging Implementation Plan, Self-Review Notes (for the plan author, not the executor), Task 1: Add the "Provenance Tagging" section to SKILL.md, Task 2: Point the checklist and process-flow prose at the new section, Task 3: Manual dry-run verification
-
 ## Knowledge Gaps
-- **230 isolated node(s):** `__dirname`, `extensionDir`, `packageRoot`, `skillsDir`, `bootstrapSkillPath` (+225 more)
+- **203 isolated node(s):** `__dirname`, `extensionDir`, `packageRoot`, `skillsDir`, `bootstrapSkillPath` (+198 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **50 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -386,16 +361,16 @@ Nodes (5): Requirement Provenance Tagging Implementation Plan, Self-Review Notes
 _Questions this graph is uniquely positioned to answer:_
 
 - **What connects `__dirname`, `extensionDir`, `packageRoot` to the rest of the system?**
-  _230 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `server.cjs` be split into smaller, more focused modules?**
+  _203 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Visual Brainstorming Server` be split into smaller, more focused modules?**
   _Cohesion score 0.055191256830601096 - nodes in this community are weakly interconnected._
-- **Should `test-sync-to-codex-plugin.sh` be split into smaller, more focused modules?**
+- **Should `Codex Plugin Sync` be split into smaller, more focused modules?**
   _Cohesion score 0.14204545454545456 - nodes in this community are weakly interconnected._
-- **Should `Governed-Superpowers Main Documentation` be split into smaller, more focused modules?**
+- **Should `GitHub Templates` be split into smaller, more focused modules?**
   _Cohesion score 0.08262108262108261 - nodes in this community are weakly interconnected._
-- **Should `server.test.js` be split into smaller, more focused modules?**
+- **Should `WebSocket Server Tests` be split into smaller, more focused modules?**
   _Cohesion score 0.1471861471861472 - nodes in this community are weakly interconnected._
-- **Should `setup.sh` be split into smaller, more focused modules?**
+- **Should `OpenCode Integration Tests` be split into smaller, more focused modules?**
   _Cohesion score 0.12121212121212122 - nodes in this community are weakly interconnected._
-- **Should `Systematic Debugging` be split into smaller, more focused modules?**
+- **Should `Root Cause Analysis` be split into smaller, more focused modules?**
   _Cohesion score 0.1380952380952381 - nodes in this community are weakly interconnected._

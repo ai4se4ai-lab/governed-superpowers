@@ -164,7 +164,7 @@ the combo band — no cheap-controller turn inflation. 26/26 and 31/31
 dispatches model-explicit, with heavier (and sane) haiku tiering than
 opus controllers showed; review loops, per-task Important→fix→re-review,
 and omnibus-fixer rules followed in both runs; the run-1 controller
-caught a fixer side-effect (`go mod tidy` removed cobra) before
+caught a fixer side-effect (`go mod tidy` removed csrvmind) before
 re-review — real adjudication, not silent absorption. But neither run
 surfaced a BLOCKED/⚠️ event (the escalation points were never stressed)
 and final reviews ran on sonnet rather than the most capable tier. The

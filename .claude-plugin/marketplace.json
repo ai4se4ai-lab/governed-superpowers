@@ -2,8 +2,8 @@
   "name": "governed-superpowers-dev",
   "description": "Development marketplace for Governed-Superpowers core skills library",
   "owner": {
-    "name": "Jesse Vincent",
-    "email": "jesse@fsck.com"
+    "name": "Majid Babaei",
+    "email": "majid@srvmind.com"
   },
   "plugins": [
     {
@@ -12,8 +12,8 @@
       "version": "6.2.0",
       "source": "./",
       "author": {
-        "name": "Jesse Vincent",
-        "email": "jesse@fsck.com"
+        "name": "Majid Babaei",
+        "email": "majid@srvmind.com"
       }
     }
   ]

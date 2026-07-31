@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use governed-superpowers:subagent-driven-development (recommended) or governed-superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Move the standalone `obra/drill` skill-compliance benchmark into governed-superpowers as a top-level `evals/` directory, delete redundant bash tests under `governed-superpowers/tests/` after per-file subagent verification of drill scenario coverage, and update top-level docs so contributors land on the new structure.
+**Goal:** Move the standalone `srvmind/drill` skill-compliance benchmark into governed-superpowers as a top-level `evals/` directory, delete redundant bash tests under `governed-superpowers/tests/` after per-file subagent verification of drill scenario coverage, and update top-level docs so contributors land on the new structure.
 
 **Architecture:** Single PR against `dev` on a new branch `f/evals-lift`. Drill source is copied verbatim with explicit rsync excludes to keep `.git/`, `.venv/`, etc. out of the new dir. A small helper in `drill/cli.py` defaults `SUPERPOWERS_ROOT` to the parent of the `evals/` directory, so contributors don't have to set the env var. Each bash-test deletion is gated by a subagent that compares the bash test's assertions to its claimed drill scenario's verify block. Historical references in plan docs and release notes are annotated, not rewritten.
 
@@ -151,7 +151,7 @@ Expected output starts with `A  evals/...` lines listing many added files. Many 
 git commit -m "$(cat <<EOF
 Lift drill into evals/ at $DRILL_SHA
 
-rsync of obra/drill@$DRILL_SHA into governed-superpowers/evals/, excluding
+rsync of srvmind/drill@$DRILL_SHA into governed-superpowers/evals/, excluding
 .git/, .venv/, results/, .env/, __pycache__/, *.egg-info/,
 .private-journal/.
 
@@ -1223,7 +1223,7 @@ assigned the identical task.
 **Base:** dev (currently b4363df)
 **Spec:** docs/governed-superpowers/specs/2026-05-06-lift-drill-into-evals-design.md
 
-This branch lifts the obra/drill repo into governed-superpowers/evals/ and
+This branch lifts the srvmind/drill repo into governed-superpowers/evals/ and
 deletes redundant bash tests that drill scenarios cover. Two prior
 adversarial reviews caught issues at the spec stage; this is the
 post-implementation review.
@@ -1233,7 +1233,7 @@ Run: git log --oneline dev..HEAD; git diff dev..HEAD --stat
 Look hard at:
 1. Did the rsync-with-excludes actually exclude what it claimed?
    (find evals -name '.git' -type d should return nothing)
-2. Does the lift commit message point at a real commit in obra/drill?
+2. Does the lift commit message point at a real commit in srvmind/drill?
 3. Does the SUPERPOWERS_ROOT helper actually default correctly when
    the env var is unset? (cd evals && unset SUPERPOWERS_ROOT && uv
    run drill list — does it work?)
@@ -1287,11 +1287,11 @@ gh pr create \
   --body "$(cat <<'EOF'
 ## What problem are you trying to solve?
 
-Drill — the standalone Python skill-compliance benchmark at obra/drill — is already the de facto eval harness for governed-superpowers. The PRI-1397 commit series lifted ~22 bash tests into drill scenarios, and the most recent governed-superpowers commit (a2292c5) explicitly removed a redundant bash test with the message "replaced by drill behavioral coverage". Drill is a sibling repo today, requiring contributors to clone two checkouts and set SUPERPOWERS_ROOT manually. This PR completes the migration: drill becomes governed-superpowers/evals/.
+Drill — the standalone Python skill-compliance benchmark at srvmind/drill — is already the de facto eval harness for governed-superpowers. The PRI-1397 commit series lifted ~22 bash tests into drill scenarios, and the most recent governed-superpowers commit (a2292c5) explicitly removed a redundant bash test with the message "replaced by drill behavioral coverage". Drill is a sibling repo today, requiring contributors to clone two checkouts and set SUPERPOWERS_ROOT manually. This PR completes the migration: drill becomes governed-superpowers/evals/.
 
 ## What does this PR change?
 
-- Lifts the obra/drill repo into governed-superpowers as `evals/`, with explicit rsync excludes (.git, .venv, results, .env, __pycache__, *.egg-info, .private-journal). The lift commit records the source SHA.
+- Lifts the srvmind/drill repo into governed-superpowers as `evals/`, with explicit rsync excludes (.git, .venv, results, .env, __pycache__, *.egg-info, .private-journal). The lift commit records the source SHA.
 - Adds a `_set_governed-superpowers_root_default()` helper to drill/cli.py so SUPERPOWERS_ROOT defaults to the parent of evals/ — no manual env-var setup.
 - Drops SUPERPOWERS_ROOT from required_env in codex.yaml/gemini.yaml (the helper supplies it). Claude*.yaml keep it because they interpolate ${SUPERPOWERS_ROOT} into --plugin-dir args.
 - Deletes redundant bash tests under tests/skill-triggering/, tests/explicit-skill-requests/, tests/subagent-driven-dev/, and tests/claude-code/ — gated per-file by a subagent that compared each bash test's assertions to its drill scenario's verify block. Anything not 100% covered was kept.
@@ -1315,7 +1315,7 @@ No — every change supports "drill is now evals/ inside governed-superpowers". 
 ## Existing PRs
 
 - [x] I have reviewed all open AND closed PRs for duplicates or prior art
-- Related PRs: #1486 (obra/governed-superpowers cross-platform PR — independent; no shared file changes besides README, which has no overlap)
+- Related PRs: #1486 (srvmind/governed-superpowers cross-platform PR — independent; no shared file changes besides README, which has no overlap)
 
 ## Environment tested
 
@@ -1344,7 +1344,7 @@ Drill's own pytest suite passes from the new location. `triggering-test-driven-d
 
 ## Action items after merge
 
-1. Archive obra/drill on GitHub (mark read-only, add README pointer to obra/governed-superpowers/evals/).
+1. Archive srvmind/drill on GitHub (mark read-only, add README pointer to srvmind/governed-superpowers/evals/).
 2. The spec lists CI integration, scenario co-location with skills, and Python package rename as deferred work. Open issues for any of these you want tracked.
 EOF
 )"
@@ -1370,5 +1370,5 @@ Expected: browser opens to the new PR. Take a screenshot or note the URL for fol
 - [ ] `cd evals && unset SUPERPOWERS_ROOT && uv run drill run triggering-test-driven-development -b claude` passes
 - [ ] `tests/brainstorm-server/server.test.js` still passes (regression gate for non-LLM tests)
 - [ ] `git diff dev..HEAD docs/governed-superpowers/plans/2026-04-06-worktree-rototill.md docs/governed-superpowers/plans/2026-03-23-codex-app-compatibility.md RELEASE-NOTES.md` shows annotations only, no path rewrites
-- [ ] `cd ../drill && git log --oneline -1` shows obra/drill is unchanged from the source SHA recorded in the lift commit
+- [ ] `cd ../drill && git log --oneline -1` shows srvmind/drill is unchanged from the source SHA recorded in the lift commit
 - [ ] PR body lists the post-merge archival action item

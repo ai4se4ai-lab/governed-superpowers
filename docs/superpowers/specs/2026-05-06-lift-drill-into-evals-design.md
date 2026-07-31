@@ -2,7 +2,7 @@
 
 ## Background
 
-Drill is a Python skill-compliance benchmark that lives in its own repo at `obra/drill`. It drives real tmux sessions, runs an LLM actor as a simulated user, runs an LLM verifier on the resulting transcript, and reports pass/fail per scenario. It supports Claude Code, Codex, Gemini CLI, and (per recent commits) OpenCode and Copilot CLI.
+Drill is a Python skill-compliance benchmark that lives in its own repo at `srvmind/drill`. It drives real tmux sessions, runs an LLM actor as a simulated user, runs an LLM verifier on the resulting transcript, and reports pass/fail per scenario. It supports Claude Code, Codex, Gemini CLI, and (per recent commits) OpenCode and Copilot CLI.
 
 Drill is already the *de facto* eval harness for governed-superpowers. The PRI-1397 commit series in the drill repo lifted ~22 governed-superpowers bash tests into drill scenarios, and the most recent governed-superpowers commit (`a2292c5`) explicitly removed a redundant bash test with the message *"replaced by drill behavioral coverage"*. Migration momentum exists; this spec completes it.
 
@@ -14,14 +14,14 @@ This work moves drill into governed-superpowers under `evals/`, deletes the redu
 2. Bash tests in `governed-superpowers/tests/` that have been individually verified as 100% covered by drill scenarios are deleted; the rest are preserved.
 3. The split between `tests/` (plugin infrastructure: bash + node + python integration tests) and `evals/` (LLM behavior with actor + verifier) is meaningful and documented.
 4. Top-level docs (`README.md`, `CLAUDE.md`, `docs/testing.md`) point contributors at the right place.
-5. The standalone `obra/drill` repo continues to exist (this PR does not touch it) and gets archived as a separate manual step after this PR merges.
+5. The standalone `srvmind/drill` repo continues to exist (this PR does not touch it) and gets archived as a separate manual step after this PR merges.
 
 ## Non-goals
 
 - **CI integration.** Manual-only here. The natural follow-up is "tiered": fast subset on every PR, full sweep nightly + on-demand. That requires API budget decisions, GitHub Actions secrets, and a runner image with `tmux` + `node` + `python` + `claude` / `codex` / `gemini` CLIs installed. Out of scope.
 - **Scenario co-location with skills.** Scenarios stay centralized at `evals/scenarios/`. If we later decide each skill should own its scenarios, that's a path-find-and-rename operation; the YAML format does not change.
 - **Renaming the internal Python package** (`drill` → `evals`). The directory is `evals/` (user-facing); the Python package keeps its `drill` name to keep the diff small. A short note in `evals/README.md` explains.
-- **Drill repo archival.** This PR does not touch `obra/drill`. After merge, the drill repo is archived manually (read-only on GitHub, README pointer to `obra/governed-superpowers/evals/`).
+- **Drill repo archival.** This PR does not touch `srvmind/drill`. After merge, the drill repo is archived manually (read-only on GitHub, README pointer to `srvmind/governed-superpowers/evals/`).
 - **Lifting `tests/claude-code/analyze-token-usage.py` into `evals/bin/`.** Useful utility, not test code. Can move later; not required by this PR.
 
 ## Branching
@@ -210,15 +210,15 @@ Each step is a separate commit (or small group of commits). Step 2 is the bigges
 
 10. Push branch + open PR against dev
     └─ PR description includes: drill SHA pinned at copy, archival action
-       item ("after merge: archive obra/drill, add README pointer to
-       obra/governed-superpowers/evals/"), per-deleted-file coverage receipts.
+       item ("after merge: archive srvmind/drill, add README pointer to
+       srvmind/governed-superpowers/evals/"), per-deleted-file coverage receipts.
 ```
 
 ## Verification (post-implementation)
 
 The implementation plan must show:
 
-- All non-excluded drill source files present at `evals/` after step 2 (subagent **per-file SHA-256 checksum diff** vs `obra/drill@<recorded-sha>`).
+- All non-excluded drill source files present at `evals/` after step 2 (subagent **per-file SHA-256 checksum diff** vs `srvmind/drill@<recorded-sha>`).
 - Excluded paths (`.git/`, `.venv/`, `results/`, `.env`, `__pycache__/`, `*.egg-info/`, `.private-journal/`) absent from `evals/`.
 - The step-2 commit message records the drill source SHA.
 - `cd evals && uv sync` succeeds without `SUPERPOWERS_ROOT` set.
@@ -228,8 +228,8 @@ The implementation plan must show:
 - For each deleted bash test: subagent verification table in the commit message showing every assertion mapped to a drill check.
 - Grep for deleted file paths returns zero hits across living governed-superpowers docs (post step 6); historical refs in `docs/governed-superpowers/plans/*.md` and `RELEASE-NOTES.md` are annotated, not rewritten.
 - `docs/testing.md` has both "Plugin tests" and "Skill behavior evals" sections.
-- The drill repo's history is untouched; `obra/drill` is unaffected by this PR.
-- PR description names the action item to archive `obra/drill` after merge.
+- The drill repo's history is untouched; `srvmind/drill` is unaffected by this PR.
+- PR description names the action item to archive `srvmind/drill` after merge.
 
 ## Open questions
 

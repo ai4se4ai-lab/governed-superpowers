@@ -780,7 +780,7 @@ git commit -m "feat: implement session.started hook for opencode"
 ```bash
 # Clone governed-superpowers skills to OpenCode config directory
 mkdir -p ~/.config/opencode/governed-superpowers
-git clone https://github.com/obra/governed-superpowers.git ~/.config/opencode/governed-superpowers
+git clone https://github.com/srvmind/governed-superpowers.git ~/.config/opencode/governed-superpowers
 ```
 
 ### 2. Install the Plugin
@@ -878,8 +878,8 @@ When a skill references a Claude Code tool you don't have:
 
 ## Getting Help
 
-- Report issues: https://github.com/obra/governed-superpowers/issues
-- Documentation: https://github.com/obra/governed-superpowers
+- Report issues: https://github.com/srvmind/governed-superpowers/issues
+- Documentation: https://github.com/srvmind/governed-superpowers
 ```
 
 **Step 2: Verify file created**
