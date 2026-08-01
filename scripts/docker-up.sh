@@ -56,6 +56,8 @@ if [[ "$dbChoice" != "local" && "$dbChoice" != "cloud" ]]; then
     exit 1
 fi
 
+# Always reflects the file on disk, so edits take effect even when rerun in
+# a shell where a previous invocation already exported these variables.
 envFile="$REPO_ROOT/.env"
 if [[ -f "$envFile" ]]; then
     while IFS= read -r line || [[ -n "$line" ]]; do
@@ -65,9 +67,7 @@ if [[ -f "$envFile" ]]; then
         val="${BASH_REMATCH[2]}"
         key="${key#"${key%%[![:space:]]*}"}"; key="${key%"${key##*[![:space:]]}"}"
         val="${val#"${val%%[![:space:]]*}"}"; val="${val%"${val##*[![:space:]]}"}"
-        if [[ -z "${!key:-}" ]]; then
-            export "$key=$val"
-        fi
+        export "$key=$val"
     done < "$envFile"
 fi
 

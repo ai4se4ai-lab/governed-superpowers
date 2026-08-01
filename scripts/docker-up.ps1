@@ -42,7 +42,9 @@ if ($dbChoice -ne "local" -and $dbChoice -ne "cloud") {
     exit 1
 }
 
-# ---- Load .env into the current session (without overriding already-set vars)
+# ---- Load .env into the current session (always reflects the file on disk,
+# so edits take effect even when rerun in a PowerShell window where a
+# previous invocation already set these variables).
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $envFile = Join-Path $repoRoot ".env"
 if (Test-Path $envFile) {
@@ -50,9 +52,7 @@ if (Test-Path $envFile) {
         if ($_ -match '^\s*([^#][^=]*?)\s*=\s*(.*)\s*$') {
             $key = $Matches[1].Trim()
             $val = $Matches[2].Trim()
-            if (-not [System.Environment]::GetEnvironmentVariable($key)) {
-                Set-Item -Path "Env:$key" -Value $val
-            }
+            Set-Item -Path "Env:$key" -Value $val
         }
     }
 }

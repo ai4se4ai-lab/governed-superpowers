@@ -8,6 +8,8 @@
 FROM node:22-alpine AS deps
 # Prisma's query engine is dynamically linked against OpenSSL on musl.
 RUN apk add --no-cache openssl
+# Silences the "New major version of npm available" nag on every npm ci/install.
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
