@@ -17,3 +17,6 @@ graphify-out/cache/
 # mcp-server/ build output and local secrets
 mcp-server/dist/
 .env
+
+__pycache__/
+*.pyc

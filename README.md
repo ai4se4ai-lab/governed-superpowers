@@ -216,7 +216,8 @@ very next request.
 
 ```bash
 cp .env.example .env
-# fill in POSTGRES_PASSWORD, DATABASE_URL, and real SMTP_* creds (there is no
+# fill in POSTGRES_PASSWORD, DATABASE_URL, DIRECT_URL (same value as
+# DATABASE_URL unless you're on Supabase), and real SMTP_* creds (there is no
 # bundled dev mail sink - confirmation email needs a real provider even locally)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
 docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm migrate
@@ -245,6 +246,21 @@ docker compose run --rm migrate
 docker compose up -d --build
 ```
 
+Or use the wrapper script, which also supports a Supabase-hosted Postgres
+instead of the bundled `db` container:
+
+```bash
+scripts/docker-up.sh --db local --build    # bundled Postgres (default)
+scripts/docker-up.sh --db cloud --build    # Supabase - requires DATABASE_URL
+                                            # and SUPABASE_DB_URL in .env
+```
+
+(`scripts/docker-up.ps1` on Windows, same flags.) Extra flags
+(`--force-recreate`, `--remove-orphans`, ...) pass straight through to
+`docker compose up`. This always uses the dev port-publishing overlay
+(`docker-compose.dev.yml`) and never starts `caddy` - for a TLS-fronted
+production deploy, use the plain `docker compose` commands above.
+
 This brings up the full stack behind Caddy, which obtains a Let's Encrypt
 certificate for `APP_DOMAIN` and path-routes `/mcp` to the MCP server and
 everything else to the portal. Point `SMTP_*` at a real mail provider so
@@ -254,6 +270,18 @@ See [`mcp-server/README.md`](mcp-server/README.md) for deployment and
 verification steps, and
 [`mcp-server/docs/using-mcp-server.md`](mcp-server/docs/using-mcp-server.md)
 for client setup in VS Code, Cursor and Claude Code.
+
+### Deploy to Google Cloud Run
+
+```bash
+python scripts/gcp-deploy.py
+```
+
+Builds and deploys `web` and `mcp-server` as two independent Cloud Run
+services (each gets its own URL - there's no single-domain path routing on
+Cloud Run the way Caddy does it locally). Requires `GCP_PROJECT_ID` and
+`DATABASE_URL` in `.env`; see the comment block at the top of
+`scripts/gcp-deploy.py` for every config key it reads.
 
 > **Upgrading an existing deployment:** `MCP_SERVER_TOKEN` has been removed.
 > Bring up the new stack, sign up, mint a token, and update your clients — the
