@@ -216,7 +216,8 @@ very next request.
 
 ```bash
 cp .env.example .env
-# fill in POSTGRES_PASSWORD, DATABASE_URL, and real SMTP_* creds (there is no
+# fill in POSTGRES_PASSWORD, DATABASE_URL, DIRECT_URL (same value as
+# DATABASE_URL unless you're on Supabase), and real SMTP_* creds (there is no
 # bundled dev mail sink - confirmation email needs a real provider even locally)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
 docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm migrate

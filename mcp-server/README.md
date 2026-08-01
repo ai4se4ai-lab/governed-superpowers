@@ -90,7 +90,8 @@ and the sibling `skills/` directory):
 
 ```bash
 cp .env.example .env
-# edit .env: set POSTGRES_PASSWORD, DATABASE_URL, APP_DOMAIN, APP_URL and SMTP_*
+# edit .env: set POSTGRES_PASSWORD, DATABASE_URL, DIRECT_URL (same value as
+# DATABASE_URL unless you're on Supabase), APP_DOMAIN, APP_URL and SMTP_*
 docker compose up -d db
 docker compose run --rm migrate
 docker compose up -d --build
