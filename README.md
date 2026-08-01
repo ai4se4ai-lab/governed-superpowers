@@ -256,7 +256,9 @@ scripts/docker-up.sh --db cloud --build    # Supabase - requires DATABASE_URL
 
 (`scripts/docker-up.ps1` on Windows, same flags.) Extra flags
 (`--force-recreate`, `--remove-orphans`, ...) pass straight through to
-`docker compose up`.
+`docker compose up`. This always uses the dev port-publishing overlay
+(`docker-compose.dev.yml`) and never starts `caddy` - for a TLS-fronted
+production deploy, use the plain `docker compose` commands above.
 
 This brings up the full stack behind Caddy, which obtains a Let's Encrypt
 certificate for `APP_DOMAIN` and path-routes `/mcp` to the MCP server and
