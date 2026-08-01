@@ -1,13 +1,29 @@
-# Local/dev override: publish mcp-server's port directly so you can point
-# VS Code at http://localhost:3000/mcp without DNS or TLS.
+# Local/dev override: publish the ports you need on the host so you can use
+# the stack without DNS or TLS.
 #
 # Usage:
-#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build mcp-server
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 #
-# (Omitting the trailing `mcp-server` also starts the caddy service, which
-# is pointless locally since it requires MCP_DOMAIN/DNS - pass the service
-# name to start only what you need for local testing.)
+# That starts caddy too, which is pointless locally (it wants APP_DOMAIN and
+# real DNS). Name the services you want instead:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build web mcp-server
+#
+# Ports published below:
+#   3000  web        - the account portal
+#   3001  mcp-server - MCP endpoint at http://localhost:3001/mcp
+#   5432  db         - Postgres, for psql / prisma studio from the host
 services:
-  mcp-server:
+  web:
     ports:
       - "3000:3000"
+
+  mcp-server:
+    # Deliberately not 3000: the portal already owns that port on the host.
+    # In production Caddy path-routes both behind one origin.
+    ports:
+      - "3001:3000"
+
+  db:
+    ports:
+      - "5432:5432"

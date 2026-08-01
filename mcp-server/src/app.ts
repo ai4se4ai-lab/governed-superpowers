@@ -3,14 +3,17 @@ import express, { type Request, type Response, type Express } from "express";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { buildServer, SERVER_NAME, SERVER_VERSION } from "./server.js";
-import { requireBearerToken } from "./auth.js";
+import { requireMcpToken, type TokenVerifier } from "./auth.js";
 
 /**
  * Builds the Express app (routes + auth + session-routed MCP transport)
  * without binding a port, so it can be exercised directly in tests via
  * an in-process HTTP server, and reused unchanged by the CLI entrypoint.
+ *
+ * `verify` resolves a bearer token to a user; index.ts supplies the
+ * Postgres-backed implementation, tests supply a stub.
  */
-export function createApp(skillsDir: string, token: string): Express {
+export function createApp(skillsDir: string, verify: TokenVerifier): Express {
   const app = express();
   app.use(express.json());
 
@@ -64,7 +67,7 @@ export function createApp(skillsDir: string, token: string): Express {
     await transports.get(sessionId)!.handleRequest(req, res);
   }
 
-  const auth = requireBearerToken(token);
+  const auth = requireMcpToken(verify);
 
   app.post("/mcp", auth, handleMcpPost);
   app.get("/mcp", auth, handleMcpSessionRequest);

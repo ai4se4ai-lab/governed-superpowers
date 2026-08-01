@@ -1,14 +1,87 @@
 services:
+  # ---------------------------------------------------------------- data
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-governed}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env - see .env.example}
+      - POSTGRES_DB=${POSTGRES_DB:-governed}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - mcp
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-governed} -d ${POSTGRES_DB:-governed}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # One-shot: applies pending Prisma migrations, then exits. Not started by
+  # `docker compose up` - run it explicitly before (re)starting the app
+  # services whenever the schema has changed:
+  #   docker compose run --rm migrate
+  migrate:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      target: migrator
+    environment:
+      - DATABASE_URL=${DATABASE_URL:?Set DATABASE_URL in .env - see .env.example}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mcp
+    restart: "no"
+
+  # ---------------------------------------------------------------- apps
+  # Account portal: signup, email confirmation, profile, MCP token management.
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${DATABASE_URL:?Set DATABASE_URL in .env - see .env.example}
+      - APP_URL=${APP_URL:-http://localhost:3000}
+      - SMTP_HOST=${SMTP_HOST:?Set SMTP_HOST in .env - see .env.example}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
+      - MAIL_FROM=${MAIL_FROM:-Governed-Superpowers <no-reply@localhost>}
+      - PORT=3000
+    expose:
+      - "3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - mcp
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # MCP server. Authenticates every /mcp request against tokens minted in the
+  # portal above - there is no shared static token.
   mcp-server:
     build:
       context: .
       dockerfile: mcp-server/Dockerfile
     restart: unless-stopped
     environment:
-      - MCP_SERVER_TOKEN=${MCP_SERVER_TOKEN:?Set MCP_SERVER_TOKEN in .env - see mcp-server/README.md}
+      - DATABASE_URL=${DATABASE_URL:?Set DATABASE_URL in .env - see .env.example}
       - PORT=3000
     expose:
       - "3000"
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - mcp
     healthcheck:
@@ -18,10 +91,11 @@ services:
       retries: 3
       start_period: 10s
 
-  # Reverse proxy terminating TLS. Requires MCP_DOMAIN to point at this host
+  # ---------------------------------------------------------------- edge
+  # Reverse proxy terminating TLS. Requires APP_DOMAIN to point at this host
   # (A/AAAA record) so Caddy can obtain a Let's Encrypt certificate
-  # automatically. Swap this service for nginx/Traefik if you already run
-  # one of those - it only needs to forward to mcp-server:3000.
+  # automatically. Swap this service for nginx/Traefik if you already run one
+  # of those - see Caddyfile for the routing it has to reproduce.
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -29,17 +103,19 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      - MCP_DOMAIN=${MCP_DOMAIN:?Set MCP_DOMAIN in .env - see mcp-server/README.md}
+      - APP_DOMAIN=${APP_DOMAIN:?Set APP_DOMAIN in .env - see .env.example}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
+      - web
       - mcp-server
     networks:
       - mcp
 
 volumes:
+  pgdata:
   caddy_data:
   caddy_config:
 

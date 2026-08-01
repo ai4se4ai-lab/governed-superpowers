@@ -1,0 +1,96 @@
+// Schema for the Governed-Superpowers account portal.
+//
+// The mcp-server reads the "McpToken" table directly with raw SQL (it does not
+// use Prisma). If you rename that table or its columns, update
+// mcp-server/src/db.ts to match.
+
+generator client {
+  provider = "prisma-client-js"
+  // "native" for local dev, musl for the node:22-alpine runtime image.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String @id @default(uuid()) @db.Uuid
+  // Always stored lowercased - see normalizeEmail() in src/lib/validation.ts.
+  email        String @unique
+  username     String @unique
+  passwordHash String
+
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  region       String?
+  postalCode   String?
+  country      String?
+
+  // Null until the invitation link is clicked. Unverified users cannot log in.
+  emailVerifiedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions      Session[]
+  verifications VerificationToken[]
+  mcpTokens     McpToken[]
+}
+
+model Session {
+  id String @id @default(uuid()) @db.Uuid
+  // sha256 of the cookie value; the raw value only ever lives in the cookie.
+  tokenHash String   @unique
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+enum VerificationPurpose {
+  EMAIL_CONFIRM
+  EMAIL_CHANGE
+  PASSWORD_RESET
+}
+
+model VerificationToken {
+  id        String              @id @default(uuid()) @db.Uuid
+  tokenHash String              @unique
+  purpose   VerificationPurpose
+  userId    String              @db.Uuid
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Set only for EMAIL_CHANGE: the address to move to once confirmed.
+  newEmail   String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, purpose])
+}
+
+model McpToken {
+  id   String @id @default(uuid()) @db.Uuid
+  name String
+
+  // Public, indexed lookup key (the middle segment of "gsp_<prefix>_<secret>").
+  // Lets mcp-server find the row with one indexed query instead of hashing
+  // every row in the table.
+  prefix String @unique
+  // sha256 of the full plaintext token. The plaintext is shown once, never stored.
+  tokenHash String
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt  DateTime? // null = never expires
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}

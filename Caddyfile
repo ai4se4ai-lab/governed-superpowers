@@ -1,3 +1,18 @@
-{$MCP_DOMAIN} {
-	reverse_proxy mcp-server:3000
+# Single origin, path-routed. Keeping /mcp on the same domain means MCP
+# clients already configured with https://<domain>/mcp keep working now that
+# the account portal sits at the root.
+{$APP_DOMAIN} {
+	# MCP protocol endpoint and its health probe.
+	handle /mcp* {
+		reverse_proxy mcp-server:3000
+	}
+
+	handle /healthz {
+		reverse_proxy mcp-server:3000
+	}
+
+	# Everything else is the account portal.
+	handle {
+		reverse_proxy web:3000
+	}
 }

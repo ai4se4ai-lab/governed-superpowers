@@ -6,13 +6,19 @@ import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { createApp } from "../src/app.js";
+import type { TokenVerifier } from "../src/auth.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SKILLS_DIR = join(__dirname, "..", "..", "skills");
-const TOKEN = "test-token";
+const TOKEN = "gsp_abcdefghijkm_test-token";
+
+// Stubs the Postgres-backed verifier from src/db.ts so these tests exercise
+// the MCP transport without needing a database.
+const verifier: TokenVerifier = async (token) =>
+  token === TOKEN ? { userId: "test-user", tokenId: "test-token-id" } : null;
 
 async function withServer<T>(fn: (baseUrl: URL) => Promise<T>): Promise<T> {
-  const app = createApp(SKILLS_DIR, TOKEN);
+  const app = createApp(SKILLS_DIR, verifier);
   const httpServer: Server = createServer(app);
 
   await new Promise<void>((resolveListen) => httpServer.listen(0, "127.0.0.1", resolveListen));

@@ -16,9 +16,15 @@ You need two things before connecting from any client:
 
 - A deployed instance's URL, e.g. `https://<your-domain>/mcp` (see
   "Docker Compose deployment" in `mcp-server/README.md`), or a local one at
-  `http://localhost:3000/mcp` via `npm run dev`.
-- The `MCP_SERVER_TOKEN` that instance was started with — every request must
-  send it as `Authorization: Bearer <token>`.
+  `http://localhost:3001/mcp` via the dev compose file.
+- **A personal MCP token.** Open the account portal at the same domain
+  (`https://<your-domain>/`), sign up, confirm your address via the emailed
+  link, then mint a token on the Tokens page. The full value is shown once, at
+  creation. Every request must send it as `Authorization: Bearer <token>`.
+
+Tokens are per-user and independently revocable: mint one per machine, and if
+a laptop goes missing, revoke just that token from the portal. Revocation
+takes effect on the next request.
 
 ---
 
@@ -44,7 +50,7 @@ You need two things before connecting from any client:
     {
       "id": "mcp_token",
       "type": "promptString",
-      "description": "governed-superpowers MCP_SERVER_TOKEN",
+      "description": "governed-superpowers MCP token (from the portal)",
       "password": true
     }
   ]
@@ -88,7 +94,7 @@ via **Settings → MCP** or a `.cursor/mcp.json` file (project-scoped) /
     "governed-superpowers": {
       "url": "https://<your-domain>/mcp",
       "headers": {
-        "Authorization": "Bearer <your MCP_SERVER_TOKEN>"
+        "Authorization": "Bearer <your token>"
       }
     }
   }
@@ -127,14 +133,14 @@ Claude Code has first-class MCP support via the `claude mcp` CLI (or the
 
 ```bash
 claude mcp add --scope project --transport http governed-superpowers https://<your-domain>/mcp \
-  --header "Authorization: Bearer <your MCP_SERVER_TOKEN>"
+  --header "Authorization: Bearer <your token>"
 ```
 
 For a local dev instance:
 
 ```bash
-claude mcp add --transport http governed-superpowers http://localhost:3000/mcp \
-  --header "Authorization: Bearer <your MCP_SERVER_TOKEN>"
+claude mcp add --transport http governed-superpowers http://localhost:3001/mcp \
+  --header "Authorization: Bearer <your token>"
 ```
 
 Check it connected:
@@ -181,7 +187,7 @@ serving content, not just that the port is open:
 curl -sS https://<your-domain>/healthz          # expect 200
 npx @modelcontextprotocol/inspector https://<your-domain>/mcp
 # set transport to Streamable HTTP, add header
-# Authorization: Bearer <your MCP_SERVER_TOKEN>, connect
+# Authorization: Bearer <your token>, connect
 ```
 
 Seeing the 14 skills listed as prompts and getting a real response back from

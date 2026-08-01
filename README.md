@@ -193,6 +193,72 @@ pi -e /path/to/governed-superpowers
 
 The Pi package loads the Governed-Superpowers skills and a small extension that injects the `using-governed-superpowers` bootstrap at session startup and again after compaction. Pi has native skills, so no compatibility `Skill` tool is required. Subagent and task-list tools remain optional Pi companion packages.
 
+## Self-hosting: account portal + MCP server
+
+Everything above installs Governed-Superpowers *locally*, per harness. If you'd
+rather serve the skill library over the network — so a teammate, a CI agent, or
+a machine without this plugin installed can use every skill — this repo also
+ships a deployable stack:
+
+- **`mcp-server/`** — serves all 14 skills over
+  [Streamable HTTP MCP](https://modelcontextprotocol.io). Read-only: it serves
+  skill content and never touches your workspace.
+- **`web/`** — a self-serve account portal. Users sign up, confirm their address
+  from an emailed invitation link, manage their profile, and mint or revoke
+  their own MCP tokens.
+
+Tokens are per-user, optionally expiring, and independently revocable. There is
+no shared static secret: `mcp-server` validates every bearer token against the
+portal's database, so revoking a token in the UI cuts that client off on its
+very next request.
+
+### Run it locally
+
+```bash
+cp .env.example .env
+# fill in POSTGRES_PASSWORD, DATABASE_URL, and real SMTP_* creds (there is no
+# bundled dev mail sink - confirmation email needs a real provider even locally)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db
+docker compose -f docker-compose.yml -f docker-compose.dev.yml run --rm migrate
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build -d web mcp-server
+```
+
+| | |
+|---|---|
+| Account portal | <http://localhost:3000> |
+| MCP endpoint | `http://localhost:3001/mcp` |
+
+Sign up at the portal, click the confirmation link from the email, sign in,
+then mint a token on the **Tokens** page. Point any MCP client at the endpoint
+with that token:
+
+```bash
+claude mcp add --transport http governed-superpowers http://localhost:3001/mcp \
+  --header "Authorization: Bearer <your token>"
+```
+
+### Deploy it
+
+```bash
+docker compose up -d db
+docker compose run --rm migrate
+docker compose up -d --build
+```
+
+This brings up the full stack behind Caddy, which obtains a Let's Encrypt
+certificate for `APP_DOMAIN` and path-routes `/mcp` to the MCP server and
+everything else to the portal. Point `SMTP_*` at a real mail provider so
+confirmation emails actually arrive - there is no bundled mail sink.
+
+See [`mcp-server/README.md`](mcp-server/README.md) for deployment and
+verification steps, and
+[`mcp-server/docs/using-mcp-server.md`](mcp-server/docs/using-mcp-server.md)
+for client setup in VS Code, Cursor and Claude Code.
+
+> **Upgrading an existing deployment:** `MCP_SERVER_TOKEN` has been removed.
+> Bring up the new stack, sign up, mint a token, and update your clients — the
+> old shared token no longer authenticates.
+
 ## The Basic Workflow
 
 1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.

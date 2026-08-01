@@ -1,0 +1,311 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ *
+ * Control-room theme.
+ * Dark = phosphor terminal on charcoal. Light = ink on warm paper.
+ * Both are authored explicitly; `.dark` on <html> wins over the media
+ * query so the manual toggle works in either direction.
+ * ------------------------------------------------------------------ */
+
+@theme {
+  --font-display: var(--font-bricolage), "Trebuchet MS", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-panel: 3px;
+}
+
+:root {
+  --bg: #f2efe7;
+  --bg-raised: #fbfaf6;
+  --bg-sunken: #e8e4d9;
+  --grid: rgba(24, 24, 20, 0.055);
+  --ink: #16160f;
+  --ink-dim: #55554a;
+  --ink-faint: #8a8a7c;
+  --line: rgba(24, 24, 16, 0.16);
+  --line-strong: rgba(24, 24, 16, 0.4);
+  --signal: #a8500a;
+  --signal-ink: #fdfcf8;
+  --signal-wash: rgba(168, 80, 10, 0.09);
+  --live: #2f6f3e;
+  --alarm: #a41f1f;
+  --alarm-wash: rgba(164, 31, 31, 0.08);
+  --glow: none;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --bg: #0c0e0d;
+    --bg-raised: #141715;
+    --bg-sunken: #080a09;
+    --grid: rgba(180, 255, 200, 0.045);
+    --ink: #e6ece6;
+    --ink-dim: #9aa89d;
+    --ink-faint: #5f6d63;
+    --line: rgba(180, 230, 195, 0.14);
+    --line-strong: rgba(180, 230, 195, 0.34);
+    --signal: #b6ff5c;
+    --signal-ink: #0a0d08;
+    --signal-wash: rgba(182, 255, 92, 0.1);
+    --live: #6fe08a;
+    --alarm: #ff6b5c;
+    --alarm-wash: rgba(255, 107, 92, 0.1);
+    --glow: 0 0 24px rgba(182, 255, 92, 0.16);
+    color-scheme: dark;
+  }
+}
+
+:root.dark {
+  --bg: #0c0e0d;
+  --bg-raised: #141715;
+  --bg-sunken: #080a09;
+  --grid: rgba(180, 255, 200, 0.045);
+  --ink: #e6ece6;
+  --ink-dim: #9aa89d;
+  --ink-faint: #5f6d63;
+  --line: rgba(180, 230, 195, 0.14);
+  --line-strong: rgba(180, 230, 195, 0.34);
+  --signal: #b6ff5c;
+  --signal-ink: #0a0d08;
+  --signal-wash: rgba(182, 255, 92, 0.1);
+  --live: #6fe08a;
+  --alarm: #ff6b5c;
+  --alarm-wash: rgba(255, 107, 92, 0.1);
+  --glow: 0 0 24px rgba(182, 255, 92, 0.16);
+  color-scheme: dark;
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--bg);
+  /* Hairline engineering grid + a soft corner bloom for depth. */
+  background-image:
+    radial-gradient(120% 80% at 82% -10%, var(--signal-wash), transparent 58%),
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 100% 100%, 34px 34px, 34px 34px;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-feature-settings: "ss01", "cv01";
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--signal-ink);
+}
+
+/* --- shared primitives ------------------------------------------- */
+
+.panel {
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+}
+
+/* Corner ticks: four tiny brackets that make a panel read as an
+   instrument readout rather than a rounded card. */
+.ticked {
+  position: relative;
+}
+.ticked::before,
+.ticked::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--line-strong);
+  pointer-events: none;
+}
+.ticked::before {
+  top: -1px;
+  left: -1px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.ticked::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: 0;
+  border-top: 0;
+}
+
+.label {
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.rule {
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--line) 0 4px,
+    transparent 4px 8px
+  );
+}
+
+/* --- form controls ------------------------------------------------ */
+
+.input {
+  width: 100%;
+  background: var(--bg-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--ink);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.input::placeholder {
+  color: var(--ink-faint);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--signal);
+  box-shadow: 0 0 0 1px var(--signal), var(--glow);
+  background: var(--bg-raised);
+}
+.input[aria-invalid="true"] {
+  border-color: var(--alarm);
+}
+.input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-panel);
+  padding: 0.6rem 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.15s ease, color 0.15s ease,
+    box-shadow 0.15s ease, opacity 0.15s ease;
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--signal);
+  color: var(--signal-ink);
+  border-color: var(--signal);
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) {
+  box-shadow: var(--glow), 0 0 0 3px var(--signal-wash);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-dim);
+}
+.btn-ghost:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--signal-wash);
+  border-color: var(--signal);
+}
+.btn-danger {
+  background: transparent;
+  color: var(--alarm);
+  border-color: color-mix(in srgb, var(--alarm) 45%, transparent);
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--alarm-wash);
+  border-color: var(--alarm);
+}
+
+.link {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line-strong);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.link:hover {
+  color: var(--signal);
+  border-color: var(--signal);
+}
+
+/* --- motion ------------------------------------------------------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sweep {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Staggered page-load reveal. Children opt in with .rise. */
+.rise {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger > * {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger > *:nth-child(3) { animation-delay: 0.16s; }
+.stagger > *:nth-child(4) { animation-delay: 0.22s; }
+.stagger > *:nth-child(5) { animation-delay: 0.28s; }
+.stagger > *:nth-child(6) { animation-delay: 0.34s; }
+.stagger > *:nth-child(7) { animation-delay: 0.40s; }
+.stagger > *:nth-child(8) { animation-delay: 0.46s; }
+
+.dot-live {
+  animation: pulse-dot 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
