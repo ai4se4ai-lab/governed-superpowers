@@ -1,0 +1,13 @@
+# Local/dev override: publish mcp-server's port directly so you can point
+# VS Code at http://localhost:3000/mcp without DNS or TLS.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build mcp-server
+#
+# (Omitting the trailing `mcp-server` also starts the caddy service, which
+# is pointless locally since it requires MCP_DOMAIN/DNS - pass the service
+# name to start only what you need for local testing.)
+services:
+  mcp-server:
+    ports:
+      - "3000:3000"

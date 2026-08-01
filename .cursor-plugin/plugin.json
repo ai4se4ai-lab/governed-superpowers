@@ -2,7 +2,7 @@
   "name": "governed-superpowers",
   "displayName": "Governed-Superpowers",
   "description": "Core skills library: TDD, debugging, collaboration patterns, and proven techniques",
-  "version": "6.2.0",
+  "version": "0.0.1",
   "author": {
     "name": "Majid Babaei",
     "email": "majid@srvmind.com"
