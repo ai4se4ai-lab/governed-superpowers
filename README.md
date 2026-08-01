@@ -258,6 +258,16 @@ scripts/docker-up.sh --db cloud --build    # Supabase - requires DATABASE_URL
 (`--force-recreate`, `--remove-orphans`, ...) pass straight through to
 `docker compose up`.
 
+This brings up the full stack behind Caddy, which obtains a Let's Encrypt
+certificate for `APP_DOMAIN` and path-routes `/mcp` to the MCP server and
+everything else to the portal. Point `SMTP_*` at a real mail provider so
+confirmation emails actually arrive - there is no bundled mail sink.
+
+See [`mcp-server/README.md`](mcp-server/README.md) for deployment and
+verification steps, and
+[`mcp-server/docs/using-mcp-server.md`](mcp-server/docs/using-mcp-server.md)
+for client setup in VS Code, Cursor and Claude Code.
+
 ### Deploy to Google Cloud Run
 
 ```bash
@@ -269,16 +279,6 @@ services (each gets its own URL - there's no single-domain path routing on
 Cloud Run the way Caddy does it locally). Requires `GCP_PROJECT_ID` and
 `DATABASE_URL` in `.env`; see the comment block at the top of
 `scripts/gcp-deploy.py` for every config key it reads.
-
-This brings up the full stack behind Caddy, which obtains a Let's Encrypt
-certificate for `APP_DOMAIN` and path-routes `/mcp` to the MCP server and
-everything else to the portal. Point `SMTP_*` at a real mail provider so
-confirmation emails actually arrive - there is no bundled mail sink.
-
-See [`mcp-server/README.md`](mcp-server/README.md) for deployment and
-verification steps, and
-[`mcp-server/docs/using-mcp-server.md`](mcp-server/docs/using-mcp-server.md)
-for client setup in VS Code, Cursor and Claude Code.
 
 > **Upgrading an existing deployment:** `MCP_SERVER_TOKEN` has been removed.
 > Bring up the new stack, sign up, mint a token, and update your clients — the
