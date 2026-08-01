@@ -144,8 +144,20 @@ async function main() {
   // Loaded after DATABASE_URL is finalized above, since PrismaClient reads
   // it at construction time. Resolved against web/ via webRequire so this
   // works regardless of where the script is invoked from.
-  const { PrismaClient } = webRequire("@prisma/client");
-  const { normalizeEmail } = webRequire("./src/lib/validation");
+  let PrismaClient, normalizeEmail;
+  try {
+    ({ PrismaClient } = webRequire("@prisma/client"));
+    ({ normalizeEmail } = webRequire("./src/lib/validation"));
+  } catch (err) {
+    if ((err as { code?: string }).code === "MODULE_NOT_FOUND") {
+      console.error(
+        "ERROR: web/node_modules is missing or incomplete. Run `npm install` in web/ first:\n" +
+          "  cd web && npm install",
+      );
+      process.exit(1);
+    }
+    throw err;
+  }
   const prisma = new PrismaClient();
 
   try {
