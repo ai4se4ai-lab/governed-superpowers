@@ -183,7 +183,7 @@ def write_env_vars_file(env_vars: dict[str, str]) -> Path:
     fd, path = tempfile.mkstemp(suffix=".yaml")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         for key, value in env_vars.items():
-            escaped = value.replace('"', '\\"')
+            escaped = value.replace('\\', '\\\\').replace('"', '\\"')
             f.write(f'{key}: "{escaped}"\n')
     return Path(path)
 
