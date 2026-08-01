@@ -30,6 +30,7 @@ import argparse
 import os
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -53,6 +54,8 @@ WEB_ENV_PASSTHROUGH_KEYS = [
     "SMTP_SECURE",
     "MAIL_FROM",
 ]
+
+LEGACY_GCR_HOSTS = {"gcr.io", "us.gcr.io", "eu.gcr.io", "asia.gcr.io"}
 
 
 @dataclass(frozen=True)
@@ -127,7 +130,14 @@ def run_capture(command: list[str]) -> str:
 
 
 def ensure_artifact_registry(config: GcpConfig) -> None:
+    if config.artifact_repo in LEGACY_GCR_HOSTS:
+        # Legacy Container Registry hostnames are automatically backed by
+        # Artifact Registry - there's no repository resource to create.
+        return
     print("\nEnsuring Artifact Registry repository exists...\n")
+    # Not run via run()/run_capture(): "already exists" is the common, expected
+    # outcome here and shouldn't print as if it were a real command being run;
+    # a real failure still surfaces loudly at the docker push step right after.
     subprocess.run(
         [
             "gcloud", "artifacts", "repositories", "create", config.artifact_repo,
@@ -138,7 +148,7 @@ def ensure_artifact_registry(config: GcpConfig) -> None:
         ],
         capture_output=True,
         text=True,
-    )  # non-fatal if it already exists - the next steps fail loudly if the repo is actually unusable
+    )
 
 
 def apply_supabase_migrations(env: dict[str, str]) -> None:
@@ -163,22 +173,42 @@ def build_and_push(image: str, dockerfile: str, context: str, target: str | None
     run(["docker", "push", image])
 
 
-def deploy_mcp_server(config: GcpConfig, env: dict[str, str], database_url: str) -> str:
+def write_env_vars_file(env_vars: dict[str, str]) -> Path:
+    """Write env vars to a temp YAML file for `gcloud run deploy --env-vars-file`.
+    Keeps secrets (DATABASE_URL, SMTP_PASSWORD, ...) out of argv and out of the
+    command-echo in run() - both leak plaintext secrets to stdout/CI logs if
+    passed via --set-env-vars instead. Also avoids --set-env-vars using ',' as
+    both the pair separator and a legal character inside a secret value.
+    """
+    fd, path = tempfile.mkstemp(suffix=".yaml")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        for key, value in env_vars.items():
+            escaped = value.replace('"', '\\"')
+            f.write(f'{key}: "{escaped}"\n')
+    return Path(path)
+
+
+def deploy_mcp_server(config: GcpConfig, database_url: str) -> str:
     image = config.image_path(config.mcp_service_name)
-    build_and_push(image, dockerfile="mcp-server/Dockerfile", context=str(REPO_ROOT))
+    build_and_push(image, dockerfile=str(REPO_ROOT / "mcp-server" / "Dockerfile"), context=str(REPO_ROOT))
 
     print(f"\nDeploying {config.mcp_service_name} to Cloud Run...\n")
-    run(
-        [
-            "gcloud", "run", "deploy", config.mcp_service_name,
-            "--image", image,
-            "--platform", "managed",
-            "--region", config.region,
-            "--port", "3000",
-            "--set-env-vars", f"DATABASE_URL={database_url},PORT=3000",
-            "--allow-unauthenticated",
-        ]
-    )
+    env_vars_file = write_env_vars_file({"DATABASE_URL": database_url, "PORT": "3000"})
+    try:
+        run(
+            [
+                "gcloud", "run", "deploy", config.mcp_service_name,
+                "--image", image,
+                "--platform", "managed",
+                "--region", config.region,
+                "--port", "3000",
+                "--env-vars-file", str(env_vars_file),
+                "--allow-unauthenticated",
+            ]
+        )
+    finally:
+        env_vars_file.unlink(missing_ok=True)
+
     return run_capture(
         [
             "gcloud", "run", "services", "describe", config.mcp_service_name,
@@ -190,28 +220,32 @@ def deploy_mcp_server(config: GcpConfig, env: dict[str, str], database_url: str)
 
 def deploy_web(config: GcpConfig, env: dict[str, str], database_url: str) -> str:
     image = config.image_path(config.web_service_name)
-    build_and_push(image, dockerfile="web/Dockerfile", context=str(REPO_ROOT / "web"), target="runtime")
+    build_and_push(image, dockerfile=str(REPO_ROOT / "web" / "Dockerfile"), context=str(REPO_ROOT / "web"), target="runtime")
 
-    env_pairs = [f"DATABASE_URL={database_url}", "PORT=3000"]
+    env_vars = {"DATABASE_URL": database_url, "PORT": "3000"}
     for key in WEB_ENV_PASSTHROUGH_KEYS:
         if env.get(key):
-            env_pairs.append(f"{key}={env[key]}")
+            env_vars[key] = env[key]
     app_url = env.get("APP_URL")
     if app_url:
-        env_pairs.append(f"APP_URL={app_url}")
+        env_vars["APP_URL"] = app_url
 
     print(f"\nDeploying {config.web_service_name} to Cloud Run...\n")
-    run(
-        [
-            "gcloud", "run", "deploy", config.web_service_name,
-            "--image", image,
-            "--platform", "managed",
-            "--region", config.region,
-            "--port", "3000",
-            "--set-env-vars", ",".join(env_pairs),
-            "--allow-unauthenticated",
-        ]
-    )
+    env_vars_file = write_env_vars_file(env_vars)
+    try:
+        run(
+            [
+                "gcloud", "run", "deploy", config.web_service_name,
+                "--image", image,
+                "--platform", "managed",
+                "--region", config.region,
+                "--port", "3000",
+                "--env-vars-file", str(env_vars_file),
+                "--allow-unauthenticated",
+            ]
+        )
+    finally:
+        env_vars_file.unlink(missing_ok=True)
 
     service_url = run_capture(
         [
@@ -256,7 +290,7 @@ def main() -> None:
 
     apply_supabase_migrations(env)
 
-    mcp_url = deploy_mcp_server(config, env, database_url)
+    mcp_url = deploy_mcp_server(config, database_url)
     web_url = deploy_web(config, env, database_url)
 
     print("\n================================================")
