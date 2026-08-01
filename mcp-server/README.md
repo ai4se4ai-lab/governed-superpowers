@@ -48,6 +48,25 @@ against a stored SHA-256 hash in constant time. The plaintext is never stored.
 > Postgres and the portal), sign up, confirm your address, mint a token on the
 > Tokens page, and update your clients.
 
+### Deleting a user's access
+
+There's no "revoke all tokens" button in the portal beyond revoking one at a
+time. To fully remove a user — and every `McpToken` they've minted, along with
+their sessions and verification tokens — use
+[`web/scripts/delete-user.ts`](../web/scripts/delete-user.ts):
+
+```bash
+cd web
+npx tsx scripts/delete-user.ts --db local --email someone@example.com
+# or: --username someone / --id <uuid>, --db cloud for a Supabase-backed deployment
+```
+
+`McpToken.userId` has `onDelete: Cascade` in `web/prisma/schema.prisma`, so
+deleting the `User` row removes their tokens in the same transaction — any
+client authenticated with one of them gets a 401 on its very next request,
+same as a manual revoke in step 6 of "Testing a local/deployed instance"
+below, just for every token at once.
+
 ## Local development
 
 ```bash
