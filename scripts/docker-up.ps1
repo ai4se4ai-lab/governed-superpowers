@@ -2,12 +2,13 @@
 # --db local|cloud switch for where Postgres lives.
 #
 # Usage:
-#   .\scripts\docker-up.ps1 [--db local|cloud] [extra docker compose flags]
+#   .\scripts\docker-up.ps1 [--db local|cloud] [--edge] [extra docker compose flags]
 #
 # Examples:
 #   .\scripts\docker-up.ps1 --db local --build --force-recreate --remove-orphans
 #   .\scripts\docker-up.ps1 --db cloud --build
 #   .\scripts\docker-up.ps1 --build                # no --db: same as --db local
+#   .\scripts\docker-up.ps1 --edge --build          # also start the caddy edge
 #
 #   --db local (default) -> starts the bundled `db` container, waits for it to
 #                            become healthy, runs `migrate`, then starts
@@ -19,10 +20,22 @@
 #                            container. DIRECT_URL is set to SUPABASE_DB_URL.
 #                            Runs `migrate` against Supabase, then starts
 #                            web + mcp-server with --no-deps.
+#   --edge                -> without this flag, web/mcp-server publish ports
+#                            directly (docker-compose.dev.yml) and no edge
+#                            proxy runs - fine for local use, but nothing
+#                            outside this host can reach it. With --edge, the
+#                            dev overlay is skipped, `caddy` is started too,
+#                            and web/mcp-server go back to internal-only
+#                            (matching production docker-compose.yml). Needs
+#                            APP_DOMAIN set in .env; on hosts behind a proxy
+#                            you don't control, also set CADDYFILE_PATH and
+#                            CADDY_HTTP_PORT - see .env.example.
 #
-# Any flag other than --db is passed straight through to `docker compose up`.
+# Any flag other than --db/--edge is passed straight through to `docker
+# compose up`.
 
 $dbChoice = "local"
+$edge = $false
 $passthrough = @()
 for ($i = 0; $i -lt $args.Count; $i++) {
     $a = $args[$i]
@@ -34,6 +47,7 @@ for ($i = 0; $i -lt $args.Count; $i++) {
         $dbChoice = $args[$i + 1]; $i++
     }
     elseif ($a -like "--db=*") { $dbChoice = $a.Split("=", 2)[1] }
+    elseif ($a -eq "--edge") { $edge = $true }
     else { $passthrough += $a }
 }
 
@@ -57,12 +71,23 @@ if (Test-Path $envFile) {
     }
 }
 
-$devFiles = @("-f", "docker-compose.yml", "-f", "docker-compose.dev.yml")
+if ($edge) {
+    if (-not $env:APP_DOMAIN) {
+        Write-Error "--edge requires APP_DOMAIN set in .env - see .env.example."
+        exit 1
+    }
+    $composeFiles = @("-f", "docker-compose.yml")
+    $edgeServices = @("web", "mcp-server", "caddy")
+}
+else {
+    $composeFiles = @("-f", "docker-compose.yml", "-f", "docker-compose.dev.yml")
+    $edgeServices = @("web", "mcp-server")
+}
 
 function Wait-DbHealthy {
     Write-Host "Waiting for the database to become healthy..."
     for ($n = 1; $n -le 30; $n++) {
-        $status = docker compose @devFiles ps db --format json | ConvertFrom-Json
+        $status = docker compose @composeFiles ps db --format json | ConvertFrom-Json
         if ($status -and $status.Health -eq "healthy") {
             Write-Host "Database is healthy."
             return
@@ -77,10 +102,10 @@ if ($dbChoice -eq "local") {
     Write-Host "DB_PROVIDER = postgres (--db local)"
     $env:DIRECT_URL = $env:DATABASE_URL
 
-    docker compose @devFiles up -d db
+    docker compose @composeFiles up -d db
     Wait-DbHealthy
-    docker compose @devFiles run --rm migrate
-    docker compose @devFiles up --build -d @passthrough web mcp-server
+    docker compose @composeFiles run --rm migrate
+    docker compose @composeFiles up --build -d @passthrough @edgeServices
 }
 else {
     Write-Host "DB_PROVIDER = supabase (--db cloud)"
@@ -100,9 +125,15 @@ else {
     }
     $env:DIRECT_URL = $env:SUPABASE_DB_URL
 
-    docker compose @devFiles run --rm migrate
-    docker compose @devFiles up --build -d --no-deps @passthrough web mcp-server
+    docker compose @composeFiles run --rm migrate
+    docker compose @composeFiles up --build -d --no-deps @passthrough @edgeServices
 }
 
-Write-Host "Portal:  http://localhost:3000"
-Write-Host "MCP:     http://localhost:3001/mcp"
+if ($edge) {
+    Write-Host "Portal:  https://$($env:APP_DOMAIN)"
+    Write-Host "MCP:     https://$($env:APP_DOMAIN)/mcp"
+}
+else {
+    Write-Host "Portal:  http://localhost:3000"
+    Write-Host "MCP:     http://localhost:3001/mcp"
+}

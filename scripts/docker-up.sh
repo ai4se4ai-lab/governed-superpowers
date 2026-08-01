@@ -4,12 +4,13 @@
 # docker-up.ps1 - keep the two in sync.
 #
 # Usage:
-#   ./scripts/docker-up.sh [--db local|cloud] [extra docker compose flags]
+#   ./scripts/docker-up.sh [--db local|cloud] [--edge] [extra docker compose flags]
 #
 # Examples:
 #   ./scripts/docker-up.sh --db local --build --force-recreate --remove-orphans
 #   ./scripts/docker-up.sh --db cloud --build
 #   ./scripts/docker-up.sh --build                # no --db: same as --db local
+#   ./scripts/docker-up.sh --edge --build          # also start the caddy edge
 #
 #   --db local (default) -> starts the bundled `db` container, waits for it to
 #                            become healthy, runs `migrate`, then starts
@@ -21,8 +22,19 @@
 #                            container. DIRECT_URL is set to SUPABASE_DB_URL.
 #                            Runs `migrate` against Supabase, then starts
 #                            web + mcp-server with --no-deps.
+#   --edge                -> without this flag, web/mcp-server publish ports
+#                            directly (docker-compose.dev.yml) and no edge
+#                            proxy runs - fine for local use, but nothing
+#                            outside this host can reach it. With --edge, the
+#                            dev overlay is skipped, `caddy` is started too,
+#                            and web/mcp-server go back to internal-only
+#                            (matching production docker-compose.yml). Needs
+#                            APP_DOMAIN set in .env; on hosts behind a proxy
+#                            you don't control, also set CADDYFILE_PATH and
+#                            CADDY_HTTP_PORT - see .env.example.
 #
-# Any flag other than --db is passed straight through to `docker compose up`.
+# Any flag other than --db/--edge is passed straight through to `docker
+# compose up`.
 
 set -euo pipefail
 
@@ -37,6 +49,7 @@ fi
 COMPOSE=(docker compose)
 
 dbChoice="local"
+edge=false
 passthrough=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -47,6 +60,7 @@ while [[ $# -gt 0 ]]; do
             fi
             dbChoice="$2"; shift 2 ;;
         --db=*) dbChoice="${1#--db=}"; shift ;;
+        --edge) edge=true; shift ;;
         *)      passthrough+=("$1"); shift ;;
     esac
 done
@@ -71,12 +85,22 @@ if [[ -f "$envFile" ]]; then
     done < "$envFile"
 fi
 
-DEV_FILES=(-f docker-compose.yml -f docker-compose.dev.yml)
+if [[ "$edge" == true ]]; then
+    if [[ -z "${APP_DOMAIN:-}" ]]; then
+        echo "ERROR: --edge requires APP_DOMAIN set in .env - see .env.example." >&2
+        exit 1
+    fi
+    COMPOSE_FILES=(-f docker-compose.yml)
+    edgeServices=(web mcp-server caddy)
+else
+    COMPOSE_FILES=(-f docker-compose.yml -f docker-compose.dev.yml)
+    edgeServices=(web mcp-server)
+fi
 
 wait_db_healthy() {
     echo "Waiting for the database to become healthy..."
     for _ in $(seq 1 30); do
-        status="$("${COMPOSE[@]}" "${DEV_FILES[@]}" ps db --format json | node -e '
+        status="$("${COMPOSE[@]}" "${COMPOSE_FILES[@]}" ps db --format json | node -e '
 let d = "";
 process.stdin.on("data", c => d += c);
 process.stdin.on("end", () => {
@@ -97,10 +121,10 @@ if [[ "$dbChoice" == "local" ]]; then
     echo "DB_PROVIDER = postgres (--db local)"
     export DIRECT_URL="${DATABASE_URL:-}"
 
-    "${COMPOSE[@]}" "${DEV_FILES[@]}" up -d db
+    "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" up -d db
     wait_db_healthy
-    "${COMPOSE[@]}" "${DEV_FILES[@]}" run --rm migrate
-    "${COMPOSE[@]}" "${DEV_FILES[@]}" up --build -d "${passthrough[@]}" web mcp-server
+    "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" run --rm migrate
+    "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" up --build -d "${passthrough[@]}" "${edgeServices[@]}"
 else
     echo "DB_PROVIDER = supabase (--db cloud)"
     # db is never started in this mode, but the compose file still hard-requires
@@ -119,9 +143,14 @@ else
     fi
     export DIRECT_URL="$SUPABASE_DB_URL"
 
-    "${COMPOSE[@]}" "${DEV_FILES[@]}" run --rm migrate
-    "${COMPOSE[@]}" "${DEV_FILES[@]}" up --build -d --no-deps "${passthrough[@]}" web mcp-server
+    "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" run --rm migrate
+    "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" up --build -d --no-deps "${passthrough[@]}" "${edgeServices[@]}"
 fi
 
-echo "Portal:  http://localhost:3000"
-echo "MCP:     http://localhost:3001/mcp"
+if [[ "$edge" == true ]]; then
+    echo "Portal:  https://$APP_DOMAIN"
+    echo "MCP:     https://$APP_DOMAIN/mcp"
+else
+    echo "Portal:  http://localhost:3000"
+    echo "MCP:     http://localhost:3001/mcp"
+fi
