@@ -14,7 +14,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
-    "user:delete": "tsx scripts/delete-user.ts"
+    "user:delete": "tsx ../scripts/delete-user.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.2.1",

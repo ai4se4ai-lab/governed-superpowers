@@ -1,8 +1,9 @@
 // Permanently deletes a user and every record that references them
 // (Session, VerificationToken, McpToken all have onDelete: Cascade in
-// prisma/schema.prisma, so one User delete removes all of it in Postgres).
+// web/prisma/schema.prisma, so one User delete removes all of it in
+// Postgres).
 //
-// Usage (run from web/):
+// Usage (run from the repo root):
 //   npx tsx scripts/delete-user.ts --db local  --email someone@example.com
 //   npx tsx scripts/delete-user.ts --db cloud  --username someone
 //   npx tsx scripts/delete-user.ts --db local  --id 123e4567-e89b-12d3-a456-426614174000
@@ -19,10 +20,19 @@
 //
 //   --yes / -y  -> skip the interactive confirmation prompt (for scripted
 //                  use - double-check the identifier before doing this).
+//
+// This lives at the repo root (not web/) but depends on web's Prisma client
+// and its normalizeEmail() helper - it loads them via createRequire(web/)
+// below so it always resolves web/node_modules regardless of cwd, rather
+// than duplicating a node_modules tree at the repo root.
 
 import { existsSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { createInterface } from "node:readline/promises";
+
+const repoRoot = path.resolve(__dirname, "..");
+const webRequire = createRequire(path.join(repoRoot, "web", "package.json"));
 
 function parseArgs(argv: string[]) {
   let email: string | undefined;
@@ -80,7 +90,6 @@ function parseEnvFile(filePath: string): Record<string, string> {
 }
 
 function resolveDatabaseUrl(dbChoice: "local" | "cloud"): string {
-  const repoRoot = path.resolve(__dirname, "..", "..");
   const env = { ...parseEnvFile(path.join(repoRoot, ".env")), ...process.env };
 
   const databaseUrl = env.DATABASE_URL;
@@ -127,10 +136,11 @@ async function main() {
   process.env.DATABASE_URL = resolveDatabaseUrl(dbChoice);
   console.log(`DB_PROVIDER = ${dbChoice === "local" ? "postgres (--db local)" : "supabase (--db cloud)"}`);
 
-  // Imported after DATABASE_URL is finalized above, since PrismaClient reads
-  // it at construction time.
-  const { PrismaClient } = await import("@prisma/client");
-  const { normalizeEmail } = await import("../src/lib/validation");
+  // Loaded after DATABASE_URL is finalized above, since PrismaClient reads
+  // it at construction time. Resolved against web/ via webRequire so this
+  // works regardless of where the script is invoked from.
+  const { PrismaClient } = webRequire("@prisma/client");
+  const { normalizeEmail } = webRequire("./src/lib/validation");
   const prisma = new PrismaClient();
 
   try {

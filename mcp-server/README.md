@@ -53,10 +53,10 @@ against a stored SHA-256 hash in constant time. The plaintext is never stored.
 There's no "revoke all tokens" button in the portal beyond revoking one at a
 time. To fully remove a user — and every `McpToken` they've minted, along with
 their sessions and verification tokens — use
-[`web/scripts/delete-user.ts`](../web/scripts/delete-user.ts):
+[`scripts/delete-user.ts`](../scripts/delete-user.ts) from the repo root
+(it depends on `web`'s Prisma client, but runs from outside `web/`):
 
 ```bash
-cd web
 npx tsx scripts/delete-user.ts --db local --email someone@example.com
 # or: --username someone / --id <uuid>, --db cloud for a Supabase-backed deployment
 ```
