@@ -26,7 +26,13 @@ $dbChoice = "local"
 $passthrough = @()
 for ($i = 0; $i -lt $args.Count; $i++) {
     $a = $args[$i]
-    if ($a -eq "--db") { $dbChoice = $args[$i + 1]; $i++ }
+    if ($a -eq "--db") {
+        if ($i + 1 -ge $args.Count) {
+            Write-Error "--db requires a value ('local' or 'cloud')."
+            exit 1
+        }
+        $dbChoice = $args[$i + 1]; $i++
+    }
     elseif ($a -like "--db=*") { $dbChoice = $a.Split("=", 2)[1] }
     else { $passthrough += $a }
 }
@@ -78,6 +84,12 @@ if ($dbChoice -eq "local") {
 }
 else {
     Write-Host "DB_PROVIDER = supabase (--db cloud)"
+    if (-not $env:POSTGRES_PASSWORD) {
+        # Never used by any service compose starts in cloud mode (`db` is never
+        # started), but the compose file's `db` service still hard-requires it
+        # via ${POSTGRES_PASSWORD:?...}, so set a throwaway placeholder.
+        $env:POSTGRES_PASSWORD = "unused-in-cloud-mode"
+    }
     if (-not $env:DATABASE_URL) {
         Write-Error "--db cloud requires DATABASE_URL (Supabase pooled connection) set in .env."
         exit 1
