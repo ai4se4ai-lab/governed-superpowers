@@ -3,6 +3,7 @@ import sys
 import unittest
 from pathlib import Path
 
+# gcp-deploy.py has a hyphen, so it can't be imported as a normal module - load it by path instead.
 _MODULE_PATH = Path(__file__).resolve().parent / "gcp-deploy.py"
 _spec = importlib.util.spec_from_file_location("gcp_deploy", _MODULE_PATH)
 gcp_deploy = importlib.util.module_from_spec(_spec)
