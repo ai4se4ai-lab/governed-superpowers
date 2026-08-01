@@ -1,0 +1,21 @@
+# Variant of ./Caddyfile for hosts where an external reverse proxy you don't
+# control (campus/shared-hosting nginx, a load balancer, etc.) already
+# terminates TLS for APP_DOMAIN and forwards everything to one port on this
+# host. Caddy has no certificate to obtain and no domain to match here - it
+# just does the same /mcp vs / path split as the normal Caddyfile, over
+# plain HTTP, on the port that external proxy actually forwards to.
+#
+# Used by docker-compose.behind-proxy.yml. See that file for usage.
+:80 {
+	handle /mcp* {
+		reverse_proxy mcp-server:3000
+	}
+
+	handle /healthz {
+		reverse_proxy mcp-server:3000
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}
