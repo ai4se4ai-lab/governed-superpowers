@@ -29,6 +29,7 @@ services:
       target: migrator
     environment:
       - DATABASE_URL=${DATABASE_URL:?Set DATABASE_URL in .env - see .env.example}
+      - DIRECT_URL=${DIRECT_URL:?Set DIRECT_URL in .env - see .env.example}
     depends_on:
       db:
         condition: service_healthy
