@@ -133,6 +133,13 @@ at build time (`COPY skills /app/skills` in the Dockerfile), so
 `docker compose up -d --build` picks up changes; there's no live-reload in
 production.
 
+### Deploying to Google Cloud Run
+
+See [`scripts/gcp-deploy.py`](../scripts/gcp-deploy.py) and the "Deploy to
+Google Cloud Run" section of the [root README](../README.md#self-hosting-account-portal--mcp-server) -
+it deploys `web` and `mcp-server` as two independent Cloud Run services
+rather than reproducing Caddy's single-domain path routing.
+
 ### Deploying to a fresh Ubuntu host (or any other Docker host - GCP, etc.)
 
 ```bash
