@@ -30,14 +30,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
-if docker compose version >/dev/null 2>&1; then
-    COMPOSE=(docker compose)
-elif command -v docker-compose >/dev/null 2>&1; then
-    COMPOSE=(docker-compose)
-else
-    echo "ERROR: neither 'docker compose' nor 'docker-compose' is available." >&2
+if ! docker compose version >/dev/null 2>&1; then
+    echo "ERROR: 'docker compose' (v2, the Compose plugin) is required and was not found." >&2
     exit 1
 fi
+COMPOSE=(docker compose)
 
 dbChoice="local"
 passthrough=()
