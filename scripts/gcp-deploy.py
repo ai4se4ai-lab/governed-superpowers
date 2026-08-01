@@ -67,7 +67,9 @@ class GcpConfig:
     mcp_service_name: str
 
     def image_path(self, service_name: str) -> str:
-        return f"{self.artifact_repo}/{self.project_id}/{service_name}"
+        if self.artifact_repo in LEGACY_GCR_HOSTS:
+            return f"{self.artifact_repo}/{self.project_id}/{service_name}"
+        return f"{self.region}-docker.pkg.dev/{self.project_id}/{self.artifact_repo}/{service_name}"
 
 
 def read_dotenv(path: Path) -> dict[str, str]:

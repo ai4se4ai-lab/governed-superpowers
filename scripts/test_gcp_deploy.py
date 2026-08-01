@@ -50,6 +50,17 @@ class LoadConfigTests(unittest.TestCase):
         config = load_config({"GCP_PROJECT_ID": "my-project", "GCP_ARTIFACT_REPO": "gcr.io"})
         self.assertEqual(config.image_path("governed-superpowers-web"), "gcr.io/my-project/governed-superpowers-web")
 
+    def test_image_path_uses_artifact_registry_format_for_real_repos(self):
+        config = load_config({
+            "GCP_PROJECT_ID": "my-project",
+            "GCP_REGION": "us-central1",
+            "GCP_ARTIFACT_REPO": "my-repo",
+        })
+        self.assertEqual(
+            config.image_path("governed-superpowers-web"),
+            "us-central1-docker.pkg.dev/my-project/my-repo/governed-superpowers-web",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
