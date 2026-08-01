@@ -134,6 +134,44 @@ VS Code will prompt for the token once and reuse it for the session. Once
 connected, the 14 skills appear as prompts/slash commands, and `list_skills`
 / `get_skill` / `search_skills` are available as tools.
 
+## Testing a deployed instance
+
+Once `MCP_DOMAIN` has DNS pointed at your host and `docker compose up -d --build`
+has run, verify it end-to-end:
+
+**1. Health check (no auth):**
+
+```bash
+curl -sS https://<your-domain>/healthz
+```
+
+Expect HTTP 200. If this fails, fix DNS/Caddy/the container before testing
+MCP itself.
+
+**2. Auth sanity check:**
+
+```bash
+# no token -> should 401
+curl -sS -o /dev/null -w "%{http_code}\n" https://<your-domain>/mcp
+
+# with token -> should not 401 (400/406 depending on client is fine - it proves auth passed)
+curl -sS -o /dev/null -w "%{http_code}\n" \
+  -H "Authorization: Bearer <your MCP_SERVER_TOKEN>" \
+  https://<your-domain>/mcp
+```
+
+**3. Real query via MCP Inspector:**
+
+```bash
+npx @modelcontextprotocol/inspector https://<your-domain>/mcp
+```
+
+Set transport to Streamable HTTP, URL to `https://<your-domain>/mcp`, add
+header `Authorization: Bearer <your MCP_SERVER_TOKEN>`, and connect. Seeing
+the 14 skills listed as prompts and getting a response back from
+`list_skills` confirms the server is live and serving content, not just that
+the port is open.
+
 ## Project layout
 
 ```
