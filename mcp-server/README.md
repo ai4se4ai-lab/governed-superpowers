@@ -79,9 +79,23 @@ Quick manual check once running:
 
 ```bash
 curl http://localhost:3000/healthz
-npx @modelcontextprotocol/inspector http://localhost:3000/mcp
-# (paste a token from the portal as the Authorization: Bearer header in the Inspector UI)
+npx @modelcontextprotocol/inspector@latest --transport http --server-url http://localhost:3000/mcp \
+  --header "Authorization: Bearer <your token>"
 ```
+
+> Don't pass the URL as a bare positional argument
+> (`npx @modelcontextprotocol/inspector http://localhost:3000/mcp`) — the
+> Inspector CLI treats a positional argument as a *command to spawn* for a
+> stdio server, not a URL, and fails with `Error: spawn
+> http://localhost:3000/mcp ENOENT`. Use `--transport http --server-url
+> <url>` to connect over Streamable HTTP instead. Use `@latest` (v2) rather
+> than the bare package name — v1 is deprecated and its `--cli` mode has a
+> separate bug where it demands a positional `target` argument even when
+> `--server-url` is already set.
+>
+> To drive it non-interactively instead of opening the browser UI, add
+> `--cli --method tools/list` (or `prompts/list`, `resources/list`, etc.) —
+> useful for scripting a smoke test against a locally running server.
 
 ## Docker Compose deployment
 
@@ -128,6 +142,84 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build -d web
 # portal  http://localhost:3000
 # MCP     http://localhost:3001/mcp
 ```
+
+> The portal and the MCP server both listen on container port 3000
+> internally; `docker-compose.dev.yml` deliberately publishes the portal on
+> host port **3000** and the MCP server on host port **3001** so they don't
+> collide (see the comments in that file). `http://localhost:3000/mcp` is
+> the portal, has no `/mcp` route, and will fail to connect — the MCP
+> endpoint is always `http://localhost:3001/mcp` in this local setup.
+
+### Testing a local instance
+
+Same idea as "Testing a deployed instance" below, but against the dev-compose
+stack above (`localhost:3001` instead of `<your-domain>`, no TLS).
+
+**1. Health check (no auth):**
+
+```bash
+curl -sS http://localhost:3001/healthz
+```
+
+Expect HTTP 200 with `{"status":"ok",...}`. If this fails, the container
+isn't up — check `docker compose -f docker-compose.yml -f docker-compose.dev.yml ps`
+and `logs mcp-server` before testing MCP itself.
+
+**2. Get a token:**
+
+Open `http://localhost:3000/`, sign up, click the link in the confirmation
+email (`SMTP_*` must point at a real provider — there's no dev mail sink),
+sign in, and mint a token on the Tokens page. Copy it — the full value is
+shown once.
+
+**3. Auth sanity check:**
+
+```bash
+# no token -> should 401
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:3001/mcp
+
+# with token -> should not 401 (a bare GET like this normally 404s - Express's
+# catch-all, since GET /mcp is only valid once a session is established via
+# initialize - the point of this check is just to confirm it isn't 401)
+curl -sS -o /dev/null -w "%{http_code}\n" \
+  -H "Authorization: Bearer <your token>" \
+  http://localhost:3001/mcp
+```
+
+**4. Real query via MCP Inspector:**
+
+```bash
+npx @modelcontextprotocol/inspector@latest --transport http --server-url http://localhost:3001/mcp \
+  --header "Authorization: Bearer <your token>" \
+  --cli --method tools/list
+```
+
+Seeing `list_skills`, `get_skill`, `search_skills`, `get_bootstrap` in the
+response confirms the server is live and serving content, not just that the
+port is open. Drop `--cli --method tools/list` to open the interactive
+Inspector web UI instead.
+
+**5. Connect a real client (Claude Code):**
+
+From the *other* project you want to use the skills in:
+
+```bash
+claude mcp add --scope project --transport http governed-superpowers \
+  http://localhost:3001/mcp \
+  --header "Authorization: Bearer <your token>"
+```
+
+Then ask it something like "list the tools available in the
+governed-superpowers MCP server" — it should show `list_skills`,
+`get_skill`, `search_skills`, `get_bootstrap`. If it instead reports "Failed
+to connect", double-check the URL is `:3001`, not `:3000` (see the note
+above), and that step 1's health check still passes.
+
+To remove it again: `claude mcp remove governed-superpowers`.
+
+**6. Confirm revocation works:**
+
+Revoke that token on the Tokens page, then re-run step 3. It should now 401.
 
 **Redeploying after a skill edit**: skill content is copied into the image
 at build time (`COPY skills /app/skills` in the Dockerfile), so
@@ -219,7 +311,9 @@ is shown once.
 # no token -> should 401
 curl -sS -o /dev/null -w "%{http_code}\n" https://<your-domain>/mcp
 
-# with token -> should not 401 (400/406 depending on client is fine - it proves auth passed)
+# with token -> should not 401 (a bare GET like this normally 404s - Express's
+# catch-all, since GET /mcp is only valid once a session is established via
+# initialize - the point of this check is just to confirm it isn't 401)
 curl -sS -o /dev/null -w "%{http_code}\n" \
   -H "Authorization: Bearer <your token>" \
   https://<your-domain>/mcp
@@ -228,11 +322,16 @@ curl -sS -o /dev/null -w "%{http_code}\n" \
 **4. Real query via MCP Inspector:**
 
 ```bash
-npx @modelcontextprotocol/inspector https://<your-domain>/mcp
+npx @modelcontextprotocol/inspector@latest --transport http --server-url https://<your-domain>/mcp \
+  --header "Authorization: Bearer <your token>"
 ```
 
-Set transport to Streamable HTTP, URL to `https://<your-domain>/mcp`, add
-header `Authorization: Bearer <your token>`, and connect. Seeing the 14 skills
+(A bare positional URL, e.g. `npx @modelcontextprotocol/inspector
+https://<your-domain>/mcp`, is treated as a stdio command to spawn and fails
+with `ENOENT` — use `--transport http --server-url` as above.) Alternatively
+run the Inspector with no args to open the web UI, then set transport to
+Streamable HTTP, URL to `https://<your-domain>/mcp`, and header
+`Authorization: Bearer <your token>` there before connecting. Seeing the 14 skills
 listed as prompts and getting a response back from `list_skills` confirms the
 server is live and serving content, not just that the port is open.
 
