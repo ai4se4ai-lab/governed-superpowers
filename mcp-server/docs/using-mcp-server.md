@@ -126,7 +126,7 @@ Claude Code has first-class MCP support via the `claude mcp` CLI (or the
 **Add the server:**
 
 ```bash
-claude mcp add --transport http governed-superpowers https://<your-domain>/mcp \
+claude mcp add --scope project --transport http governed-superpowers https://<your-domain>/mcp \
   --header "Authorization: Bearer <your MCP_SERVER_TOKEN>"
 ```
 
