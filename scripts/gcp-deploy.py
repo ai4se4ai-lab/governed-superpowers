@@ -111,8 +111,164 @@ def resolve_env() -> dict[str, str]:
     return env
 
 
+def run(command: list[str], **kwargs) -> None:
+    print(f"\n>>> {' '.join(command)}\n")
+    result = subprocess.run(command, **kwargs)
+    if result.returncode != 0:
+        sys.exit(f"ERROR: command failed ({result.returncode}): {' '.join(command)}")
+
+
+def run_capture(command: list[str]) -> str:
+    print(f"\n>>> {' '.join(command)}\n")
+    result = subprocess.run(command, capture_output=True, text=True)
+    if result.returncode != 0:
+        sys.exit(f"ERROR: command failed ({result.returncode}): {' '.join(command)}\n{result.stderr}")
+    return result.stdout.strip()
+
+
+def ensure_artifact_registry(config: GcpConfig) -> None:
+    print("\nEnsuring Artifact Registry repository exists...\n")
+    subprocess.run(
+        [
+            "gcloud", "artifacts", "repositories", "create", config.artifact_repo,
+            "--repository-format=docker",
+            f"--location={config.region}",
+            "--description=governed-superpowers deploy",
+            "--quiet",
+        ],
+        capture_output=True,
+        text=True,
+    )  # non-fatal if it already exists - the next steps fail loudly if the repo is actually unusable
+
+
+def apply_supabase_migrations(env: dict[str, str]) -> None:
+    supabase_db_url = env.get("SUPABASE_DB_URL")
+    if not supabase_db_url:
+        print("SUPABASE_DB_URL not set - skipping cloud migration step.")
+        return
+    print("\nApplying Prisma migrations against Supabase...\n")
+    migrate_env = dict(os.environ)
+    migrate_env["DATABASE_URL"] = supabase_db_url
+    migrate_env["DIRECT_URL"] = supabase_db_url
+    run(["npx", "prisma", "migrate", "deploy"], cwd=str(REPO_ROOT / "web"), env=migrate_env)
+
+
+def build_and_push(image: str, dockerfile: str, context: str, target: str | None = None) -> None:
+    print(f"\nBuilding {image}...\n")
+    command = ["docker", "build", "-f", dockerfile, "-t", image]
+    if target:
+        command += ["--target", target]
+    command += [context]
+    run(command)
+    run(["docker", "push", image])
+
+
+def deploy_mcp_server(config: GcpConfig, env: dict[str, str], database_url: str) -> str:
+    image = config.image_path(config.mcp_service_name)
+    build_and_push(image, dockerfile="mcp-server/Dockerfile", context=str(REPO_ROOT))
+
+    print(f"\nDeploying {config.mcp_service_name} to Cloud Run...\n")
+    run(
+        [
+            "gcloud", "run", "deploy", config.mcp_service_name,
+            "--image", image,
+            "--platform", "managed",
+            "--region", config.region,
+            "--port", "3000",
+            "--set-env-vars", f"DATABASE_URL={database_url},PORT=3000",
+            "--allow-unauthenticated",
+        ]
+    )
+    return run_capture(
+        [
+            "gcloud", "run", "services", "describe", config.mcp_service_name,
+            "--platform", "managed", "--region", config.region,
+            "--format", "value(status.url)",
+        ]
+    )
+
+
+def deploy_web(config: GcpConfig, env: dict[str, str], database_url: str) -> str:
+    image = config.image_path(config.web_service_name)
+    build_and_push(image, dockerfile="web/Dockerfile", context=str(REPO_ROOT / "web"), target="runtime")
+
+    env_pairs = [f"DATABASE_URL={database_url}", "PORT=3000"]
+    for key in WEB_ENV_PASSTHROUGH_KEYS:
+        if env.get(key):
+            env_pairs.append(f"{key}={env[key]}")
+    app_url = env.get("APP_URL")
+    if app_url:
+        env_pairs.append(f"APP_URL={app_url}")
+
+    print(f"\nDeploying {config.web_service_name} to Cloud Run...\n")
+    run(
+        [
+            "gcloud", "run", "deploy", config.web_service_name,
+            "--image", image,
+            "--platform", "managed",
+            "--region", config.region,
+            "--port", "3000",
+            "--set-env-vars", ",".join(env_pairs),
+            "--allow-unauthenticated",
+        ]
+    )
+
+    service_url = run_capture(
+        [
+            "gcloud", "run", "services", "describe", config.web_service_name,
+            "--platform", "managed", "--region", config.region,
+            "--format", "value(status.url)",
+        ]
+    )
+
+    if not app_url:
+        print(f"\nAPP_URL not set in .env - updating {config.web_service_name} with its Cloud Run URL ({service_url})...\n")
+        run(
+            [
+                "gcloud", "run", "services", "update", config.web_service_name,
+                "--region", config.region,
+                "--update-env-vars", f"APP_URL={service_url}",
+            ]
+        )
+        return service_url
+    return app_url
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.parse_args()
+
+    env = resolve_env()
+    config = load_config(env)
+
+    database_url = env.get("DATABASE_URL")
+    if not database_url:
+        sys.exit("ERROR: DATABASE_URL must be set in .env (Supabase pooled connection, or your own managed Postgres).")
+
+    print(f"Project:  {config.project_id}")
+    print(f"Region:   {config.region}")
+
+    if not os.environ.get("CI"):
+        run(["gcloud", "auth", "login"])
+    run(["gcloud", "config", "set", "project", config.project_id])
+    ensure_artifact_registry(config)
+    run(["gcloud", "auth", "configure-docker", "--quiet"])
+
+    apply_supabase_migrations(env)
+
+    mcp_url = deploy_mcp_server(config, env, database_url)
+    web_url = deploy_web(config, env, database_url)
+
+    print("\n================================================")
+    print(" Deployment complete")
+    print("================================================\n")
+    print(f"Portal:  {web_url}")
+    print(f"MCP:     {mcp_url}/mcp")
+    print("\nNext: open the portal URL, sign up, confirm your email, mint a token on the")
+    print("Tokens page, then:")
+    print(f'  claude mcp add --transport http governed-superpowers {mcp_url}/mcp \\')
+    print('    --header "Authorization: Bearer <your token>"')
+
+
 if __name__ == "__main__":
-    # Deployment steps land in a later task - this file is import-safe (no
-    # side effects at import time) so scripts/test_gcp_deploy.py can import
-    # GcpConfig/load_config without shelling out to gcloud/docker.
-    pass
+    main()
