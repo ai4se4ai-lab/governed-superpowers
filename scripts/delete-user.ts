@@ -30,8 +30,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { createInterface } from "node:readline/promises";
+import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(__dirname, "..");
+// The repo root's package.json sets "type": "module", so this file always
+// runs as ESM (regardless of cwd) - no __dirname available, hence
+// import.meta.url here instead.
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(scriptDir, "..");
 const webRequire = createRequire(path.join(repoRoot, "web", "package.json"));
 
 function parseArgs(argv: string[]) {
