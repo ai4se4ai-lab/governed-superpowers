@@ -1,0 +1,77 @@
+{
+  "1": {
+    "source": "existing_codebase",
+    "ref": "skills/subagent-driven-development/SKILL.md:423-429",
+    "text": "The collaboration graph is currently assembled and published exactly once, at the end of the plan, after the final whole-branch review."
+  },
+  "2": {
+    "source": "human",
+    "ref": null,
+    "text": "The consent check moves from the Finish section to Setup, immediately after the ledger is created and before Task 1 is dispatched."
+  },
+  "3": {
+    "source": "human",
+    "ref": null,
+    "text": "The consent prompt must describe a live, updating feed rather than a one-time finished-work summary."
+  },
+  "4": {
+    "source": "existing_codebase",
+    "ref": "skills/subagent-driven-development/publishing-graphs.md:22-24",
+    "text": "The four scope flags and the rule that a hedged answer is not consent for annotationText must carry over unchanged from the existing consent gate."
+  },
+  "5": {
+    "source": "human",
+    "ref": null,
+    "text": "On a clear yes, the agent must publish an initial skeleton sheet immediately, before Task 1 dispatches."
+  },
+  "6": {
+    "source": "human",
+    "ref": null,
+    "text": "After every Task <N>: complete ledger line, clean or parked-at-cap, the agent must run scripts/sdd-publish and call publish_graph."
+  },
+  "7": {
+    "source": "human",
+    "ref": null,
+    "text": "Each scripts/sdd-publish call must re-check .governed-superpowers/sharing.json for revocation and skip silently, without erroring the task loop, if consent has been revoked."
+  },
+  "8": {
+    "source": "human",
+    "ref": null,
+    "text": "State clustering must be recomputed from scratch on every publish call, not assigned once and left sticky."
+  },
+  "9": {
+    "source": "human",
+    "ref": null,
+    "text": "Each publish call must resend the full accumulated payload, replacing the sheet's prior contents, rather than sending an incremental delta."
+  },
+  "10": {
+    "source": "human",
+    "ref": null,
+    "text": "The existing end-of-plan publish offer in subagent-driven-development's Finish section must be removed."
+  },
+  "11": {
+    "source": "human",
+    "ref": null,
+    "text": "A new script, scripts/sdd-publish, must be added alongside the existing sdd-workspace, task-brief, and review-package scripts."
+  },
+  "12": {
+    "source": "existing_codebase",
+    "ref": "skills/subagent-driven-development/SKILL.md:264-272",
+    "text": "scripts/sdd-publish must assemble and print the payload for the controlling agent to send, the same division of labor review-package uses for diffs handed to a reviewer."
+  },
+  "13": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "scripts/sdd-publish must never read or write .governed-superpowers/sharing.json itself; only the agent's own consent-gate step may write it."
+  },
+  "14": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "A scripts/sdd-publish call made without active consent must skip silently and exit 0, never surfacing as a task-loop error."
+  },
+  "15": {
+    "source": "skill_doc",
+    "ref": "CLAUDE.md (Skill Changes Require Evaluation section)",
+    "text": "This change must be verified via eval evidence and manual dry runs, per this project's existing bar for skill-content changes, not via an automated unit-test suite."
+  }
+}
