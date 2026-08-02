@@ -85,15 +85,15 @@ a new top-level key in this same file (`hooks/hooks.json`).
    (`hooks/session-start:16-24`), and wraps it in an `<EXTREMELY_IMPORTANT>`
    block (`hooks/session-start:27`).
 
-   > **Note on current repo state:** the skill directory that actually exists
-   > on disk is `skills/using-superpowers/` (confirmed via `Glob
-   > skills/*/SKILL.md`), not `skills/using-governed-superpowers/` as
-   > referenced at `hooks/session-start:11`. This looks like a leftover from
-   > the in-progress `Superpowers → Governed-Superpowers` rename (see commit
-   > `5e8d2d0`). If this path doesn't resolve, the script's own fallback
-   > (`|| echo "Error reading using-governed-superpowers skill"`) fires and an
-   > error string gets injected as context instead of the real skill. Worth
-   > flagging/fixing, not something to silently work around.
+   > **Resolved:** this note previously flagged that the skill directory on
+   > disk was `skills/using-superpowers/`, not `skills/using-governed-superpowers/`
+   > as referenced at `hooks/session-start:11` — a leftover from the
+   > in-progress `Superpowers → Governed-Superpowers` rename (commit
+   > `5e8d2d0`) that made the fallback `|| echo "Error reading
+   > using-governed-superpowers skill"` fire instead of loading the real
+   > skill. The directory has since been renamed to
+   > `skills/using-governed-superpowers/` to match the frontmatter name and
+   > every other reference to it.
 
 ### Hook input/output contract
 
@@ -138,7 +138,7 @@ You have governed-superpowers.
 
 There are two separate mechanisms in this repo, one per harness family, both
 converging on the same underlying idea: **inject the bootstrap skill
-(`using-superpowers`/`using-governed-superpowers`) at session start so the
+(`using-governed-superpowers`) at session start so the
 model knows skills exist; individual skills are then loaded on demand.**
 
 ### Claude Code / Cursor / Copilot CLI (hook-based harnesses)
@@ -149,11 +149,11 @@ model knows skills exist; individual skills are then loaded on demand.**
   `keywords`. Claude Code discovers skills by convention: every
   `skills/<name>/SKILL.md` in the plugin root is registered, with the skill's
   invocable name and one-line description coming from the file's YAML
-  frontmatter (e.g. `skills/using-superpowers/SKILL.md:1-4`:
+  frontmatter (e.g. `skills/using-governed-superpowers/SKILL.md:1-4`:
   `name: using-governed-superpowers`, `description: Use when starting any
   conversation...`).
 - **Bootstrap = one skill's full body injected verbatim.** Only the bootstrap
-  skill (`using-superpowers`) is pushed into context automatically, by the
+  skill (`using-governed-superpowers`) is pushed into context automatically, by the
   `SessionStart` hook described in §2 above — its entire body is read off disk
   and embedded in the hook's JSON output. Every other skill stays on disk,
   undiscovered by the model, until the model calls the `Skill` tool by name
@@ -169,26 +169,26 @@ model knows skills exist; individual skills are then loaded on demand.**
 
 ### Pi (in-process extension harness)
 
-Pi has no hook/event-and-stdout system; instead `.pi/extensions/superpowers.ts`
+Pi has no hook/event-and-stdout system; instead `.pi/extensions/governed-superpowers.ts`
 (122 lines) is loaded in-process and registers callbacks directly on the
 `ExtensionAPI`:
 
-- `resources_discover` (`.pi/extensions/superpowers.ts:19-21`) returns
+- `resources_discover` (`.pi/extensions/governed-superpowers.ts:19-21`) returns
   `{ skillPaths: [skillsDir] }`, where `skillsDir` is computed at
-  `.pi/extensions/superpowers.ts:11` as `resolve(packageRoot, "skills")` —
+  `.pi/extensions/governed-superpowers.ts:11` as `resolve(packageRoot, "skills")` —
   this is how Pi's native skill system finds every `SKILL.md` under
   `skills/`.
-- `session_start` / `session_compact` (`.pi/extensions/superpowers.ts:23-29`)
+- `session_start` / `session_compact` (`.pi/extensions/governed-superpowers.ts:23-29`)
   each set `injectBootstrap = true`; `agent_end`
-  (`.pi/extensions/superpowers.ts:31-33`) sets it back to `false`.
+  (`.pi/extensions/governed-superpowers.ts:31-33`) sets it back to `false`.
 - The actual injection happens in the `context` callback
-  (`.pi/extensions/superpowers.ts:35-56`): if `injectBootstrap` is true and no
+  (`.pi/extensions/governed-superpowers.ts:35-56`): if `injectBootstrap` is true and no
   existing message already contains the `BOOTSTRAP_MARKER` sentinel
   (`messageContainsBootstrap()`, line 100), it builds a synthetic `user`
   message from `getBootstrapContent()` and splices it into `event.messages`
   right after any leading `compactionSummary` messages
   (`firstNonCompactionSummaryIndex()`, line 115).
-- `getBootstrapContent()` (`.pi/extensions/superpowers.ts:59-81`) reads
+- `getBootstrapContent()` (`.pi/extensions/governed-superpowers.ts:59-81`) reads
   `bootstrapSkillPath` — `resolve(skillsDir, "using-governed-superpowers",
   "SKILL.md")` (line 12) — strips YAML frontmatter (`stripFrontmatter()`,
   lines 83-86), and wraps the body with a Pi-specific tool-name mapping
@@ -205,12 +205,13 @@ Pi has no hook/event-and-stdout system; instead `.pi/extensions/superpowers.ts`
   tree lives; `pi.extensions` tells it which file to load as the bootstrap
   extension.
 
-  > **Note on current repo state:** `package.json:17` points at
-  > `./.pi/extensions/governed-superpowers.ts`, but the file that actually
-  > exists on disk is `.pi/extensions/superpowers.ts` (confirmed via `Glob
-  > .pi/extensions/*`). Same pattern as the `hooks/session-start` path
-  > mismatch in §2 — both look like artifacts of the in-progress
-  > `governed-superpowers` rename rather than intentional.
+  > **Resolved:** this note previously flagged that `package.json:17` pointed
+  > at `./.pi/extensions/governed-superpowers.ts` while the file on disk was
+  > named `.pi/extensions/superpowers.ts` — the same rename-artifact pattern
+  > as the `hooks/session-start` mismatch in §2, plus an invalid TypeScript
+  > identifier (`function governed-superpowersPiExtension`, a hyphen in a
+  > function name) that meant the file couldn't even compile. Both the file
+  > name and the identifier have been fixed.
 
 ### The general (harness-agnostic) model
 
@@ -241,8 +242,8 @@ integration must supply:
   `graphify query "plugin.json skills directory convention..."`,
   `graphify explain "bootstrapSkillPath"`, `graphify explain "Bootstrap Mechanism"`.
 - Files read directly: `hooks/hooks.json`, `hooks/session-start`,
-  `docs/windows/polyglot-hooks.md`, `.pi/extensions/superpowers.ts`,
+  `docs/windows/polyglot-hooks.md`, `.pi/extensions/governed-superpowers.ts`,
   `package.json`, `.claude-plugin/plugin.json`,
-  `skills/using-superpowers/SKILL.md`,
+  `skills/using-governed-superpowers/SKILL.md`,
   `docs/porting-to-a-new-harness.md`,
   `docs/superpowers/specs/2026-04-06-worktree-rototill-design.md`.

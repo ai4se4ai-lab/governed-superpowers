@@ -40,11 +40,11 @@ test("loadSkills finds all 14 governed-superpowers skills with name + descriptio
   }
 });
 
-test("using-superpowers/SKILL.md loads under its frontmatter name, not its directory name", () => {
+test("using-governed-superpowers/SKILL.md loads under its frontmatter name", () => {
   const skills = loadSkills(SKILLS_DIR);
   const bootstrap = findSkill(skills, "using-governed-superpowers");
   assert.ok(bootstrap, "expected a skill named 'using-governed-superpowers'");
-  assert.equal(bootstrap!.dir, join(SKILLS_DIR, "using-superpowers"));
+  assert.equal(bootstrap!.dir, join(SKILLS_DIR, "using-governed-superpowers"));
 });
 
 test("skill reference files are indexed with forward-slash relative paths", () => {

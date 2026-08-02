@@ -20,8 +20,8 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-if (!existsSync(join(SKILLS_DIR, "using-superpowers", "SKILL.md"))) {
-  console.error(`SKILLS_DIR (${SKILLS_DIR}) does not contain skills/using-superpowers/SKILL.md.`);
+if (!existsSync(join(SKILLS_DIR, "using-governed-superpowers", "SKILL.md"))) {
+  console.error(`SKILLS_DIR (${SKILLS_DIR}) does not contain skills/using-governed-superpowers/SKILL.md.`);
   console.error("Set the SKILLS_DIR env var to the governed-superpowers 'skills' directory.");
   process.exit(1);
 }

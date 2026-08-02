@@ -12,7 +12,7 @@ Claude Code's `SessionStart` hook injects locally, via the MCP `initialize`
 response's `instructions` field. It does not execute code, does not touch
 your workspace, and does not run the brainstorming skill's local visual
 companion server - see
-[`skills/using-superpowers/references/mcp-tools.md`](../skills/using-superpowers/references/mcp-tools.md)
+[`skills/using-governed-superpowers/references/mcp-tools.md`](../skills/using-governed-superpowers/references/mcp-tools.md)
 for exactly what this harness can and can't do.
 
 ## What it exposes

@@ -17,7 +17,7 @@ export function buildBootstrapInstructions(skills: Skill[]): string {
   if (!bootstrapSkill) {
     throw new Error(
       `Bootstrap skill '${BOOTSTRAP_SKILL_NAME}' not found among loaded skills - ` +
-        "check that skills/using-superpowers/SKILL.md still declares that frontmatter name."
+        "check that skills/using-governed-superpowers/SKILL.md still declares that frontmatter name."
     );
   }
 

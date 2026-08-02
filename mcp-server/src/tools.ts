@@ -36,7 +36,7 @@ function skillDetailText(skill: Skill): string {
 /**
  * Registers the tool-based fallback surface for clients whose UI doesn't
  * expose MCP prompts/instructions well: list_skills, get_skill,
- * search_skills, get_bootstrap. See skills/using-superpowers/references/
+ * search_skills, get_bootstrap. See skills/using-governed-superpowers/references/
  * mcp-tools.md for how these map onto the skill vocabulary.
  */
 export function registerSkillTools(server: McpServer, skills: Skill[], bootstrapInstructions: string): void {

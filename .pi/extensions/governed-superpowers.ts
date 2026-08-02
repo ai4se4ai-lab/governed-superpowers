@@ -13,7 +13,7 @@ const bootstrapSkillPath = resolve(skillsDir, "using-governed-superpowers", "SKI
 
 let cachedBootstrap: string | null | undefined;
 
-export default function governed-superpowersPiExtension(pi: ExtensionAPI) {
+export default function governedSuperpowersPiExtension(pi: ExtensionAPI) {
 	let injectBootstrap = true;
 
 	pi.on("resources_discover", async () => ({

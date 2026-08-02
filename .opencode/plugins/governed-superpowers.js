@@ -52,9 +52,9 @@ const normalizePath = (p, homeDir) => {
 // every agent step.  See #1202 for the full analysis.
 let _bootstrapCache = undefined; // undefined = not yet loaded, null = file missing
 
-export const Governed-SuperpowersPlugin = async ({ client, directory }) => {
+export const GovernedSuperpowersPlugin = async ({ client, directory }) => {
   const homeDir = os.homedir();
-  const governed-superpowersSkillsDir = path.resolve(__dirname, '../../skills');
+  const governedSuperpowersSkillsDir = path.resolve(__dirname, '../../skills');
   const envConfigDir = normalizePath(process.env.OPENCODE_CONFIG_DIR, homeDir);
   const configDir = envConfigDir || path.join(homeDir, '.config/opencode');
 
@@ -64,7 +64,7 @@ export const Governed-SuperpowersPlugin = async ({ client, directory }) => {
     if (_bootstrapCache !== undefined) return _bootstrapCache;
 
     // Try to load using-governed-superpowers skill
-    const skillPath = path.join(governed-superpowersSkillsDir, 'using-governed-superpowers', 'SKILL.md');
+    const skillPath = path.join(governedSuperpowersSkillsDir, 'using-governed-superpowers', 'SKILL.md');
     if (!fs.existsSync(skillPath)) {
       _bootstrapCache = null;
       return null;
@@ -107,8 +107,8 @@ ${toolMapping}
     config: async (config) => {
       config.skills = config.skills || {};
       config.skills.paths = config.skills.paths || [];
-      if (!config.skills.paths.includes(governed-superpowersSkillsDir)) {
-        config.skills.paths.push(governed-superpowersSkillsDir);
+      if (!config.skills.paths.includes(governedSuperpowersSkillsDir)) {
+        config.skills.paths.push(governedSuperpowersSkillsDir);
       }
     },
 

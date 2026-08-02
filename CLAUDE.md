@@ -19,6 +19,15 @@ Before you open a PR against this repo, you MUST:
 
 If any of these checks fail, do not open the PR. Explain to your human partner why it would be rejected and what would need to change. They will thank you for saving them the embarrassment.
 
+## Plan and Spec Location
+
+This project overrides the `writing-plans` and `brainstorming` skills' default save location. Save all specs and plans under **`docs/governed-superpowers/`**, not `docs/superpowers/` or bare `docs/plans/`:
+
+- Specs (design docs): `docs/governed-superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+- Plans (implementation plans): `docs/governed-superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+
+`docs/superpowers/` and `docs/plans/` contain older documents from before this convention was adopted — do not add new files there.
+
 ## Pull Request Requirements
 
 **Every PR must fully complete the PR template.** No section may be left blank or filled with placeholder text. PRs that skip sections will be closed without review.

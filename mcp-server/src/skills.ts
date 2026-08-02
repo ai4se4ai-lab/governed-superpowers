@@ -89,10 +89,8 @@ export function loadSkills(skillsDir: string): Skill[] {
       throw new Error(`${skillMdPath} is missing 'name' or 'description' in frontmatter`);
     }
     if (frontmatter.name !== entry.name) {
-      // using-superpowers/SKILL.md declares name: using-governed-superpowers,
-      // deliberately different from its directory name (see
-      // docs/governed-superpowers/hooks-and-skill-discovery.md) - trust the
-      // frontmatter name, not the directory name, as the canonical id.
+      // A skill's frontmatter name is the canonical id even if it differs
+      // from the directory it lives in - trust frontmatter.name, not entry.name.
     }
 
     skills.push({

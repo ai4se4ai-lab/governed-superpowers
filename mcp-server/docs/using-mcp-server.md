@@ -7,7 +7,7 @@ serves skill content (prompts, resources, a few lookup tools) and does not
 touch your workspace or run code on your behalf — see
 [`mcp-server/README.md`](../README.md) for what it exposes and how
 to deploy it, and
-[`skills/using-superpowers/references/mcp-tools.md`](../../skills/using-superpowers/references/mcp-tools.md)
+[`skills/using-governed-superpowers/references/mcp-tools.md`](../../skills/using-governed-superpowers/references/mcp-tools.md)
 for exactly how skill vocabulary (the `Skill` tool, task tracking, subagent
 dispatch, etc.) maps onto MCP primitives on a client that has no execution
 access to your repo.

@@ -22,7 +22,7 @@ export type ServerDeps = {
 /**
  * Builds one fresh McpServer instance for a client session: loads skills
  * from disk, registers resources/prompts/tools, and sets `instructions` to
- * the bootstrap briefing (skills/using-superpowers/SKILL.md +
+ * the bootstrap briefing (skills/using-governed-superpowers/SKILL.md +
  * references/mcp-tools.md) so it's returned automatically at `initialize`.
  *
  * `deps` is optional so existing tests that only exercise the read-only skill
