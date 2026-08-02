@@ -33,6 +33,10 @@
 #
 # Any flag other than --db/--edge is passed straight through to `docker
 # compose up`.
+#
+# Migrations are always applied from a freshly built migrator image, so
+# upgrading an existing deployment picks up new migrations (e.g. the
+# collaboration-graph tables) without any extra step.
 
 $dbChoice = "local"
 $edge = $false
@@ -84,6 +88,18 @@ else {
     $edgeServices = @("web", "mcp-server")
 }
 
+# docker compose failures are not terminating errors in PowerShell, so every
+# step has to be checked explicitly. Without this a failed migration would let
+# the script carry on and start the app against a database missing its tables.
+function Invoke-Step {
+    param([string]$What, [scriptblock]$Step)
+    & $Step
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "$What failed (exit $LASTEXITCODE). Stack not started."
+        exit 1
+    }
+}
+
 function Wait-DbHealthy {
     Write-Host "Waiting for the database to become healthy..."
     for ($n = 1; $n -le 30; $n++) {
@@ -102,10 +118,13 @@ if ($dbChoice -eq "local") {
     Write-Host "DB_PROVIDER = postgres (--db local)"
     $env:DIRECT_URL = $env:DATABASE_URL
 
-    docker compose @composeFiles up -d db
+    Invoke-Step "Starting the database" { docker compose @composeFiles up -d db }
     Wait-DbHealthy
-    docker compose @composeFiles run --rm migrate
-    docker compose @composeFiles up --build -d @passthrough @edgeServices
+    # --build is load-bearing on an upgrade: `run` reuses an existing image, so
+    # without it a stack that was deployed before a migration was added keeps
+    # running the OLD migrator image and silently skips the new migration.
+    Invoke-Step "Applying migrations" { docker compose @composeFiles run --build --rm migrate }
+    Invoke-Step "Starting the stack" { docker compose @composeFiles up --build -d @passthrough @edgeServices }
 }
 else {
     Write-Host "DB_PROVIDER = supabase (--db cloud)"
@@ -125,15 +144,21 @@ else {
     }
     $env:DIRECT_URL = $env:SUPABASE_DB_URL
 
-    docker compose @composeFiles run --rm migrate
-    docker compose @composeFiles up --build -d --no-deps @passthrough @edgeServices
+    # --no-deps: migrate declares depends_on: db, and without this `run` would
+    # start the bundled Postgres container that cloud mode exists to avoid.
+    # --build for the same upgrade reason as the local branch above.
+    Invoke-Step "Applying migrations" { docker compose @composeFiles run --build --rm --no-deps migrate }
+    Invoke-Step "Starting the stack" { docker compose @composeFiles up --build -d --no-deps @passthrough @edgeServices }
 }
 
 if ($edge) {
-    Write-Host "Portal:  https://$($env:APP_DOMAIN)"
-    Write-Host "MCP:     https://$($env:APP_DOMAIN)/mcp"
+    $base = "https://$($env:APP_DOMAIN)"
+    Write-Host "Portal:  $base"
+    Write-Host "Graphs:  $base/graphs"
+    Write-Host "MCP:     $base/mcp"
 }
 else {
     Write-Host "Portal:  http://localhost:3000"
+    Write-Host "Graphs:  http://localhost:3000/graphs"
     Write-Host "MCP:     http://localhost:3001/mcp"
 }

@@ -420,6 +420,14 @@ delete this plan's workspace (`rm -rf <workspace>`) — the git history is
 the record now. Sibling directories belong to other plans; leave them
 alone.
 
+Before handing off, offer to publish this plan's collaboration graph to
+the account portal. Check `.governed-superpowers/sharing.json`: if it is
+missing or revoked, ask your human partner whether to share this
+project's graph, and write the file only on a clear yes. Never publish
+without it. If they decline, say nothing further and move on.
+
+Read [publishing-graphs.md](publishing-graphs.md) before you publish.
+
 Use governed-superpowers:finishing-a-development-branch.
 
 ## Common Rationalizations

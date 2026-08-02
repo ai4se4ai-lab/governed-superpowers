@@ -3,6 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createApp } from "./app.js";
 import { createPool, createTokenVerifier } from "./db.js";
+import { createGraphStore } from "./graphs.js";
 import { SERVER_NAME, SERVER_VERSION } from "./server.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -34,7 +35,7 @@ pool.on("error", (error) => {
   console.error("Postgres pool error", error);
 });
 
-const app = createApp(SKILLS_DIR, createTokenVerifier(pool));
+const app = createApp(SKILLS_DIR, createTokenVerifier(pool), createGraphStore(pool));
 
 const server = app.listen(PORT, () => {
   console.log(`${SERVER_NAME} v${SERVER_VERSION} listening on :${PORT} (skills: ${SKILLS_DIR})`);

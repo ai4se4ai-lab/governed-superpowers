@@ -3,6 +3,11 @@
 // The mcp-server reads the "McpToken" table directly with raw SQL (it does not
 // use Prisma). If you rename that table or its columns, update
 // mcp-server/src/db.ts to match.
+//
+// The mcp-server also WRITES the collaboration-graph tables with raw SQL:
+// "Project", "GraphSpec", "GraphState", "GraphSubstate", "GraphSource",
+// "GraphStateEdge", "GraphSubstateEdge". Renaming any of those, or their
+// columns, means updating mcp-server/src/graphs.ts to match.
 
 generator client {
   provider = "prisma-client-js"
@@ -39,6 +44,7 @@ model User {
   sessions      Session[]
   verifications VerificationToken[]
   mcpTokens     McpToken[]
+  projects      Project[]
 }
 
 model Session {
@@ -94,4 +100,190 @@ model McpToken {
   createdAt  DateTime  @default(now())
 
   @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Collaboration graphs
+//
+// Published from a user's local project by the MCP server's publish_graph
+// tool. One GraphSpec is one sheet-tab in the portal's Graphs view; its
+// GraphStates are the containers and GraphSubstates the circles inside them.
+// ---------------------------------------------------------------------------
+
+// The six provenance source types from the brainstorming skill's
+// .annotations.json sidecar. Names match that file's "source" values verbatim
+// so the ingestion path needs no mapping table - see
+// skills/brainstorming/SKILL.md, "Provenance Tagging".
+enum ProvenanceSource {
+  human
+  ai_assumption
+  skill_doc
+  tool_output
+  existing_codebase
+  external_reference
+}
+
+// The status protocol strings reported by subagent-driven-development's
+// task reviewers.
+enum SubstateStatus {
+  DONE
+  DONE_WITH_CONCERNS
+  BLOCKED
+}
+
+model Project {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Identity supplied by the local consent file, not a filesystem path.
+  slug String
+  name String
+
+  // The scope block from .governed-superpowers/sharing.json, kept verbatim so
+  // the portal can show exactly what the user agreed to share. This is an
+  // audit trail, not a security boundary: the server cannot read the user's
+  // disk, so it can only verify that a well-formed, unrevoked consent record
+  // accompanied the publish.
+  consentScope      Json
+  consentGrantedAt  DateTime
+  consentRecordedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  specs GraphSpec[]
+
+  @@unique([userId, slug])
+  @@index([userId])
+}
+
+model GraphSpec {
+  id        String  @id @default(uuid()) @db.Uuid
+  projectId String  @db.Uuid
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Repo-relative path of the spec .md. The idempotency key for re-publishing.
+  specPath String
+
+  // Sheet-tab label and position. Set once on insert, then owned by the user -
+  // a re-publish must never clobber a rename or reorder. See the ON CONFLICT
+  // clause in mcp-server/src/graphs.ts.
+  title String
+  order Int    @default(0)
+
+  planPath        String?
+  lastPublishedAt DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  states        GraphState[]
+  stateEdges    GraphStateEdge[]
+  substateEdges GraphSubstateEdge[]
+
+  @@unique([projectId, specPath])
+  @@index([projectId])
+}
+
+model GraphState {
+  id     String    @id @default(uuid()) @db.Uuid
+  specId String    @db.Uuid
+  spec   GraphSpec @relation(fields: [specId], references: [id], onDelete: Cascade)
+
+  // Stable key from the payload, e.g. "auth-in-connection".
+  key     String
+  label   String
+  summary String?
+  order   Int
+
+  createdAt DateTime @default(now())
+
+  substates GraphSubstate[]
+  edgesOut  GraphStateEdge[] @relation("StateEdgeFrom")
+  edgesIn   GraphStateEdge[] @relation("StateEdgeTo")
+
+  @@unique([specId, key])
+  @@index([specId])
+}
+
+model GraphSubstate {
+  id      String     @id @default(uuid()) @db.Uuid
+  stateId String     @db.Uuid
+  state   GraphState @relation(fields: [stateId], references: [id], onDelete: Cascade)
+
+  // Stable key from the payload, e.g. "task-3".
+  key String
+  // Circle caption ("S1", "S2", ...), assigned at publish time so the UI never
+  // re-derives it from order.
+  label String
+  title String
+  order Int
+
+  status SubstateStatus?
+  // [{ path, summary }] - rendered in the detail drawer, never queried.
+  changes Json?
+  commits String[]
+  notes   String?
+
+  // Denormalised provenance counters, written from the sources below in the
+  // same transaction. The red/blue/purple category is computed from these at
+  // render time - see web/src/lib/graph-color.ts.
+  humanCount    Int @default(0)
+  aiCount       Int @default(0)
+  groundedCount Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  sources  GraphSource[]
+  edgesOut GraphSubstateEdge[] @relation("SubstateEdgeFrom")
+  edgesIn  GraphSubstateEdge[] @relation("SubstateEdgeTo")
+
+  @@unique([stateId, key])
+  @@index([stateId])
+}
+
+model GraphSource {
+  id         String        @id @default(uuid()) @db.Uuid
+  substateId String        @db.Uuid
+  substate   GraphSubstate @relation(fields: [substateId], references: [id], onDelete: Cascade)
+
+  // Sidecar marker key, e.g. "7". Null when the source did not come from an
+  // annotations sidecar.
+  marker String?
+  source ProvenanceSource
+  ref    String?
+  // Verbatim requirement sentence from the sidecar. Null when the user's
+  // consent scope excluded annotation text. Shown in the drawer so a human can
+  // spot a bad substate<->annotation match.
+  text String?
+
+  @@index([substateId])
+}
+
+model GraphStateEdge {
+  id     String    @id @default(uuid()) @db.Uuid
+  specId String    @db.Uuid
+  spec   GraphSpec @relation(fields: [specId], references: [id], onDelete: Cascade)
+
+  fromId String     @db.Uuid
+  from   GraphState @relation("StateEdgeFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  toId   String     @db.Uuid
+  to     GraphState @relation("StateEdgeTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
+  @@index([specId])
+}
+
+model GraphSubstateEdge {
+  id     String    @id @default(uuid()) @db.Uuid
+  specId String    @db.Uuid
+  spec   GraphSpec @relation(fields: [specId], references: [id], onDelete: Cascade)
+
+  fromId String        @db.Uuid
+  from   GraphSubstate @relation("SubstateEdgeFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  toId   String        @db.Uuid
+  to     GraphSubstate @relation("SubstateEdgeTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
+  @@index([specId])
 }

@@ -77,6 +77,20 @@ export const revokeTokenSchema = z.object({
   tokenId: z.string().uuid(),
 });
 
+export const renameSpecSchema = z.object({
+  specId: z.string().uuid(),
+  title: z
+    .string()
+    .min(1, "A sheet tab needs a name")
+    .max(120, "At most 120 characters")
+    .transform((v) => v.trim())
+    .refine((v) => v.length > 0, "A sheet tab needs a name"),
+});
+
+export const deleteSpecSchema = z.object({
+  specId: z.string().uuid(),
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ProfileInput = z.infer<typeof profileSchema>;

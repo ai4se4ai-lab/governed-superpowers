@@ -35,6 +35,10 @@
 #
 # Any flag other than --db/--edge is passed straight through to `docker
 # compose up`.
+#
+# Migrations are always applied from a freshly built migrator image, so
+# upgrading an existing deployment picks up new migrations (e.g. the
+# collaboration-graph tables) without any extra step.
 
 set -euo pipefail
 
@@ -123,7 +127,10 @@ if [[ "$dbChoice" == "local" ]]; then
 
     "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" up -d db
     wait_db_healthy
-    "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" run --rm migrate
+    # --build is load-bearing on an upgrade: `run` reuses an existing image, so
+    # without it a stack that was deployed before a migration was added keeps
+    # running the OLD migrator image and silently skips the new migration.
+    "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" run --build --rm migrate
     "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" up --build -d "${passthrough[@]}" "${edgeServices[@]}"
 else
     echo "DB_PROVIDER = supabase (--db cloud)"
@@ -143,14 +150,20 @@ else
     fi
     export DIRECT_URL="$SUPABASE_DB_URL"
 
-    "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" run --rm migrate
+    # --no-deps: migrate declares depends_on: db, and without this `run` would
+    # start the bundled Postgres container that cloud mode exists to avoid.
+    # --build for the same upgrade reason as the local branch above.
+    "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" run --build --rm --no-deps migrate
     "${COMPOSE[@]}" "${COMPOSE_FILES[@]}" up --build -d --no-deps "${passthrough[@]}" "${edgeServices[@]}"
 fi
 
 if [[ "$edge" == true ]]; then
-    echo "Portal:  https://$APP_DOMAIN"
-    echo "MCP:     https://$APP_DOMAIN/mcp"
+    base="https://$APP_DOMAIN"
+    echo "Portal:  $base"
+    echo "Graphs:  $base/graphs"
+    echo "MCP:     $base/mcp"
 else
     echo "Portal:  http://localhost:3000"
+    echo "Graphs:  http://localhost:3000/graphs"
     echo "MCP:     http://localhost:3001/mcp"
 fi

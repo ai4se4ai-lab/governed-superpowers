@@ -31,6 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <nav className="flex gap-1 border-b pb-0" style={{ borderColor: "var(--line)" }}>
         <NavLink href="/dashboard">Overview</NavLink>
         <NavLink href="/tokens">Tokens</NavLink>
+        <NavLink href="/graphs">Graphs</NavLink>
         <NavLink href="/profile">Profile</NavLink>
       </nav>
 

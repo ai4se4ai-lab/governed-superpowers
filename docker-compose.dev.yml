@@ -1,6 +1,11 @@
 # Local/dev override: publish the ports you need on the host so you can use
 # the stack without DNS or TLS.
 #
+# Prefer scripts/docker-up.sh (or .ps1): plain `up` never runs the one-shot
+# `migrate` service, so a stack started the manual way comes up against an
+# unmigrated database. If you do drive compose by hand, run migrations first:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml run --build --rm migrate
+#
 # Usage:
 #   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 #

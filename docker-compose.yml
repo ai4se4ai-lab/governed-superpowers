@@ -21,7 +21,13 @@ services:
   # One-shot: applies pending Prisma migrations, then exits. Not started by
   # `docker compose up` - run it explicitly before (re)starting the app
   # services whenever the schema has changed:
-  #   docker compose run --rm migrate
+  #   docker compose run --build --rm migrate
+  #
+  # Pass --build. `docker compose run` reuses an already-built image, so on an
+  # upgrade it would otherwise run the previous deployment's migrator, which
+  # does not contain the newly added migration directories - the migration is
+  # skipped silently and the app then starts against a database missing its
+  # tables. scripts/docker-up.* always pass it.
   migrate:
     build:
       context: ./web
@@ -70,6 +76,11 @@ services:
 
   # MCP server. Authenticates every /mcp request against tokens minted in the
   # portal above - there is no shared static token.
+  #
+  # It reads McpToken to verify those tokens, and (since the collaboration-graph
+  # tools) also WRITES the Project/Graph* tables when a user publishes a graph.
+  # DATABASE_URL therefore needs INSERT/UPDATE/DELETE on them, not just SELECT -
+  # the bundled db and a stock Supabase connection string both already do.
   mcp-server:
     build:
       context: .

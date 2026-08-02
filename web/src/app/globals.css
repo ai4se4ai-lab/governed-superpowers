@@ -31,6 +31,17 @@
   --alarm: #a41f1f;
   --alarm-wash: rgba(164, 31, 31, 0.08);
   --glow: none;
+
+  /* Provenance: blue = traced to the human, red = the agent's own assumption,
+     purple = roughly balanced. --prov-ai matches --alarm on purpose, so the
+     palette reads as one system rather than a bolted-on set. */
+  --prov-human: #1f5fa8;
+  --prov-human-wash: rgba(31, 95, 168, 0.1);
+  --prov-ai: #a41f1f;
+  --prov-ai-wash: rgba(164, 31, 31, 0.09);
+  --prov-mixed: #6b3fa0;
+  --prov-mixed-wash: rgba(107, 63, 160, 0.1);
+
   color-scheme: light;
 }
 
@@ -52,6 +63,14 @@
     --alarm: #ff6b5c;
     --alarm-wash: rgba(255, 107, 92, 0.1);
     --glow: 0 0 24px rgba(182, 255, 92, 0.16);
+
+    --prov-human: #6cb3ff;
+    --prov-human-wash: rgba(108, 179, 255, 0.13);
+    --prov-ai: #ff6b5c;
+    --prov-ai-wash: rgba(255, 107, 92, 0.12);
+    --prov-mixed: #c79bff;
+    --prov-mixed-wash: rgba(199, 155, 255, 0.13);
+
     color-scheme: dark;
   }
 }
@@ -73,6 +92,14 @@
   --alarm: #ff6b5c;
   --alarm-wash: rgba(255, 107, 92, 0.1);
   --glow: 0 0 24px rgba(182, 255, 92, 0.16);
+
+  --prov-human: #6cb3ff;
+  --prov-human-wash: rgba(108, 179, 255, 0.13);
+  --prov-ai: #ff6b5c;
+  --prov-ai-wash: rgba(255, 107, 92, 0.12);
+  --prov-mixed: #c79bff;
+  --prov-mixed-wash: rgba(199, 155, 255, 0.13);
+
   color-scheme: dark;
 }
 
@@ -308,4 +335,43 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* --- collaboration graph canvas ----------------------------------- *
+ * React Flow ships its own custom properties; pointing them at ours is
+ * what makes it follow the theme. Its `colorMode` prop is deliberately
+ * NOT used - that reads the OS media query and would ignore the manual
+ * toggle, which sets a class on <html>. These variables inherit, so
+ * both themes work with no JavaScript at all.
+ * ------------------------------------------------------------------ */
+
+.gsp-flow {
+  --xy-background-color: transparent;
+  --xy-edge-stroke: var(--line-strong);
+  --xy-edge-stroke-selected: var(--signal);
+  --xy-controls-button-background-color: var(--bg-raised);
+  --xy-controls-button-background-color-hover: var(--bg-sunken);
+  --xy-controls-button-color: var(--ink-dim);
+  --xy-controls-button-color-hover: var(--ink);
+  --xy-controls-button-border-color: var(--line);
+  --xy-attribution-background-color: transparent;
+}
+
+.gsp-flow .react-flow__attribution a {
+  color: var(--ink-faint);
+}
+
+/* The container nodes draw their own border and wash. */
+.gsp-flow .react-flow__node-stateNode,
+.gsp-flow .react-flow__node-substateNode {
+  background: transparent;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--font-mono);
+}
+
+.gsp-flow .react-flow__node-substateNode.selected {
+  outline: none;
 }

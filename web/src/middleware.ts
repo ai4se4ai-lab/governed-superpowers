@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const PROTECTED = ["/dashboard", "/profile", "/tokens"];
+const PROTECTED = ["/dashboard", "/profile", "/tokens", "/graphs"];
 
 /**
  * Cheap cookie-presence gate so signed-out visitors bounce to /login without
@@ -24,5 +24,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/tokens/:path*"],
+  matcher: ["/dashboard/:path*", "/profile/:path*", "/tokens/:path*", "/graphs/:path*"],
 };
