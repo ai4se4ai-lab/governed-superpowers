@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# Bundle raw per-task material for a live collaboration-graph publish: for
+# every completed task in the plan's ledger, print its commit range, its
+# brief/report file paths, and a `git diff --stat` over that range. Also
+# print the spec's annotations sidecar path if one exists, without opening
+# it. The controlling agent interprets this bundle -- reading status,
+# matching annotations, clustering into states -- and calls publish_graph
+# itself; this script never does any of that.
+#
+# Consent is re-checked on every call: if .governed-superpowers/sharing.json
+# is missing or its revokedAt is set, this prints one line and exits 0
+# without bundling anything, so a mid-plan revocation takes effect on the
+# very next call, not the next plan.
+#
+# Usage: sdd-publish PLAN_FILE
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: sdd-publish PLAN_FILE" >&2
+  exit 2
+fi
+
+plan=$1
+[ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
+
+root=$(git rev-parse --show-toplevel)
+sharing="$root/.governed-superpowers/sharing.json"
+
+if [ ! -f "$sharing" ]; then
+  echo "skipped: no .governed-superpowers/sharing.json -- no active consent"
+  exit 0
+fi
+
+revoked=$(grep -o '"revokedAt"[[:space:]]*:[[:space:]]*[^,}]*' "$sharing" \
+  | head -1 | sed 's/^[^:]*:[[:space:]]*//' | tr -d '[:space:]')
+if [ "$revoked" != "null" ]; then
+  echo "skipped: sharing.json revokedAt is set -- consent revoked"
+  exit 0
+fi
+
+dir=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace" "$plan")
+
+echo "# Publish bundle: $(basename "$plan")"
+echo
+
+spec_line=$(grep -m1 '^\*\*Reference spec:\*\*' "$plan" || true)
+if [ -n "$spec_line" ]; then
+  spec_path=$(echo "$spec_line" \
+    | sed 's/^\*\*Reference spec:\*\*[[:space:]]*//' \
+    | tr -d '`' | sed 's/[[:space:]]*$//')
+  sidecar="${spec_path%.md}.annotations.json"
+  echo "## Annotations sidecar"
+  if [ -f "$root/$sidecar" ]; then
+    echo "$sidecar (exists)"
+  else
+    echo "$sidecar (does not exist)"
+  fi
+  echo
+fi
+
+ledger="$dir/progress.md"
+count=0
+if [ -f "$ledger" ]; then
+  while IFS= read -r line; do
+    if [[ "$line" =~ ^Task\ ([0-9]+):\ complete\ \(commits\ ([0-9a-f]+)\.\.([0-9a-f]+), ]]; then
+      n="${BASH_REMATCH[1]}"
+      base="${BASH_REMATCH[2]}"
+      head="${BASH_REMATCH[3]}"
+      echo "## Task $n"
+      echo "Commits: ${base}..${head}"
+      echo "Brief: $dir/task-${n}-brief.md"
+      echo "Report: $dir/task-${n}-report.md"
+      echo "Diff stat:"
+      git diff --stat "${base}..${head}"
+      echo
+      count=$((count + 1))
+    fi
+  done < "$ledger"
+fi
+
+echo "# $count completed task(s) bundled"
