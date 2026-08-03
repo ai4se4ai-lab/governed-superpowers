@@ -67,6 +67,7 @@ digraph process {
         "STOP: report BLOCKED to human partner" [shape=box];
         "Park findings in ledger with rulings" [shape=box];
         "Append completion to ledger, mark todo complete" [shape=box];
+        "Publish graph update (if consent active)" [shape=box];
     }
 
     "Setup: worktree, ledger check, read plan, pre-flight review" [shape=box];
@@ -98,7 +99,8 @@ digraph process {
     "Any load-bearing finding?" -> "STOP: report BLOCKED to human partner" [label="yes"];
     "Any load-bearing finding?" -> "Park findings in ledger with rulings" [label="no"];
     "Park findings in ledger with rulings" -> "Append completion to ledger, mark todo complete";
-    "Append completion to ledger, mark todo complete" -> "More tasks remain?";
+    "Append completion to ledger, mark todo complete" -> "Publish graph update (if consent active)";
+    "Publish graph update (if consent active)" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer (../requesting-code-review/code-reviewer.md)" [label="no"];
     "Dispatch final code reviewer (../requesting-code-review/code-reviewer.md)" -> "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals";
@@ -407,6 +409,16 @@ message as your other bookkeeping:
 - `Task <N>: complete (commits <base7>..<head7>, review clean)`
 - `Task <N>: complete (commits <base7>..<head7>, <K> parked)` after a
   tripped breaker
+
+If graph consent is active (`.governed-superpowers/sharing.json` present
+and not revoked), run `scripts/sdd-publish PLAN_FILE`, interpret the printed
+bundle into substates and states per
+[publishing-graphs.md](publishing-graphs.md), and call `publish_graph` with
+the full accumulated payload. If `sdd-publish` reports it skipped (consent
+missing or revoked), do not call `publish_graph`. If the `publish_graph`
+call itself fails, note it in this task's ledger line ("graph publish
+failed: `<reason>`") and continue — a publish failure is never a reason to
+stop or retry a task.
 
 Then mark the todo complete and move on. Never move to the next task while
 the review has open Critical/Important issues that are neither fixed nor
