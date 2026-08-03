@@ -75,7 +75,7 @@ Create `tests/local-graphs/store.test.mjs`:
 
 ```js
 import { strict as assert } from "node:assert";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -150,7 +150,10 @@ test("writeJsonAtomic creates parent directories and leaves no temp file behind"
   writeJsonAtomic(target, { a: 1 });
 
   assert.deepEqual(JSON.parse(readFileSync(target, "utf8")), { a: 1 });
-  assert.deepEqual(listRevisions(join(root, "deep")), []);
+  // Inspect the directory the file landed in - listRevisions() would look in a
+  // `revisions/` subdirectory that does not exist here, and so would return []
+  // whether or not a stray .tmp file survived.
+  assert.deepEqual(readdirSync(join(root, "deep", "nested")), ["file.json"]);
 });
 
 test("readIndex returns an empty index when none exists, and round-trips", () => {
@@ -294,6 +297,8 @@ Expected: PASS — 9 tests, 0 failures
 git add skills/subagent-driven-development/scripts/lib/store.mjs tests/local-graphs/store.test.mjs
 git commit -m "feat: add local graph store paths and revision numbering"
 ```
+
+> **As landed** (`573bd78`, `c80b76c`, `61127ee`) — read `store.mjs` itself rather than the block above, which is the pre-review draft. Code review added, and later tasks depend on: `SDD_GRAPH_ROOT` is `resolve`d so `repoRoot()` is always absolute; `listRevisions` matches `^\d{4,}\.json$` so numbering does not silently stop at 9999; `slugForSpec` throws on `""`, `"."` and `".."` rather than returning a slug that escapes the store; `readIndex` wraps a JSON parse failure in an actionable message naming the file; and the `.git` check is documented as deliberately accepting both the directory and the worktree file form. Tests grew from 9 to 11.
 
 ---
 
