@@ -59,14 +59,19 @@ test("full consent sends everything except the local-only fields", () => {
   const substate = payload.states[0].substates[0];
 
   assert.equal(payload.spec.path, "docs/specs/a-design.md");
+  assert.equal(payload.spec.planPath, "docs/plans/a.md");
   assert.equal(payload.states[0].label, "First chunk");
   assert.deepEqual(substate.changes, [{ path: "a.ts", summary: "new file" }]);
+  assert.deepEqual(substate.commits, ["abc1234"]);
   assert.equal(substate.sources[0].text, "Must do it.");
+  assert.equal(substate.sources[0].marker, "1");
   assert.deepEqual(payload.annotationCoverage, { mapped: 1, total: 2 });
-  assert.equal(payload.consent.project.slug, "demo");
+  assert.deepEqual(payload.consent, consent(), "the whole consent record must pass through unfiltered");
 
   assert.equal(substate.notes, undefined, "notes are never sent");
   assert.equal(substate.humanCount, undefined, "local counters are never sent");
+  assert.equal(substate.aiCount, undefined, "aiCount is never sent");
+  assert.equal(substate.groundedCount, undefined, "groundedCount is never sent");
   assert.deepEqual(omittedFields, ["substates.notes"]);
 });
 
@@ -113,4 +118,28 @@ test("a substate key that is not task-N still yields a non-empty title", () => {
   doc.states[0].substates[0].key = "cleanup";
   const { payload } = applyScope(doc, consent({ substateTitles: false }));
   assert.equal(payload.states[0].substates[0].title, "Task");
+});
+
+test("group numbering is per-state, not a constant", () => {
+  const doc = revision();
+  doc.states.push({ ...revision().states[0], key: "s2" });
+  const { payload } = applyScope(doc, consent({ substateTitles: false }));
+  assert.equal(payload.states[0].label, "Group 1");
+  assert.equal(payload.states[1].label, "Group 2");
+});
+
+test("edges pass through unfiltered", () => {
+  const doc = revision();
+  doc.stateEdges = [{ from: "s1", to: "s2" }];
+  doc.substateEdges = [{ from: "s1/task-1", to: "s1/task-2" }];
+  const { payload } = applyScope(doc, consent());
+  assert.deepEqual(payload.stateEdges, doc.stateEdges);
+  assert.deepEqual(payload.substateEdges, doc.substateEdges);
+});
+
+test("a revision with no annotationCoverage omits the field entirely, never sends null", () => {
+  const doc = revision();
+  doc.annotationCoverage = null;
+  const { payload } = applyScope(doc, consent());
+  assert.equal("annotationCoverage" in payload, false);
 });
