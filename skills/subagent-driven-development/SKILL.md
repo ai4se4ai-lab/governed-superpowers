@@ -139,6 +139,30 @@ a ledger file, not only in todos.
 - `git clean -fdx` will destroy the workspace (it's git-ignored scratch); if
   that happens, recover from `git log`.
 
+### Live collaboration graph consent
+
+Once the ledger exists, check `.governed-superpowers/sharing.json`. If it is
+missing, or its `revokedAt` is not null, stop and ask your human partner,
+verbatim:
+
+> "I can publish this plan's collaboration graph to your Governed-Superpowers
+> account as it happens — a live diagram of what's getting built and which
+> parts trace back to your input versus my own assumptions, updating after
+> every completed task. It would send: the spec's path, the task titles from
+> this plan, the files each task changed, and the requirement text from the
+> spec's annotations sidecar. Want me to?"
+
+Read [publishing-graphs.md](publishing-graphs.md) before asking — it covers
+the consent-file schema, the four per-field scope flags, and why a hedged
+answer is not consent for `annotationText`. Write `sharing.json` only on a
+clear yes. If they decline, say nothing further and do not ask again this
+session.
+
+On a clear yes, run `scripts/sdd-publish PLAN_FILE`, then call `publish_graph`
+with a skeleton payload (project identity and spec path, zero substates,
+zero states) — this puts the sheet in the portal before Task 1 dispatches, so
+your human partner can open it immediately.
+
 Read the plan once, note its context and Global Constraints, and create a
 todo per task.
 
