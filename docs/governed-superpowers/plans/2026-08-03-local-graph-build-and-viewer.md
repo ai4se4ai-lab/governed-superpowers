@@ -3116,3 +3116,17 @@ curl -fsS http://127.0.0.1:3100/api/healthz
 ```
 
 Expected: `write` reports the revision number; `payload` prints either a full payload or a `skipped:` line depending on `sharing.json`; the viewer serves the sheet at `http://localhost:3100` with the publish banner reflecting whichever of those happened.
+
+---
+
+## Known gap, deferred: state-key content is never neutralized
+
+Found during Task 5's code quality review, deliberately deferred rather than fixed inline.
+
+`applyScope` neutralizes `state.label`/`summary` and `substate.title` when `substateTitles` is declined, but passes `state.key` and `substate.key` through verbatim in every case. Substate keys are conventionally content-free (`task-N`), so `neutralTitle`'s fallback already handles a non-conforming one. State keys have no such convention — nothing in the assembly procedure (`publishing-graphs.md`, rewritten in Task 14) constrains what an agent names a cluster, so a key like `authentication-secret-rotation` would ship even with `substateTitles` declined.
+
+By the design's own stated principle — a declined flag must not leave an equivalent leak reachable through an unflagged field — this is the same failure class the flag exists to close, just one field over.
+
+**Why it isn't fixed in Task 5:** state keys are structural. `stateEdges`/`substateEdges` reference them (`{from:"s1",to:"s2"}`, `"s1/task-1"`), and the viewer (Task 10) synthesizes node ids from them. Neutralizing a key inside `applyScope` means rewriting every edge endpoint through the same substitution, or edges silently detach — real work, not a one-line change, and out of scope for a task specified as a pure filter over already-shaped data.
+
+**Follow-up required before this ships with real consent flows:** either (a) `applyScope` neutralizes `state.key`/`substate.key` under `substateTitles: false` and rewrites `stateEdges`/`substateEdges` to match, or (b) `validate.mjs` rejects a state key that isn't a short structural identifier at write time, so a content-bearing key can never reach `applyScope` in the first place. A guiding note in the assembly procedure (Task 14) can reduce how often this occurs but must not be the only enforcement — a filter module that depends on an upstream agent choosing well-behaved keys is a convention, not a boundary.
