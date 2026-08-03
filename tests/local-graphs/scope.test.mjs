@@ -54,7 +54,7 @@ function revision() {
   };
 }
 
-test("full consent sends everything except the local-only fields", () => {
+test("full consent lets everything through", () => {
   const { payload, omittedFields } = applyScope(revision(), consent());
   const substate = payload.states[0].substates[0];
 
@@ -67,12 +67,27 @@ test("full consent sends everything except the local-only fields", () => {
   assert.equal(substate.sources[0].marker, "1");
   assert.deepEqual(payload.annotationCoverage, { mapped: 1, total: 2 });
   assert.deepEqual(payload.consent, consent(), "the whole consent record must pass through unfiltered");
-
-  assert.equal(substate.notes, undefined, "notes are never sent");
-  assert.equal(substate.humanCount, undefined, "local counters are never sent");
-  assert.equal(substate.aiCount, undefined, "aiCount is never sent");
-  assert.equal(substate.groundedCount, undefined, "groundedCount is never sent");
   assert.deepEqual(omittedFields, ["substates.notes"]);
+});
+
+test("local-only fields never leave, regardless of consent", () => {
+  const fullyDeclined = consent({
+    specPaths: false,
+    substateTitles: false,
+    changePaths: false,
+    annotationText: false,
+  });
+
+  for (const c of [consent(), fullyDeclined]) {
+    const { payload, omittedFields } = applyScope(revision(), c);
+    const substate = payload.states[0].substates[0];
+
+    assert.equal(substate.notes, undefined, "notes are never sent");
+    assert.equal(substate.humanCount, undefined, "local counters are never sent");
+    assert.equal(substate.aiCount, undefined, "aiCount is never sent");
+    assert.equal(substate.groundedCount, undefined, "groundedCount is never sent");
+    assert.ok(omittedFields.includes("substates.notes"));
+  }
 });
 
 test("changePaths off omits changes entirely rather than sending an empty array", () => {
@@ -142,4 +157,45 @@ test("a revision with no annotationCoverage omits the field entirely, never send
   doc.annotationCoverage = null;
   const { payload } = applyScope(doc, consent());
   assert.equal("annotationCoverage" in payload, false);
+});
+
+test("an empty or unknown scope object redacts everything by default", () => {
+  const digest = createHash("sha256").update("docs/specs/a-design.md").digest("hex");
+  const emptyScopeConsent = { ...consent(), scope: {} };
+
+  const { payload, omittedFields } = applyScope(revision(), emptyScopeConsent);
+
+  assert.deepEqual(payload, {
+    consent: emptyScopeConsent,
+    spec: {
+      path: `opaque:${digest.slice(0, 16)}`,
+      title: `Sheet ${digest.slice(0, 8)}`,
+      planPath: null,
+    },
+    states: [
+      {
+        key: "s1",
+        label: "Group 1",
+        substates: [
+          {
+            key: "task-1",
+            title: "Task 1",
+            status: "DONE",
+            commits: ["abc1234"],
+            sources: [{ marker: "1", source: "human", ref: "a.ts:1" }],
+          },
+        ],
+      },
+    ],
+    stateEdges: [],
+    substateEdges: [],
+    annotationCoverage: { mapped: 1, total: 2 },
+  });
+  assert.deepEqual(omittedFields, [
+    "spec.path",
+    "substates.title",
+    "substates.changes",
+    "sources.text",
+    "substates.notes",
+  ]);
 });
