@@ -454,15 +454,9 @@ finishing-a-development-branch presents the options.
 When the final whole-branch review is clean and its fixes are merged,
 delete this plan's workspace (`rm -rf <workspace>`) — the git history is
 the record now. Sibling directories belong to other plans; leave them
-alone.
-
-Before handing off, offer to publish this plan's collaboration graph to
-the account portal. Check `.governed-superpowers/sharing.json`: if it is
-missing or revoked, ask your human partner whether to share this
-project's graph, and write the file only on a clear yes. Never publish
-without it. If they decline, say nothing further and move on.
-
-Read [publishing-graphs.md](publishing-graphs.md) before you publish.
+alone. The collaboration graph, if consent was active, is already current
+from the last per-task publish call — there is nothing left to publish
+here.
 
 Use governed-superpowers:finishing-a-development-branch.
 
