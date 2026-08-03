@@ -8,7 +8,7 @@
  * `write` is unconditional: the local graph is built whether or not the human
  * partner has consented to publishing anything. Consent is read only by
  * `payload`, the single point where anything is prepared to leave the
- * machine — see Tasks 6 and 7, which add the other two subcommands here.
+ * machine — see Task 7, which adds `record-publish` here.
  *
  * run() takes its I/O as an argument and returns an exit code rather than
  * calling process.exit, so the whole surface is testable in-process. The
@@ -109,11 +109,16 @@ function commandWrite(args, io) {
   return 0;
 }
 
+const SHARING_REL = ".governed-superpowers/sharing.json";
+
 /**
  * Consent is read here and nowhere else, and re-read on every call - a
- * revocation mid-plan must stop the very next update, not the next plan. A
- * missing or revoked record is not an error: it prints one line and exits 0,
- * exactly like sdd-publish's old skip.
+ * revocation mid-plan must stop the very next update, not the next plan.
+ * A missing, unreadable, or revoked record is not an error: it prints one
+ * line on stdout and exits 0, exactly like sdd-publish's old skip.
+ * "Unreadable" covers unparseable JSON and a missing/invalid scope object —
+ * anything that would make applyScope's already-validated-input contract a
+ * lie.
  */
 function commandPayload(args, io) {
   const slug = args[0];
@@ -123,30 +128,33 @@ function commandPayload(args, io) {
   }
 
   const root = io.root ?? repoRoot();
-  const sharingPath = join(root, ".governed-superpowers", "sharing.json");
+  const sharingPath = join(root, SHARING_REL);
 
   if (!existsSync(sharingPath)) {
-    io.out("skipped: no .governed-superpowers/sharing.json -- no active consent\n");
+    io.out(`skipped: no ${SHARING_REL} -- no active consent\n`);
     return 0;
   }
 
   let consent;
   try {
     consent = readJson(sharingPath);
-  } catch {
-    io.out("skipped: .governed-superpowers/sharing.json is not valid JSON -- no usable consent\n");
+  } catch (error) {
+    io.out(`skipped: ${SHARING_REL} is not valid JSON (${error.message}) -- no usable consent\n`);
     return 0;
   }
 
   if (consent.revokedAt !== null && consent.revokedAt !== undefined) {
-    io.out("skipped: sharing.json revokedAt is set -- consent revoked\n");
+    io.out(`skipped: ${SHARING_REL} revokedAt is set -- consent revoked\n`);
     return 0;
   }
 
-  // consent.scope must already be a present object by the time it reaches
-  // applyScope - checked here, not inside applyScope itself.
-  if (!consent.scope || typeof consent.scope !== "object") {
-    io.out("skipped: sharing.json has no scope object -- no usable consent\n");
+  // scope.mjs promises applyScope never throws, on the condition that its input
+  // is a usable consent record - see scope.mjs's header. Enforcing that here is
+  // what makes the promise true: applyScope reads scope.<flag> unguarded, so a
+  // null/absent/malformed scope would be a TypeError inside a function
+  // documented as infallible.
+  if (!consent.scope || typeof consent.scope !== "object" || Array.isArray(consent.scope)) {
+    io.out(`skipped: ${SHARING_REL} has no scope object -- no usable consent\n`);
     return 0;
   }
 

@@ -60,6 +60,8 @@ function graphsPath(root, ...parts) {
   return join(root, ".governed-superpowers", "graphs", ...parts);
 }
 
+// ---- write ----
+
 test("write creates revision 0001, current.json and the index", () => {
   const root = tempRoot();
   const result = invoke(root, ["write", "docs/plans/a.md"], doc());
@@ -209,12 +211,19 @@ test("no subcommand at all exits 2 with usage", () => {
   assert.match(result.stderr, /usage: sdd-graph/);
 });
 
-/** Writes a sharing.json into the temp store's repo root. */
-function grantConsent(root, overrides = {}) {
+// ---- payload ----
+
+/** Writes raw bytes as the temp store's sharing.json. */
+function writeSharing(root, raw) {
   const dir = join(root, ".governed-superpowers");
   mkdirSync(dir, { recursive: true });
-  writeFileSync(
-    join(dir, "sharing.json"),
+  writeFileSync(join(dir, "sharing.json"), raw);
+}
+
+/** Writes a well-formed sharing.json into the temp store's repo root. */
+function grantConsent(root, overrides = {}) {
+  writeSharing(
+    root,
     JSON.stringify({
       version: 1,
       project: { slug: "demo", name: "Demo", originHash: "sha256:abc" },
@@ -259,7 +268,21 @@ test("payload skips when consent has been revoked", () => {
 
   const result = invoke(root, ["payload", SLUG]);
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^skipped: sharing\.json revokedAt is set/);
+  assert.match(result.stdout, /^skipped: \.governed-superpowers\/sharing\.json revokedAt is set/);
+});
+
+test("payload writes nothing to the store", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  grantConsent(root);
+  const before = readFileSync(graphsPath(root, SLUG, "current.json"), "utf8");
+  const indexBefore = readFileSync(graphsPath(root, "index.json"), "utf8");
+
+  assert.equal(invoke(root, ["payload", SLUG]).code, 0);
+
+  assert.equal(readFileSync(graphsPath(root, SLUG, "current.json"), "utf8"), before);
+  assert.equal(readFileSync(graphsPath(root, "index.json"), "utf8"), indexBefore);
+  assert.deepEqual(readdirSync(graphsPath(root, SLUG, "revisions")), ["0001.json"]);
 });
 
 test("payload for an unknown slug exits nonzero", () => {
@@ -292,7 +315,7 @@ test("payload treats a falsy-but-present revokedAt (empty string) as revoked, no
 
   const result = invoke(root, ["payload", SLUG]);
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^skipped: sharing\.json revokedAt is set/);
+  assert.match(result.stdout, /^skipped: \.governed-superpowers\/sharing\.json revokedAt is set/);
 });
 
 test("payload prints 'omitted: nothing' to stderr when consent is full and nothing is withheld", () => {
@@ -320,35 +343,39 @@ test("payload prints 'omitted: nothing' to stderr when consent is full and nothi
 test("payload skips when sharing.json is not valid JSON", () => {
   const root = tempRoot();
   invoke(root, ["write", "docs/plans/a.md"], doc());
-  const dir = join(root, ".governed-superpowers");
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "sharing.json"), "{not json");
+  writeSharing(root, "{not json");
 
   const result = invoke(root, ["payload", SLUG]);
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^skipped: .*sharing\.json is not valid JSON/);
+  assert.match(result.stdout, /^skipped: \.governed-superpowers\/sharing\.json is not valid JSON/);
 });
 
 test("payload skips when sharing.json has no scope key at all", () => {
   const root = tempRoot();
   invoke(root, ["write", "docs/plans/a.md"], doc());
-  const dir = join(root, ".governed-superpowers");
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "sharing.json"), JSON.stringify({}));
+  writeSharing(root, "{}");
 
   const result = invoke(root, ["payload", SLUG]);
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^skipped: sharing\.json has no scope object/);
+  assert.match(result.stdout, /^skipped: \.governed-superpowers\/sharing\.json has no scope object/);
 });
 
 test("payload skips when sharing.json's scope is explicitly null", () => {
   const root = tempRoot();
   invoke(root, ["write", "docs/plans/a.md"], doc());
-  const dir = join(root, ".governed-superpowers");
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "sharing.json"), JSON.stringify({ revokedAt: null, scope: null }));
+  grantConsent(root, { scope: null });
 
   const result = invoke(root, ["payload", SLUG]);
   assert.equal(result.code, 0);
-  assert.match(result.stdout, /^skipped: sharing\.json has no scope object/);
+  assert.match(result.stdout, /^skipped: \.governed-superpowers\/sharing\.json has no scope object/);
+});
+
+test("payload skips when sharing.json's scope is an array, not an object", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  grantConsent(root, { scope: ["specPaths"] });
+
+  const result = invoke(root, ["payload", SLUG]);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /^skipped: \.governed-superpowers\/sharing\.json has no scope object/);
 });
