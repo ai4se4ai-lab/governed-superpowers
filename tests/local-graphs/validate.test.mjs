@@ -114,3 +114,51 @@ test("duplicate substate keys within one state are rejected", () => {
   doc.states[0].substates.push({ ...doc.states[0].substates[0] });
   assert.equal(validateDocument(doc).path, "states[0].substates[1].key");
 });
+
+test("a null state entry is rejected, not thrown, with the state's own path", () => {
+  const doc = validDoc();
+  doc.states = [null];
+  let result;
+  assert.doesNotThrow(() => {
+    result = validateDocument(doc);
+  });
+  assert.deepEqual(result, { ok: false, path: "states[0]", message: "must be an object" });
+});
+
+test("a null substate entry is rejected, not thrown, with the substate's own path", () => {
+  const doc = validDoc();
+  doc.states[0].substates = [null];
+  let result;
+  assert.doesNotThrow(() => {
+    result = validateDocument(doc);
+  });
+  assert.deepEqual(result, {
+    ok: false,
+    path: "states[0].substates[0]",
+    message: "must be an object",
+  });
+});
+
+test("a non-array sources value is rejected, not thrown", () => {
+  const doc = validDoc();
+  doc.states[0].substates[0].sources = {};
+  let result;
+  assert.doesNotThrow(() => {
+    result = validateDocument(doc);
+  });
+  assert.deepEqual(result, {
+    ok: false,
+    path: "states[0].substates[0].sources",
+    message: "must be an array",
+  });
+});
+
+test("absent or null sources are still allowed", () => {
+  const doc = validDoc();
+  delete doc.states[0].substates[0].sources;
+  assert.deepEqual(validateDocument(doc), { ok: true });
+
+  const doc2 = validDoc();
+  doc2.states[0].substates[0].sources = null;
+  assert.deepEqual(validateDocument(doc2), { ok: true });
+});

@@ -1,11 +1,13 @@
 /**
  * Shape validation for an incoming graph document.
  *
- * Deliberately mirrors the constraints in mcp-server/src/tools.ts (min-1
- * states, min-1 substates per state, the source and status enums) so a
- * document that builds locally is one the server would also accept once
- * scope-filtered. Returns the first failure with a JSON-path-ish location
- * rather than throwing, so the CLI can report exactly which field is wrong.
+ * Deliberately mirrors the *shape* constraints in mcp-server/src/tools.ts
+ * (min-1 states, min-1 substates per state, the source and status enums).
+ * It does not duplicate the server's size bounds (states max 20, substates
+ * max 50, sources max 200, and various string maxima) — an over-large
+ * document can still pass here and be rejected server-side. Returns the
+ * first failure with a JSON-path-ish location rather than throwing, so the
+ * CLI can report exactly which field is wrong.
  */
 
 export const PROVENANCE_SOURCES = [
@@ -44,6 +46,7 @@ export function validateDocument(doc) {
   const stateKeys = new Set();
   for (const [i, state] of doc.states.entries()) {
     const at = `states[${i}]`;
+    if (typeof state !== "object" || state === null) return fail(at, "must be an object");
     if (!isNonEmptyString(state.key)) return fail(`${at}.key`, "must be a non-empty string");
     if (stateKeys.has(state.key)) return fail(`${at}.key`, `duplicate state key '${state.key}'`);
     stateKeys.add(state.key);
@@ -56,6 +59,7 @@ export function validateDocument(doc) {
     const substateKeys = new Set();
     for (const [j, substate] of state.substates.entries()) {
       const subAt = `${at}.substates[${j}]`;
+      if (typeof substate !== "object" || substate === null) return fail(subAt, "must be an object");
       if (!isNonEmptyString(substate.key)) return fail(`${subAt}.key`, "must be a non-empty string");
       if (substateKeys.has(substate.key)) {
         return fail(`${subAt}.key`, `duplicate substate key '${substate.key}'`);
@@ -71,6 +75,14 @@ export function validateDocument(doc) {
         !SUBSTATE_STATUSES.includes(substate.status)
       ) {
         return fail(`${subAt}.status`, `must be one of ${SUBSTATE_STATUSES.join(", ")}`);
+      }
+
+      if (
+        substate.sources !== undefined &&
+        substate.sources !== null &&
+        !Array.isArray(substate.sources)
+      ) {
+        return fail(`${subAt}.sources`, "must be an array");
       }
 
       for (const [k, source] of (substate.sources ?? []).entries()) {
