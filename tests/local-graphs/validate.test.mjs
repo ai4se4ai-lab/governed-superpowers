@@ -103,16 +103,63 @@ test("an unknown provenance source is rejected", () => {
   assert.equal(validateDocument(doc).path, "states[0].substates[0].sources[0].source");
 });
 
+// These two messages interpolate the offending key, so the whole result is
+// asserted - a wrong key in the message would otherwise go unnoticed.
 test("duplicate state keys are rejected", () => {
   const doc = validDoc();
   doc.states.push({ ...doc.states[0] });
-  assert.equal(validateDocument(doc).path, "states[1].key");
+  assert.deepEqual(validateDocument(doc), {
+    ok: false,
+    path: "states[1].key",
+    message: "duplicate state key 's1'",
+  });
 });
 
 test("duplicate substate keys within one state are rejected", () => {
   const doc = validDoc();
   doc.states[0].substates.push({ ...doc.states[0].substates[0] });
-  assert.equal(validateDocument(doc).path, "states[0].substates[1].key");
+  assert.deepEqual(validateDocument(doc), {
+    ok: false,
+    path: "states[0].substates[1].key",
+    message: "duplicate substate key 'task-1'",
+  });
+});
+
+// The substateKeys set is scoped per state. If it were hoisted out of the
+// state loop, nearly every real multi-state document would be rejected - and
+// the single-state validDoc() fixture would not notice.
+test("the same substate key may repeat across different states", () => {
+  const doc = validDoc();
+  doc.states.push({ ...doc.states[0], key: "s2" });
+  assert.deepEqual(validateDocument(doc), { ok: true });
+});
+
+test("a missing spec is rejected, not thrown", () => {
+  const doc = validDoc();
+  delete doc.spec;
+  let result;
+  assert.doesNotThrow(() => {
+    result = validateDocument(doc);
+  });
+  assert.deepEqual(result, { ok: false, path: "spec", message: "must be an object" });
+});
+
+test("an empty state key is rejected by path", () => {
+  const doc = validDoc();
+  doc.states[0].key = "";
+  assert.equal(validateDocument(doc).path, "states[0].key");
+});
+
+test("an empty state label is rejected by path", () => {
+  const doc = validDoc();
+  doc.states[0].label = "";
+  assert.equal(validateDocument(doc).path, "states[0].label");
+});
+
+test("an empty substate key is rejected by path", () => {
+  const doc = validDoc();
+  doc.states[0].substates[0].key = "";
+  assert.equal(validateDocument(doc).path, "states[0].substates[0].key");
 });
 
 test("a null state entry is rejected, not thrown, with the state's own path", () => {
