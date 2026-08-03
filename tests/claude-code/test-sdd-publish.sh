@@ -185,6 +185,37 @@ LEDGER
         echo "    got: $out"
     fi
 
+    # --- malformed sharing.json (no revokedAt key at all): skip, exit 0 ---
+    cat > "$repo/.governed-superpowers/sharing.json" <<'JSON'
+{"version":1}
+JSON
+    rc=0
+    out="$(cd "$repo" && "$SDD_SCRIPTS/sdd-publish" plan-a.md)" || rc=$?
+    if [[ "$rc" -eq 0 && "$out" == *"skipped"* ]]; then
+        pass "sharing.json missing revokedAt key: skips silently, exit 0"
+    else
+        fail "sharing.json missing revokedAt key: skips silently, exit 0"
+        echo "    exit: $rc"
+        echo "    got: $out"
+    fi
+
+    # --- bad commit range in ledger: diff unavailable note, script still finishes ---
+    write_sharing_json "$repo/.governed-superpowers/sharing.json" 'null'
+    cat > "$dir/progress.md" <<LEDGER
+# SDD ledger — plan: plan-a.md
+Task 1: complete (commits ${base}..${head}, review clean)
+Task 2: complete (commits deadbee0..deadbee1, review clean)
+LEDGER
+    rc=0
+    out="$(cd "$repo" && "$SDD_SCRIPTS/sdd-publish" plan-a.md)" || rc=$?
+    if [[ "$rc" -eq 0 && "$out" == *"(diff unavailable for deadbee0..deadbee1)"* && "$out" == *"2 completed task(s) bundled"* ]]; then
+        pass "bad commit range: degrades gracefully, script still finishes"
+    else
+        fail "bad commit range: degrades gracefully, script still finishes"
+        echo "    exit: $rc"
+        echo "    got: $out"
+    fi
+
     echo ""
     if [[ "$FAILURES" -ne 0 ]]; then
         echo "FAILED: $FAILURES assertion(s)."
