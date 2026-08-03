@@ -160,10 +160,8 @@ answer is not consent for `annotationText`. Write `sharing.json` only on a
 clear yes. If they decline, say nothing further and do not ask again this
 session.
 
-On a clear yes, run `scripts/sdd-publish PLAN_FILE`, then call `publish_graph`
-with a skeleton payload (project identity and spec path, zero substates,
-zero states) — this puts the sheet in the portal before Task 1 dispatches, so
-your human partner can open it immediately.
+On a clear yes, no publish happens yet — the first sheet appears once Task 1
+completes, via the per-task publish step below.
 
 Read the plan once, note its context and Global Constraints, and create a
 todo per task.
@@ -415,10 +413,12 @@ and not revoked), run `scripts/sdd-publish PLAN_FILE`, interpret the printed
 bundle into substates and states per
 [publishing-graphs.md](publishing-graphs.md), and call `publish_graph` with
 the full accumulated payload. If `sdd-publish` reports it skipped (consent
-missing or revoked), do not call `publish_graph`. If the `publish_graph`
-call itself fails, note it in this task's ledger line ("graph publish
-failed: `<reason>`") and continue — a publish failure is never a reason to
-stop or retry a task.
+missing or revoked), do not call `publish_graph`. If `sdd-publish` exits
+non-zero for any other reason, treat it the same as a skip — do not call
+`publish_graph`, and do not block or retry the task loop over it. If the
+`publish_graph` call itself fails, note it in this task's ledger line
+("graph publish failed: `<reason>`") and continue — a publish failure is
+never a reason to stop or retry a task.
 
 Then mark the todo complete and move on. Never move to the next task while
 the review has open Critical/Important issues that are neither fixed nor

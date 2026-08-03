@@ -11,8 +11,7 @@ This is opt-in, per project, and your human partner owns the decision.
 
 ## Consent comes first
 
-This check happens twice: once at SDD Setup, before Task 1 dispatches, and
-again automatically inside `scripts/sdd-publish` before every later publish
+This check happens at Setup, and again on every later `scripts/sdd-publish`
 call — a mid-plan revocation must stop the very next update, not just the
 next plan.
 
@@ -66,20 +65,21 @@ an accountability trail, not an access control — do not describe it as
 though the file itself is enforced remotely.
 
 If they decline: say nothing further, do not re-offer later in the
-session, and move on to finishing-a-development-branch. A previous yes to
+session, and proceed with the plan. A previous yes to
 something unrelated is not consent for this.
 
 ## Assembling the payload
 
-Run this after the Setup skeleton call and again after every
-`Task <N>: complete` ledger line (clean or parked-at-cap):
+Run this after every `Task <N>: complete` ledger line (clean or
+parked-at-cap) — the first call, after Task 1 completes, is what puts the
+sheet in the portal for the first time:
 
 1. Run `scripts/sdd-publish <plan>`. It re-checks `sharing.json` for
    revocation (skipping silently if revoked), then prints a bundle: for
    every completed task, its commit range, the `task-N-brief.md` and
    `task-N-report.md` paths, and a `git diff --stat` over that range. It
-   also prints the spec's `.annotations.json` sidecar path if one exists,
-   without opening it. The script never interprets this material.
+   also prints the spec's `.annotations.json` sidecar's path and whether it
+   exists, without opening it. The script never interprets this material.
 2. Read the bundle. For each task, read its brief and report to get the
    title and status (`DONE` / `DONE_WITH_CONCERNS` / `BLOCKED`); this is one
    **substate**, key `task-N`, in ledger order.

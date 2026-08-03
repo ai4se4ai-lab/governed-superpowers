@@ -32,7 +32,7 @@ if [ ! -f "$sharing" ]; then
 fi
 
 revoked=$(grep -o '"revokedAt"[[:space:]]*:[[:space:]]*[^,}]*' "$sharing" \
-  | head -1 | sed 's/^[^:]*:[[:space:]]*//' | tr -d '[:space:]')
+  | head -1 | sed 's/^[^:]*:[[:space:]]*//' | tr -d '[:space:]' || true)
 if [ "$revoked" != "null" ]; then
   echo "skipped: sharing.json revokedAt is set -- consent revoked"
   exit 0
@@ -71,7 +71,7 @@ if [ -f "$ledger" ]; then
       echo "Brief: $dir/task-${n}-brief.md"
       echo "Report: $dir/task-${n}-report.md"
       echo "Diff stat:"
-      git diff --stat "${base}..${head}"
+      git diff --stat "${base}..${head}" || echo "(diff unavailable for ${base}..${head})"
       echo
       count=$((count + 1))
     fi
