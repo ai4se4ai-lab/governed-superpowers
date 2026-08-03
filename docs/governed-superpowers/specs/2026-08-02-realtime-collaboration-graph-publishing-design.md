@@ -18,13 +18,14 @@ On a clear yes, an initial publish happens immediately — a skeleton sheet (pro
 
 ### Per-task live updates
 
-After every `Task <N>: complete` ledger line — whether the task finished clean or was parked-at-cap — the controlling agent runs `scripts/sdd-publish PLAN_FILE`, then clusters the printed substates into states itself, then calls `publish_graph`.[^6] The script handles the mechanical part; clustering stays the agent's job, same as it is today:
+After every `Task <N>: complete` ledger line — whether the task finished clean or was parked-at-cap — the controlling agent runs `scripts/sdd-publish PLAN_FILE`, then interprets the printed bundle to build substates, match annotations, and cluster states, then calls `publish_graph`.[^6] The script's job is strictly mechanical; everything requiring judgment — reading a report's status, matching an annotation to a task, naming a cluster — is the agent's, same as it is today:
 
 1. **Script:** re-checks `.governed-superpowers/sharing.json`. If revoked since the last call, it skips silently (prints one line, exits 0) — publishing is never load-bearing for the task loop, and a mid-plan revocation must take effect on the very next task, not the next plan.[^7]
-2. **Script:** re-reads the whole ledger from scratch and rebuilds the complete substate list, the same way today's end-of-plan assembly does — reading each completed task's brief and report for title, status, commits, and changed files.
-3. **Script:** re-matches the spec's `.annotations.json` sidecar entries against substates, with the existing drop-and-count rule: an entry that cannot be confidently matched to a task is dropped, never guessed, and counted into `annotationCoverage`. If the sidecar doesn't exist, it publishes with no sources. The script prints the substate list (with matched sources and `annotationCoverage`) and exits.
-4. **Agent:** clusters all substates into 2–5 states from scratch every time, the same generative step `publishing-graphs.md` already describes today — naming what each group of tasks accomplished. Clusters are not sticky: early-plan groupings may shift or be renamed as later tasks add context the first call didn't have.[^8] This step needs semantic judgment a script cannot supply, so it stays outside `scripts/sdd-publish`, exactly as it's outside any existing SDD script today.
-5. **Agent:** calls `publish_graph` with the full accumulated payload (script's substates + its own clustering), replacing the sheet's prior contents — the same "resend everything, no delta" model `publish_graph` already uses today, just invoked many times instead of once.[^9]
+2. **Script:** re-reads the whole ledger from scratch. For each `Task <N>: complete` (or parked-at-cap) line, prints the task number, the commit range parsed from the ledger line, the brief and report file paths, and `git diff --stat` for that commit range — the same raw-material bundling `review-package` already does for diffs, just for the whole ledger instead of one task's range.
+3. **Script:** locates the plan's `**Reference spec:**` line and prints the matching `<spec>.annotations.json` path if it exists, or notes its absence. It does not open the sidecar or attempt to match entries — verbatim-text matching between a spec requirement and freeform task prose needs the same judgment as clustering, so it is not attempted mechanically.
+4. **Agent:** reads the bundle and does all interpretation: each task's status (`DONE` / `DONE_WITH_CONCERNS` / `BLOCKED`) and changed files from its brief/report/diff-stat, and — if the sidecar exists — matches its entries against substates with the existing drop-and-count rule (an entry that cannot be confidently matched is dropped, never guessed, and counted into `annotationCoverage`).
+5. **Agent:** clusters all substates into 2–5 states from scratch every time, the same generative step `publishing-graphs.md` already describes today — naming what each group of tasks accomplished. Clusters are not sticky: early-plan groupings may shift or be renamed as later tasks add context the first call didn't have.[^8]
+6. **Agent:** calls `publish_graph` with the full accumulated payload, replacing the sheet's prior contents — the same "resend everything, no delta" model `publish_graph` already uses today, just invoked many times instead of once.[^9]
 
 There is no new tool and no new consent artifact: the existing `publish_graph` / `sharing.json` machinery is reused at a finer call cadence.
 
@@ -36,9 +37,9 @@ There is no new tool and no new consent artifact: the existing `publish_graph` /
 
 ### `scripts/sdd-publish`
 
-A new script alongside the existing `sdd-workspace`, `task-brief`, and `review-package` scripts, invoked as `scripts/sdd-publish PLAN_FILE`.[^11] It performs steps 1–3 above (consent re-check, substate assembly, annotation matching) and prints the substate list — with matched sources and the `annotationCoverage` tally — for the controlling agent to cluster into states and hand to `publish_graph`. It never calls `publish_graph` itself and never decides state groupings: mirroring how `review-package` prints a diff file for the agent to hand to a reviewer rather than dispatching the reviewer itself, `sdd-publish` prints material for the agent to judge and act on.[^12]
+A new script alongside the existing `sdd-workspace`, `task-brief`, and `review-package` scripts, invoked as `scripts/sdd-publish PLAN_FILE`.[^11] It performs steps 1–3 above (consent re-check, per-task raw-material bundling, sidecar path lookup) and prints that bundle to a file for the controlling agent to interpret — mirroring how `review-package` prints a diff file for the agent to hand to a reviewer rather than dispatching the reviewer itself, `sdd-publish` prints raw material for the agent to judge and act on. It never opens or interprets brief/report content, never matches annotations, never clusters, and never calls `publish_graph`.[^12]
 
-The script is stateless: every invocation is a fresh, full recompute from the ledger and sidecar on disk. It never writes or reads any state of its own between calls, and it never touches `sharing.json` — that file is written only by the agent's own consent-gate step, never by this script.[^13]
+The script is stateless: every invocation is a fresh, full recompute from the ledger and sidecar path on disk. It never writes or reads any state of its own between calls, and it never touches `sharing.json` — that file is written only by the agent's own consent-gate step, never by this script.[^13]
 
 ## Data flow
 
@@ -56,7 +57,7 @@ The script is stateless: every invocation is a fresh, full recompute from the le
 
 This is a behavioral change to skill prose plus one small script, so it follows this project's existing bar for skill-content changes — eval evidence via `governed-superpowers:writing-skills`, not a unit-test suite, mirroring the testing approach used for the requirement-provenance-tagging change.[^15]
 
-- **Script-level dry run**: against a fixed sample workspace (ledger + briefs/reports + annotations sidecar), confirm a skeleton call with zero completions produces zero substates and zero states; a second call after one completion produces exactly one substate with correct annotation matches; a call against a revoked `sharing.json` produces the skip line and no `publish_graph` invocation.
+- **Script-level dry run**: against a fixed sample workspace (ledger + briefs/reports + annotations sidecar), confirm a skeleton call with zero completions prints an empty bundle; a second call after one completion prints that task's commit range, file paths, and diff stat correctly; a call against a revoked `sharing.json` produces the skip line and no bundle output.
 - **Skill-level adversarial dry run**: run `subagent-driven-development` on a small real multi-task plan with consent granted at Setup, confirming a publish call fires after every task completion (not only the last), and that hand-editing `sharing.json` to set `revokedAt` between two task completions stops the very next call, not a later one.
 - **Regression check**: confirm the existing end-to-end consent semantics (declined scope flags omitted, not blanked; declined consent means no further prompt this session) still hold when the ask happens at Setup instead of Finish.
 
@@ -65,13 +66,13 @@ This is a behavioral change to skill prose plus one small script, so it follows 
 [^3]: The consent prompt must describe a live, updating feed rather than a one-time finished-work summary.
 [^4]: The four `scope` flags and the rule that a hedged answer is not consent for `annotationText` must carry over unchanged from the existing consent gate.
 [^5]: On a clear yes, the agent must publish an initial skeleton sheet immediately, before Task 1 dispatches.
-[^6]: After every `Task <N>: complete` ledger line, clean or parked-at-cap, the agent must run `scripts/sdd-publish`, cluster the printed substates into states, and call `publish_graph`.
+[^6]: After every `Task <N>: complete` ledger line, clean or parked-at-cap, the agent must run `scripts/sdd-publish`, interpret the printed bundle into substates and states, and call `publish_graph`.
 [^7]: Each `scripts/sdd-publish` call must re-check `.governed-superpowers/sharing.json` for revocation and skip silently, without erroring the task loop, if consent has been revoked.
 [^8]: State clustering must be recomputed from scratch by the agent on every publish call, not assigned once and left sticky.
 [^9]: Each publish call must resend the full accumulated payload, replacing the sheet's prior contents, rather than sending an incremental delta.
 [^10]: The existing end-of-plan publish offer in `subagent-driven-development`'s `Finish` section must be removed.
 [^11]: A new script, `scripts/sdd-publish`, must be added alongside the existing `sdd-workspace`, `task-brief`, and `review-package` scripts.
-[^12]: `scripts/sdd-publish` must assemble and print the substate list (with matched sources) for the controlling agent to cluster and send, never calling `publish_graph` or deciding state groupings itself — the same division of labor `review-package` uses for diffs handed to a reviewer.
+[^12]: `scripts/sdd-publish` must print raw per-task material (commit range, file paths, diff stat) for the controlling agent to interpret, never opening or interpreting brief/report content, matching annotations, clustering, or calling `publish_graph` itself — the same division of labor `review-package` uses for diffs handed to a reviewer.
 [^13]: `scripts/sdd-publish` must never read or write `.governed-superpowers/sharing.json` itself; only the agent's own consent-gate step may write it.
 [^14]: A `scripts/sdd-publish` call made without active consent must skip silently and exit 0, never surfacing as a task-loop error.
 [^15]: This change must be verified via eval evidence and manual dry runs, per this project's existing bar for skill-content changes, not via an automated unit-test suite.
