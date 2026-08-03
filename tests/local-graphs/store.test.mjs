@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -74,7 +74,7 @@ test("writeJsonAtomic creates parent directories and leaves no temp file behind"
   writeJsonAtomic(target, { a: 1 });
 
   assert.deepEqual(JSON.parse(readFileSync(target, "utf8")), { a: 1 });
-  assert.deepEqual(listRevisions(join(root, "deep")), []);
+  assert.deepEqual(readdirSync(join(root, "deep", "nested")), ["file.json"]);
 });
 
 test("readIndex returns an empty index when none exists, and round-trips", () => {
