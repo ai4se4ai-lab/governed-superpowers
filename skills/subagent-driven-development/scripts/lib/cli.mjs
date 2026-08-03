@@ -173,6 +173,58 @@ function commandPayload(args, io) {
   return 0;
 }
 
+/**
+ * The one field on a revision that is written after the fact. Everything else
+ * is immutable once built, so "what left this machine, and when" can be
+ * answered from disk without asking the server.
+ */
+function commandRecordPublish(args, io) {
+  const slug = args[0];
+  const sent = args.includes("--sent");
+  const skippedAt = args.indexOf("--skipped");
+
+  if (!slug || sent === (skippedAt !== -1)) {
+    io.err(`${USAGE}\n`);
+    return 2;
+  }
+
+  const omittedAt = args.indexOf("--omitted");
+  const omittedFields =
+    omittedAt === -1 || !args[omittedAt + 1]
+      ? []
+      : args[omittedAt + 1]
+          .split(",")
+          .map((field) => field.trim())
+          .filter(Boolean);
+
+  const publish = sent
+    ? { sentAt: new Date().toISOString(), skippedReason: null, omittedFields }
+    : { sentAt: null, skippedReason: args[skippedAt + 1] ?? "unknown", omittedFields: [] };
+
+  const root = io.root ?? repoRoot();
+  const dir = sheetDir(root, slug);
+  const currentPath = join(dir, "current.json");
+  if (!existsSync(currentPath)) {
+    io.err(`no local graph for '${slug}' -- run sdd-graph write first\n`);
+    return 1;
+  }
+
+  const current = { ...readJson(currentPath), publish };
+  writeJsonAtomic(currentPath, current);
+  writeJsonAtomic(revisionPath(dir, current.revision), current);
+
+  const index = readIndex(root);
+  const entry = index.sheets.find((sheet) => sheet.slug === slug);
+  if (entry) writeIndex(root, upsertSheet(index, { ...entry, publish }));
+
+  io.out(
+    sent
+      ? `recorded publish of ${slug} revision ${current.revision}\n`
+      : `recorded skip: ${publish.skippedReason}\n`
+  );
+  return 0;
+}
+
 export function run(argv, io) {
   const [command, ...args] = argv;
   switch (command) {
@@ -180,6 +232,8 @@ export function run(argv, io) {
       return commandWrite(args, io);
     case "payload":
       return commandPayload(args, io);
+    case "record-publish":
+      return commandRecordPublish(args, io);
     default:
       io.err(`${USAGE}\n`);
       return 2;

@@ -379,3 +379,71 @@ test("payload skips when sharing.json's scope is an array, not an object", () =>
   assert.equal(result.code, 0);
   assert.match(result.stdout, /^skipped: \.governed-superpowers\/sharing\.json has no scope object/);
 });
+
+// ---- record-publish ----
+
+test("record-publish --sent stamps the current revision and the index", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+
+  const result = invoke(root, [
+    "record-publish",
+    SLUG,
+    "--sent",
+    "--omitted",
+    "substates.changes,sources.text",
+  ]);
+  assert.equal(result.code, 0, result.stderr);
+
+  const current = JSON.parse(readFileSync(graphsPath(root, SLUG, "current.json"), "utf8"));
+  const stored = JSON.parse(readFileSync(graphsPath(root, SLUG, "revisions", "0001.json"), "utf8"));
+
+  assert.match(current.publish.sentAt, /^\d{4}-\d{2}-\d{2}T/);
+  assert.equal(current.publish.skippedReason, null);
+  assert.deepEqual(current.publish.omittedFields, ["substates.changes", "sources.text"]);
+  assert.deepEqual(stored.publish, current.publish, "the revision file is stamped too");
+
+  const index = JSON.parse(readFileSync(graphsPath(root, "index.json"), "utf8"));
+  assert.deepEqual(index.sheets[0].publish, current.publish);
+});
+
+test("record-publish --skipped records the reason and no send time", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+
+  assert.equal(invoke(root, ["record-publish", SLUG, "--skipped", "no-consent"]).code, 0);
+
+  const current = JSON.parse(readFileSync(graphsPath(root, SLUG, "current.json"), "utf8"));
+  assert.equal(current.publish.sentAt, null);
+  assert.equal(current.publish.skippedReason, "no-consent");
+  assert.deepEqual(current.publish.omittedFields, []);
+});
+
+test("record-publish without --sent or --skipped exits 2", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+
+  const result = invoke(root, ["record-publish", SLUG]);
+  assert.equal(result.code, 2);
+  assert.match(result.stderr, /usage: sdd-graph/);
+});
+
+test("record-publish only stamps the current revision, leaving older revisions untouched", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  invoke(root, ["write", "docs/plans/a.md"], doc({ trigger: { task: 2, reason: "task-complete" } }));
+  const firstBefore = readFileSync(graphsPath(root, SLUG, "revisions", "0001.json"), "utf8");
+
+  assert.equal(invoke(root, ["record-publish", SLUG, "--sent"]).code, 0);
+
+  assert.equal(
+    readFileSync(graphsPath(root, SLUG, "revisions", "0001.json"), "utf8"),
+    firstBefore,
+    "revision 1 must be untouched by a publish recorded after revision 2 was written"
+  );
+
+  const stored2 = JSON.parse(readFileSync(graphsPath(root, SLUG, "revisions", "0002.json"), "utf8"));
+  const current = JSON.parse(readFileSync(graphsPath(root, SLUG, "current.json"), "utf8"));
+  assert.deepEqual(stored2.publish, current.publish);
+  assert.match(current.publish.sentAt, /^\d{4}-\d{2}-\d{2}T/);
+});
