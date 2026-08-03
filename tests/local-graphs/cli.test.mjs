@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { existsSync, mkdtempSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -207,4 +207,66 @@ test("no subcommand at all exits 2 with usage", () => {
   const result = invoke(tempRoot(), []);
   assert.equal(result.code, 2);
   assert.match(result.stderr, /usage: sdd-graph/);
+});
+
+/** Writes a sharing.json into the temp store's repo root. */
+function grantConsent(root, overrides = {}) {
+  const dir = join(root, ".governed-superpowers");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(
+    join(dir, "sharing.json"),
+    JSON.stringify({
+      version: 1,
+      project: { slug: "demo", name: "Demo", originHash: "sha256:abc" },
+      scope: { specPaths: true, substateTitles: true, changePaths: true, annotationText: true },
+      grantedAt: "2026-08-01T14:22:10Z",
+      grantedBy: "human partner, in session",
+      revokedAt: null,
+      ...overrides,
+    })
+  );
+}
+
+test("payload prints the wire payload as parseable JSON on stdout", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  grantConsent(root);
+
+  const result = invoke(root, ["payload", SLUG]);
+  assert.equal(result.code, 0, result.stderr);
+
+  const payload = JSON.parse(result.stdout);
+  assert.equal(payload.spec.path, "docs/specs/a-design.md");
+  assert.equal(payload.consent.project.slug, "demo");
+  assert.equal(payload.states[0].substates[0].title, "Do the thing");
+  assert.equal(payload.states[0].substates[0].notes, undefined);
+  assert.match(result.stderr, /omitted: substates\.notes/);
+});
+
+test("payload skips silently when there is no consent file", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+
+  const result = invoke(root, ["payload", SLUG]);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /^skipped: no \.governed-superpowers\/sharing\.json/);
+});
+
+test("payload skips when consent has been revoked", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  grantConsent(root, { revokedAt: "2026-08-02T09:00:00Z" });
+
+  const result = invoke(root, ["payload", SLUG]);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /^skipped: sharing\.json revokedAt is set/);
+});
+
+test("payload for an unknown slug exits nonzero", () => {
+  const root = tempRoot();
+  grantConsent(root);
+
+  const result = invoke(root, ["payload", "no-such-sheet"]);
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /no local graph for 'no-such-sheet'/);
 });

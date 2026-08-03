@@ -14,11 +14,15 @@
  * calling process.exit, so the whole surface is testable in-process. The
  * executable shim supplies the real streams.
  */
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { withCounts } from "./counts.mjs";
+import { applyScope } from "./scope.mjs";
 import {
   FORMAT_VERSION,
   nextRevisionNumber,
   readIndex,
+  readJson,
   repoRoot,
   revisionPath,
   sheetDir,
@@ -105,11 +109,55 @@ function commandWrite(args, io) {
   return 0;
 }
 
+/**
+ * Consent is read here and nowhere else, and re-read on every call - a
+ * revocation mid-plan must stop the very next update, not the next plan. A
+ * missing or revoked record is not an error: it prints one line and exits 0,
+ * exactly like sdd-publish's old skip.
+ */
+function commandPayload(args, io) {
+  const slug = args[0];
+  if (!slug) {
+    io.err(`${USAGE}\n`);
+    return 2;
+  }
+
+  const root = io.root ?? repoRoot();
+  const sharingPath = join(root, ".governed-superpowers", "sharing.json");
+
+  if (!existsSync(sharingPath)) {
+    io.out("skipped: no .governed-superpowers/sharing.json -- no active consent\n");
+    return 0;
+  }
+
+  const consent = readJson(sharingPath);
+  if (consent.revokedAt !== null && consent.revokedAt !== undefined) {
+    io.out("skipped: sharing.json revokedAt is set -- consent revoked\n");
+    return 0;
+  }
+
+  const currentPath = join(sheetDir(root, slug), "current.json");
+  if (!existsSync(currentPath)) {
+    io.err(`no local graph for '${slug}' -- run sdd-graph write first\n`);
+    return 1;
+  }
+
+  const { payload, omittedFields } = applyScope(readJson(currentPath), consent);
+
+  // The payload goes to stdout so it can be piped or read verbatim; the
+  // human-facing summary goes to stderr so it never contaminates that JSON.
+  io.out(`${JSON.stringify(payload, null, 2)}\n`);
+  io.err(omittedFields.length ? `omitted: ${omittedFields.join(", ")}\n` : "omitted: nothing\n");
+  return 0;
+}
+
 export function run(argv, io) {
   const [command, ...args] = argv;
   switch (command) {
     case "write":
       return commandWrite(args, io);
+    case "payload":
+      return commandPayload(args, io);
     default:
       io.err(`${USAGE}\n`);
       return 2;
