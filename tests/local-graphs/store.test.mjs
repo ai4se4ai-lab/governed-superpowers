@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { test } from "node:test";
 import {
   FORMAT_VERSION,
@@ -52,8 +52,18 @@ test("repoRoot prefers SDD_GRAPH_ROOT and throws when there is no repository", (
   const root = tempRoot();
   process.env.SDD_GRAPH_ROOT = root;
   assert.equal(repoRoot(tempRoot()), root);
+
+  process.env.SDD_GRAPH_ROOT = "relative/dir";
+  assert.equal(repoRoot(tempRoot()), resolve("relative/dir"));
+
   delete process.env.SDD_GRAPH_ROOT;
   assert.throws(() => repoRoot(tempRoot()), /SDD_GRAPH_ROOT/);
+
+  const withGit = tempRoot();
+  mkdirSync(join(withGit, ".git"), { recursive: true });
+  const nested = join(withGit, "a", "b");
+  mkdirSync(nested, { recursive: true });
+  assert.equal(repoRoot(nested), withGit);
 });
 
 test("slugForSpec drops the directory and the .md extension", () => {
@@ -63,9 +73,9 @@ test("slugForSpec drops the directory and the .md extension", () => {
   );
   assert.equal(slugForSpec("docs/spec"), "spec");
   assert.equal(slugForSpec("a.md.backup"), "a.md.backup");
-  assert.throws(() => slugForSpec(""));
-  assert.throws(() => slugForSpec("."));
-  assert.throws(() => slugForSpec(".."));
+  assert.throws(() => slugForSpec(""), /usable slug/);
+  assert.throws(() => slugForSpec("."), /usable slug/);
+  assert.throws(() => slugForSpec(".."), /usable slug/);
 });
 
 test("graphsDir and sheetDir sit under .governed-superpowers", () => {
@@ -93,9 +103,10 @@ test("nextRevisionNumber starts at 1 and follows the highest file on disk", () =
   assert.equal(nextRevisionNumber(dir), 10001);
 });
 
-test("revisionPath zero-pads to four digits", () => {
+test("revisionPath pads to four digits and passes longer numbers through", () => {
   assert.equal(revisionPath("/d", 7), join("/d", "revisions", "0007.json"));
   assert.equal(revisionPath("/d", 1234), join("/d", "revisions", "1234.json"));
+  assert.equal(revisionPath("/d", 10000), join("/d", "revisions", "10000.json"));
 });
 
 test("writeJsonAtomic creates parent directories and leaves no temp file behind", () => {
