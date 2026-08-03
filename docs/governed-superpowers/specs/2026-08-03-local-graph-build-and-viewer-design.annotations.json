@@ -1,0 +1,167 @@
+{
+  "1": {
+    "source": "human",
+    "ref": null,
+    "text": "The system must build a local collaboration-graph revision after every completed task, independent of whether any publish consent exists."
+  },
+  "2": {
+    "source": "human",
+    "ref": null,
+    "text": "Publishing must read that local artifact rather than assembling a payload independently."
+  },
+  "3": {
+    "source": "human",
+    "ref": null,
+    "text": "A Node script with no third-party dependencies, living beside the existing scripts at `skills/subagent-driven-development/scripts/`."
+  },
+  "4": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "Invalid input must cause a nonzero exit naming the offending field path, with no file written — a failed build must never leave a partial revision or an index pointing at a revision that does not exist."
+  },
+  "5": {
+    "source": "existing_codebase",
+    "ref": "skills/subagent-driven-development/scripts/sdd-publish:29-39",
+    "text": "When `sharing.json` is absent or its `revokedAt` is non-null, it must print a single `skipped:` line and exit 0 without printing a payload."
+  },
+  "6": {
+    "source": "skill_doc",
+    "ref": "CLAUDE.md:47",
+    "text": "The script must not require any package installation to run; a Node runtime is its only prerequisite."
+  },
+  "7": {
+    "source": "human",
+    "ref": null,
+    "text": "Local graphs live at `.governed-superpowers/graphs/`, beside `sharing.json` and the SDD progress ledger, and are git-ignored — they must never enter the repository's history."
+  },
+  "8": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "It is rewritten in full on every `write`, so a damaged entry is repaired by the next task rather than needing manual intervention."
+  },
+  "9": {
+    "source": "human",
+    "ref": null,
+    "text": "A revision must carry `changes`, `commits`, `sources[].ref` and `sources[].text` unconditionally, regardless of the consent scope — scope filtering happens only at send time."
+  },
+  "10": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "Re-running a task must append a new revision rather than editing an existing one."
+  },
+  "11": {
+    "source": "existing_codebase",
+    "ref": "web/src/lib/graph-color.ts",
+    "text": "`humanCount`, `aiCount` and `groundedCount` are computed at write time using the same rule the portal applies: `human` and `ai_assumption` feed the two-sided axis, and the remaining four provenance sources (`skill_doc`, `tool_output`, `existing_codebase`, `external_reference`) feed `groundedCount` only."
+  },
+  "12": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "Revision numbers are zero-padded, monotonic, and allocated by reading the highest existing revision file, so the numbering cannot drift from the directory contents."
+  },
+  "13": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "The viewer must refuse to render a revision whose `formatVersion` it does not recognise rather than attempting a partial render."
+  },
+  "14": {
+    "source": "existing_codebase",
+    "ref": "mcp-server/src/tools.ts:206-211",
+    "text": "The server's schema requires `spec.path`, `spec.title` and `substates[].title`, each `z.string().min(1)`, so a declined flag cannot be expressed by omitting the field."
+  },
+  "15": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "When `specPaths` is false, `spec.path` must be sent as `opaque:<first 16 hex of sha256 of the repo-relative path>` and `spec.title` as `Sheet <first 8 hex of that digest>`."
+  },
+  "16": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "When `substateTitles` is false, `substates[].title` must be sent as `Task <N>` derived from the substate key, `states[].label` as `Group <n>`, and `states[].summary` omitted."
+  },
+  "17": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "`substates[].notes` is written locally but must never be sent, since no scope flag covers free text lifted from task reports."
+  },
+  "18": {
+    "source": "human",
+    "ref": null,
+    "text": "A Next.js application mirroring `web/` without Prisma, authentication or email."
+  },
+  "19": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "A test must assert the viewer's copies are byte-identical to the portal's, so colour thresholds and canvas geometry cannot silently diverge."
+  },
+  "20": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "`viewer/src/lib/graph-store.ts` reads the directory named by `GRAPH_DIR` and returns the same `GraphPayload` shape, synthesising node ids (`state-<key>`, `sub-<stateKey>-<key>`) in place of the database's row ids."
+  },
+  "21": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "Routes: `/` lists sheets from `index.json`; `/sheet/[slug]` renders the canvas for the revision named by `?rev=`, defaulting to the current one; `/api/healthz` backs the container healthcheck."
+  },
+  "22": {
+    "source": "human",
+    "ref": null,
+    "text": "A revision scrubber stepping through revisions 1..N, re-rendering the canvas for the selected revision."
+  },
+  "23": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "A per-revision publish banner rendered from the `publish` block — either the send time and the fields that were omitted, or the reason it was never sent."
+  },
+  "24": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "The `annotationCoverage` fraction shown as text alongside the canvas."
+  },
+  "25": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "A separate compose file, not a profile inside `docker-compose.yml`, so that starting the viewer can never start Postgres, the MCP server or Caddy."
+  },
+  "26": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "The published port must bind to loopback only, and the graph directory must be mounted read-only."
+  },
+  "27": {
+    "source": "existing_codebase",
+    "ref": "web/Dockerfile:1-60",
+    "text": "`viewer/Dockerfile` mirrors `web/Dockerfile`'s deps → builder → standalone-runtime chain without the Prisma migrator stage and without the OpenSSL package that only Prisma's query engine needs."
+  },
+  "28": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "Viewer renders an empty state explaining graphs appear after the first completed task — never a 500"
+  },
+  "29": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "Viewer renders an error card naming the file; the sheet list still loads"
+  },
+  "30": {
+    "source": "ai_assumption",
+    "ref": null,
+    "text": "Script tests live at `tests/local-graphs/` and cover `write` (validation rejection, revision numbering, count computation), `payload` (each scope flag's effect, the missing-consent and revoked paths) and `record-publish`."
+  },
+  "31": {
+    "source": "existing_codebase",
+    "ref": "web/package.json:13",
+    "text": "Viewer tests live at `viewer/test/*.test.ts` and run under `tsx --test`, matching the existing `web/test/` convention."
+  },
+  "32": {
+    "source": "existing_codebase",
+    "ref": "skills/subagent-driven-development/scripts/sdd-publish:29-39",
+    "text": "`scripts/sdd-publish`'s early exit on missing consent must be removed, since the bundle is now needed for the unconditional local build."
+  },
+  "33": {
+    "source": "skill_doc",
+    "ref": "CLAUDE.md:102-108",
+    "text": "Per this repository's contributor guidelines, such changes require adversarial pressure testing and before/after eval evidence rather than being treated as documentation edits."
+  }
+}
