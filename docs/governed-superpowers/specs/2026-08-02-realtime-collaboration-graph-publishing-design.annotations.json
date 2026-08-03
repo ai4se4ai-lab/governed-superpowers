@@ -27,7 +27,7 @@
   "6": {
     "source": "human",
     "ref": null,
-    "text": "After every Task <N>: complete ledger line, clean or parked-at-cap, the agent must run scripts/sdd-publish and call publish_graph."
+    "text": "After every Task <N>: complete ledger line, clean or parked-at-cap, the agent must run scripts/sdd-publish, cluster the printed substates into states, and call publish_graph."
   },
   "7": {
     "source": "human",
@@ -37,7 +37,7 @@
   "8": {
     "source": "human",
     "ref": null,
-    "text": "State clustering must be recomputed from scratch on every publish call, not assigned once and left sticky."
+    "text": "State clustering must be recomputed from scratch by the agent on every publish call, not assigned once and left sticky."
   },
   "9": {
     "source": "human",
@@ -57,7 +57,7 @@
   "12": {
     "source": "existing_codebase",
     "ref": "skills/subagent-driven-development/SKILL.md:264-272",
-    "text": "scripts/sdd-publish must assemble and print the payload for the controlling agent to send, the same division of labor review-package uses for diffs handed to a reviewer."
+    "text": "scripts/sdd-publish must assemble and print the substate list (with matched sources) for the controlling agent to cluster and send, never calling publish_graph or deciding state groupings itself, the same division of labor review-package uses for diffs handed to a reviewer."
   },
   "13": {
     "source": "ai_assumption",
