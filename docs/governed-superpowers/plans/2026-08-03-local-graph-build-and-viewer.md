@@ -543,6 +543,8 @@ git add skills/subagent-driven-development/scripts/lib/validate.mjs tests/local-
 git commit -m "feat: validate local graph documents before writing a revision"
 ```
 
+> **As landed** (`1c911fa`, `4401f6c`) — read `validate.mjs` itself rather than the block above. The drafted version **threw `TypeError`** on three inputs (`states: [null]`, `substates: [null]`, and a non-array `sources`), which defeats the contract Task 4 depends on: validation returns a value and never throws, so a malformed document cannot cause a partial write. Object guards on each state and substate, and an array guard on `sources`, were added; a bare-primitive entry now reports `states[0]` "must be an object" rather than `states[0].key`. Tests grew from 13 to 17 and pin the never-throws contract with `assert.doesNotThrow`. The module docstring was also softened: it mirrors the server's *shape* constraints only — size bounds (`states` ≤ 20, `substates` ≤ 50, `sources` ≤ 200, string maxima) are not duplicated locally, so an over-large document can still be rejected server-side.
+
 ---
 
 ## Task 3: Provenance count computation
