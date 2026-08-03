@@ -130,9 +130,23 @@ function commandPayload(args, io) {
     return 0;
   }
 
-  const consent = readJson(sharingPath);
+  let consent;
+  try {
+    consent = readJson(sharingPath);
+  } catch {
+    io.out("skipped: .governed-superpowers/sharing.json is not valid JSON -- no usable consent\n");
+    return 0;
+  }
+
   if (consent.revokedAt !== null && consent.revokedAt !== undefined) {
     io.out("skipped: sharing.json revokedAt is set -- consent revoked\n");
+    return 0;
+  }
+
+  // consent.scope must already be a present object by the time it reaches
+  // applyScope - checked here, not inside applyScope itself.
+  if (!consent.scope || typeof consent.scope !== "object") {
+    io.out("skipped: sharing.json has no scope object -- no usable consent\n");
     return 0;
   }
 

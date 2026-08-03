@@ -270,3 +270,85 @@ test("payload for an unknown slug exits nonzero", () => {
   assert.equal(result.code, 1);
   assert.match(result.stderr, /no local graph for 'no-such-sheet'/);
 });
+
+test("payload without a slug argument exits 2 with usage", () => {
+  const result = invoke(tempRoot(), ["payload"]);
+  assert.equal(result.code, 2);
+  assert.match(result.stderr, /usage: sdd-graph/);
+});
+
+test("payload treats a falsy-but-present revokedAt (empty string) as revoked, not as absent", () => {
+  // revokedAt is documented as either null (not revoked) or an ISO timestamp
+  // string (revoked); "" is neither, but it is not null/undefined either. The
+  // check is written as `!== null && !== undefined` specifically so that ANY
+  // present value - even a falsy one like "" - counts as "set" and triggers
+  // the skip, matching publishing-graphs.md's "missing, or its revokedAt is
+  // not null" rule. A naive `if (consent.revokedAt)` truthy-check would get
+  // this backwards: "" is falsy, so it would (incorrectly) let the payload
+  // proceed. This pins the correct (skip) behavior against that mutation.
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  grantConsent(root, { revokedAt: "" });
+
+  const result = invoke(root, ["payload", SLUG]);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /^skipped: sharing\.json revokedAt is set/);
+});
+
+test("payload prints 'omitted: nothing' to stderr when consent is full and nothing is withheld", () => {
+  const root = tempRoot();
+  invoke(
+    root,
+    ["write", "docs/plans/a.md"],
+    doc({
+      states: [
+        {
+          key: "s1",
+          label: "First chunk",
+          substates: [{ key: "task-1", title: "Do the thing", status: "DONE" }],
+        },
+      ],
+    })
+  );
+  grantConsent(root);
+
+  const result = invoke(root, ["payload", SLUG]);
+  assert.equal(result.code, 0, result.stderr);
+  assert.match(result.stderr, /^omitted: nothing/);
+});
+
+test("payload skips when sharing.json is not valid JSON", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  const dir = join(root, ".governed-superpowers");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "sharing.json"), "{not json");
+
+  const result = invoke(root, ["payload", SLUG]);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /^skipped: .*sharing\.json is not valid JSON/);
+});
+
+test("payload skips when sharing.json has no scope key at all", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  const dir = join(root, ".governed-superpowers");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "sharing.json"), JSON.stringify({}));
+
+  const result = invoke(root, ["payload", SLUG]);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /^skipped: sharing\.json has no scope object/);
+});
+
+test("payload skips when sharing.json's scope is explicitly null", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  const dir = join(root, ".governed-superpowers");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "sharing.json"), JSON.stringify({ revokedAt: null, scope: null }));
+
+  const result = invoke(root, ["payload", SLUG]);
+  assert.equal(result.code, 0);
+  assert.match(result.stdout, /^skipped: sharing\.json has no scope object/);
+});
