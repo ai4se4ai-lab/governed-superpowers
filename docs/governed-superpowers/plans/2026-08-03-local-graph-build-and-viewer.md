@@ -3131,6 +3131,12 @@ By the design's own stated principle — a declined flag must not leave an equiv
 
 **Follow-up required before this ships with real consent flows:** either (a) `applyScope` neutralizes `state.key`/`substate.key` under `substateTitles: false` and rewrites `stateEdges`/`substateEdges` to match, or (b) `validate.mjs` rejects a state key that isn't a short structural identifier at write time, so a content-bearing key can never reach `applyScope` in the first place. A guiding note in the assembly procedure (Task 14) can reduce how often this occurs but must not be the only enforcement — a filter module that depends on an upstream agent choosing well-behaved keys is a convention, not a boundary.
 
+## Known gap, deferred: viewer and portal would diverge if empty-edges coercion is ever removed
+
+Found during Task 10's code quality review.
+
+The portal's server-side `planGraph` (`mcp-server/src/graphs.ts`) synthesizes a default edge chain when `stateEdges`/`substateEdges` are absent from a `publish_graph` payload. The viewer's `graph-store.ts` has no equivalent default — an absent edge array maps to `[]`. Today this divergence is unreachable: both `cli.mjs` (`sdd-graph payload`) and `scope.mjs` (`applyScope`) coerce a missing edge array to `[]` before it ever reaches either side, so "absent" never actually happens on the wire. If that coercion is ever removed or bypassed, the portal would render default edges for a document the viewer renders with none — a real preview-fidelity gap, currently latent rather than active. No action needed unless the coercion changes; flagging so it isn't rediscovered from scratch.
+
 ## Environment note for Tasks 10-13: `git checkout` reintroduces CRLF on copied viewer files
 
 Found while fixing Task 9's drift-guard coverage.
