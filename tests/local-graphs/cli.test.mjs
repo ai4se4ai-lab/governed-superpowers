@@ -385,6 +385,7 @@ test("payload skips when sharing.json's scope is an array, not an object", () =>
 test("record-publish --sent stamps the current revision and the index", () => {
   const root = tempRoot();
   invoke(root, ["write", "docs/plans/a.md"], doc());
+  const beforeStamp = JSON.parse(readFileSync(graphsPath(root, SLUG, "current.json"), "utf8"));
 
   const result = invoke(root, [
     "record-publish",
@@ -405,6 +406,15 @@ test("record-publish --sent stamps the current revision and the index", () => {
 
   const index = JSON.parse(readFileSync(graphsPath(root, "index.json"), "utf8"));
   assert.deepEqual(index.sheets[0].publish, current.publish);
+
+  // Only `publish` may change: the rest of the revision body (states, spec,
+  // stateEdges, annotationCoverage, ...) must survive the stamp untouched, in
+  // both current.json and the individual revision file it mirrors.
+  const { publish: _beforePublish, ...beforeRest } = beforeStamp;
+  const { publish: _currentPublish, ...currentRest } = current;
+  const { publish: _storedPublish, ...storedRest } = stored;
+  assert.deepEqual(currentRest, beforeRest, "only the publish field may change in current.json");
+  assert.deepEqual(storedRest, beforeRest, "only the publish field may change in the revision file");
 });
 
 test("record-publish --skipped records the reason and no send time", () => {
@@ -446,4 +456,26 @@ test("record-publish only stamps the current revision, leaving older revisions u
   const current = JSON.parse(readFileSync(graphsPath(root, SLUG, "current.json"), "utf8"));
   assert.deepEqual(stored2.publish, current.publish);
   assert.match(current.publish.sentAt, /^\d{4}-\d{2}-\d{2}T/);
+});
+
+test("record-publish for an unknown slug exits nonzero", () => {
+  const result = invoke(tempRoot(), ["record-publish", "no-such-sheet", "--sent"]);
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /no local graph for 'no-such-sheet'/);
+});
+
+test("record-publish with both --sent and --skipped exits 2", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  const result = invoke(root, ["record-publish", SLUG, "--sent", "--skipped", "no-consent"]);
+  assert.equal(result.code, 2);
+  assert.match(result.stderr, /usage: sdd-graph/);
+});
+
+test("--omitted trims whitespace and drops empty segments", () => {
+  const root = tempRoot();
+  invoke(root, ["write", "docs/plans/a.md"], doc());
+  invoke(root, ["record-publish", SLUG, "--sent", "--omitted", "a,,b, , c "]);
+  const current = JSON.parse(readFileSync(graphsPath(root, SLUG, "current.json"), "utf8"));
+  assert.deepEqual(current.publish.omittedFields, ["a", "b", "c"]);
 });
