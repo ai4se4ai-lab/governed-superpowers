@@ -76,7 +76,9 @@ assert_contains "$OUTPUT" "# 0 completed task(s) bundled" "reports an empty ledg
 
 setup_project
 write_sharing "null"
-assert_contains "$(run_publish)" "# Publish bundle: plan.md" "bundles with unrevoked consent"
+OUTPUT="$(run_publish)"
+assert_contains "$OUTPUT" "# Publish bundle: plan.md" "bundles with unrevoked consent"
+assert_not_contains "$OUTPUT" "skipped:" "does not skip with unrevoked consent"
 
 setup_project
 write_sharing '"2026-08-02T09:00:00Z"'
