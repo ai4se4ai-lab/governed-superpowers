@@ -30,7 +30,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <head>
         {/* Static file, loaded synchronously so the stored theme applies
-            before first paint. Copied from web/public/theme.js. */}
+            before first paint. Copied from web/public/theme.js. The viewer
+            has no ThemeToggle (no src/components/ui/ here, and none is
+            planned) - this only honors a stored/system preference if one is
+            ever set; dark mode otherwise comes entirely from globals.css's
+            prefers-color-scheme. */}
         <script src="/theme.js" />
       </head>
       <body>
