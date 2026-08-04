@@ -147,3 +147,47 @@ test("an unknown slug returns null", async () => {
   setupStore();
   assert.equal(await loadRevision("no-such-sheet"), null);
 });
+
+test("a 5-digit revision number is listed and can be loaded explicitly", async () => {
+  const dir = setupStore([revisionDoc({ revision: 1 })]);
+  const sheet = join(dir, "a-design");
+  const tenThousand = revisionDoc({ revision: 10000 });
+  writeFileSync(join(sheet, "revisions", "10000.json"), JSON.stringify(tenThousand));
+  writeFileSync(join(sheet, "current.json"), JSON.stringify(tenThousand));
+
+  const loaded = await loadRevision("a-design");
+  assert.ok(loaded && !("message" in loaded));
+  assert.ok(loaded.revisions.includes(10000), `expected revisions to include 10000, got ${loaded.revisions}`);
+
+  const explicit = await loadRevision("a-design", 10000);
+  assert.ok(explicit && !("message" in explicit));
+  assert.equal(explicit.revision, 10000);
+});
+
+test("state and substate edges are mapped from wire keys to synthesised ids", async () => {
+  setupStore([
+    revisionDoc({
+      states: [
+        {
+          key: "s1",
+          label: "First chunk",
+          summary: null,
+          substates: [
+            { key: "task-1", title: "First task", status: "DONE" },
+            { key: "task-2", title: "Second task", status: "DONE" },
+          ],
+        },
+        { key: "s2", label: "Second chunk", summary: null, substates: [] },
+      ],
+      stateEdges: [{ from: "s1", to: "s2" }],
+      substateEdges: [{ from: "s1/task-1", to: "s1/task-2" }],
+    }),
+  ]);
+
+  const loaded = await loadRevision("a-design");
+  assert.ok(loaded && !("message" in loaded));
+  assert.deepEqual(loaded.graph.stateEdges, [{ fromId: "state-s1", toId: "state-s2" }]);
+  assert.deepEqual(loaded.graph.substateEdges, [
+    { fromId: "sub-s1-task-1", toId: "sub-s1-task-2" },
+  ]);
+});
