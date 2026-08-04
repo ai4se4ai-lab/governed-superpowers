@@ -48,6 +48,7 @@ setup_project() {
   (
     cd "$PROJECT"
     git init -q
+    git config core.autocrlf false
     git config user.email "test@example.com"
     git config user.name "Test"
     printf '# Plan\n\n**Reference spec:** `docs/a-design.md`\n' > docs/plan.md
@@ -56,8 +57,10 @@ setup_project() {
   )
 }
 
+# run_publish — runs the script in the throwaway repo; captures combined
+# output, never aborts on exit code.
 run_publish() {
-  (cd "$PROJECT" && "$SCRIPT_UNDER_TEST" docs/plan.md 2>&1)
+  (cd "$PROJECT" && "$SCRIPT_UNDER_TEST" docs/plan.md 2>&1) || true
 }
 
 write_sharing() {
