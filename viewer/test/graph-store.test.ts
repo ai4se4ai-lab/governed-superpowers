@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { listSheets, loadRevision } from "../src/lib/graph-store";
+import { listSheets, loadRevision, toPayload } from "../src/lib/graph-store";
 
 function revisionDoc(overrides: Record<string, unknown> = {}) {
   return {
@@ -162,6 +162,44 @@ test("a 5-digit revision number is listed and can be loaded explicitly", async (
   const explicit = await loadRevision("a-design", 10000);
   assert.ok(explicit && !("message" in explicit));
   assert.equal(explicit.revision, 10000);
+});
+
+test("a revision missing spec.title or states degrades to a SheetError instead of throwing", async () => {
+  const dir = setupStore();
+  writeFileSync(join(dir, "a-design", "current.json"), JSON.stringify({ formatVersion: 1 }));
+
+  let loaded: Awaited<ReturnType<typeof loadRevision>>;
+  await assert.doesNotReject(async () => {
+    loaded = await loadRevision("a-design");
+  });
+
+  assert.ok(loaded! && "message" in loaded!);
+  assert.match(loaded!.message, /spec\.title|states/);
+});
+
+test("invalid JSON that happens to contain the substring ENOENT is reported as corruption, not a missing sheet", async () => {
+  const dir = setupStore();
+  writeFileSync(join(dir, "a-design", "current.json"), "ENOENT not valid json");
+  const loaded = await loadRevision("a-design");
+  assert.ok(loaded && "message" in loaded, "expected a SheetError, not null (false-positive ENOENT match)");
+  assert.match(loaded.message, /could not read this revision/);
+});
+
+test("an edge pointing at a nonexistent state is dropped rather than rendered as a broken reference", () => {
+  const raw = revisionDoc({
+    states: [
+      { key: "s1", label: "First chunk", summary: null, substates: [] },
+      { key: "s2", label: "Second chunk", summary: null, substates: [] },
+    ],
+    stateEdges: [
+      { from: "s1", to: "s2" },
+      { from: "s1", to: "does-not-exist" },
+    ],
+    substateEdges: [],
+  }) as Parameters<typeof toPayload>[0];
+
+  const payload = toPayload(raw);
+  assert.deepEqual(payload.stateEdges, [{ fromId: "state-s1", toId: "state-s2" }]);
 });
 
 test("state and substate edges are mapped from wire keys to synthesised ids", async () => {

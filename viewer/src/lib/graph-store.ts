@@ -45,14 +45,14 @@ async function listRevisionNumbers(sheetDir: string): Promise<number[]> {
   }
 }
 
-type RawSource = {
+export type RawSource = {
   marker?: string | null;
   source: string;
   ref?: string | null;
   text?: string | null;
 };
 
-type RawSubstate = {
+export type RawSubstate = {
   key: string;
   title: string;
   status?: string | null;
@@ -65,9 +65,14 @@ type RawSubstate = {
   groundedCount?: number;
 };
 
-type RawState = { key: string; label: string; summary?: string | null; substates: RawSubstate[] };
+export type RawState = {
+  key: string;
+  label: string;
+  summary?: string | null;
+  substates: RawSubstate[];
+};
 
-type RawRevision = {
+export type RawRevision = {
   formatVersion: number;
   revision: number;
   builtAt: string;
@@ -89,7 +94,7 @@ function substateId(stateKey: string, key: string): string {
   return `sub-${stateKey}-${key}`;
 }
 
-function toPayload(raw: RawRevision): GraphPayload {
+export function toPayload(raw: RawRevision): GraphPayload {
   const details: Record<string, SubstateDetail> = {};
 
   const states = raw.states.map((state) => ({
@@ -134,18 +139,27 @@ function toPayload(raw: RawRevision): GraphPayload {
     }),
   }));
 
-  const stateEdges = (raw.stateEdges ?? []).map((edge) => ({
-    fromId: stateId(edge.from),
-    toId: stateId(edge.to),
-  }));
+  // The portal (mcp-server/src/graphs.ts) rejects a document with an
+  // unresolvable edge endpoint outright at publish time. The viewer has no
+  // such option - it must render whatever is actually on disk - so instead
+  // of crashing or fabricating a node for a typo'd/malformed endpoint, it
+  // silently drops any edge that doesn't resolve to a real node in this
+  // same document.
+  const known = new Set(states.flatMap((s) => [s.id, ...s.substates.map((x) => x.id)]));
+
+  const stateEdges = (raw.stateEdges ?? [])
+    .map((edge) => ({ fromId: stateId(edge.from), toId: stateId(edge.to) }))
+    .filter((edge) => known.has(edge.fromId) && known.has(edge.toId));
 
   // Substate edge endpoints arrive as "<stateKey>/<substateKey>", the same
   // form publish_graph accepts.
-  const substateEdges = (raw.substateEdges ?? []).map((edge) => {
-    const [fromState, fromSub] = edge.from.split("/");
-    const [toState, toSub] = edge.to.split("/");
-    return { fromId: substateId(fromState, fromSub), toId: substateId(toState, toSub) };
-  });
+  const substateEdges = (raw.substateEdges ?? [])
+    .map((edge) => {
+      const [fromState, fromSub] = edge.from.split("/");
+      const [toState, toSub] = edge.to.split("/");
+      return { fromId: substateId(fromState, fromSub), toId: substateId(toState, toSub) };
+    })
+    .filter((edge) => known.has(edge.fromId) && known.has(edge.toId));
 
   return { states, stateEdges, substateEdges, details };
 }
@@ -174,8 +188,8 @@ export async function loadRevision(
   try {
     raw = (await readJson(file)) as RawRevision;
   } catch (error) {
+    if ((error as NodeJS.ErrnoException)?.code === "ENOENT") return null;
     const message = error instanceof Error ? error.message : String(error);
-    if (message.includes("ENOENT")) return null;
     return { slug, file, message: `could not read this revision: ${message}` };
   }
 
@@ -185,6 +199,10 @@ export async function loadRevision(
       file,
       message: `this revision declares formatVersion ${raw.formatVersion}; this viewer only renders version ${SUPPORTED_FORMAT_VERSION}`,
     };
+  }
+
+  if (typeof raw.spec?.title !== "string" || !Array.isArray(raw.states)) {
+    return { slug, file, message: "this revision is missing spec.title or states" };
   }
 
   return {
