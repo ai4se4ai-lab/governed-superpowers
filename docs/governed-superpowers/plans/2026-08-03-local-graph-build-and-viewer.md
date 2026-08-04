@@ -3130,3 +3130,23 @@ By the design's own stated principle — a declined flag must not leave an equiv
 **Why it isn't fixed in Task 5:** state keys are structural. `stateEdges`/`substateEdges` reference them (`{from:"s1",to:"s2"}`, `"s1/task-1"`), and the viewer (Task 10) synthesizes node ids from them. Neutralizing a key inside `applyScope` means rewriting every edge endpoint through the same substitution, or edges silently detach — real work, not a one-line change, and out of scope for a task specified as a pure filter over already-shaped data.
 
 **Follow-up required before this ships with real consent flows:** either (a) `applyScope` neutralizes `state.key`/`substate.key` under `substateTitles: false` and rewrites `stateEdges`/`substateEdges` to match, or (b) `validate.mjs` rejects a state key that isn't a short structural identifier at write time, so a content-bearing key can never reach `applyScope` in the first place. A guiding note in the assembly procedure (Task 14) can reduce how often this occurs but must not be the only enforcement — a filter module that depends on an upstream agent choosing well-behaved keys is a convention, not a boundary.
+
+## Known gap, deferred: record-publish can silently drop the index entry it exists to keep honest
+
+Found during Task 7's code quality review.
+
+`commandRecordPublish` (`cli.mjs`) looks up the slug's entry in `index.json` and, if none is found, silently skips the index update (`if (entry) writeIndex(...)`) — `current.json` gets the publish stamp, the index does not, and nothing signals the divergence.
+
+This is reachable without any tampering: `readIndex` returns an empty `{sheets: []}` when `index.json` is missing, and its own error message for a corrupt file says "delete it and re-run to rebuild" — exactly the state that produces a missing entry. Once in that state, every `record-publish` call silently no-ops on the index until the next `write` happens to recreate the entry. The field being dropped is the one the viewer (Task 10+) renders as "was this ever published" — per this plan's own publishing-graphs.md rationale, the record of what left the machine is the entire point of the step.
+
+**Fix, not yet applied:** `commandRecordPublish` already holds every field needed to reconstruct a missing index entry (`current.spec.path`, `.title`, `.planPath`, `.revision`, `.builtAt`) — the same fields `commandWrite` assembles when it first creates one. Replace the silent skip with a self-healing upsert using those fields as a fallback, so the index can never diverge from `current.json` for a slug that has one.
+
+## Known gap, deferred: two store reads are unguarded against a corrupt file
+
+Found during Task 7's code quality review.
+
+`commandPayload` and `commandRecordPublish` both call `readJson(currentPath)` (reading a revision's `current.json`) without a try/catch. A corrupt file throws an uncaught `SyntaxError` out of `run()`, surfacing as a raw stack trace from the real `sdd-graph` executable — reachable by an agent mid-plan, not just a human. This is inconsistent with `readIndex` (guarded since Task 1, with an actionable "delete it and re-run" message) and with `payload`'s read of `sharing.json` (guarded since Task 6).
+
+Realistic likelihood is low — `write`'s atomic write-then-rename makes corruption from this tool itself very unlikely — but the fix is small and the blast radius (an agent workflow derailed by an unhandled exception) is disproportionate to that cost.
+
+**Fix, not yet applied:** rather than patching both call sites separately (which would leave the pattern inconsistent in either direction), fix it once in `store.mjs` — either make `readJson` itself wrap the parse the way `readIndex` already does, or add a `readCurrent(dir)` helper both commands call, so every store read fails with the same actionable message.

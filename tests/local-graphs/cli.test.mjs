@@ -472,7 +472,7 @@ test("record-publish with both --sent and --skipped exits 2", () => {
   assert.match(result.stderr, /usage: sdd-graph/);
 });
 
-test("--omitted trims whitespace and drops empty segments", () => {
+test("record-publish --omitted trims whitespace and drops empty segments", () => {
   const root = tempRoot();
   invoke(root, ["write", "docs/plans/a.md"], doc());
   invoke(root, ["record-publish", SLUG, "--sent", "--omitted", "a,,b, , c "]);

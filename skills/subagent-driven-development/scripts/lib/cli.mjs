@@ -183,6 +183,7 @@ function commandRecordPublish(args, io) {
   const sent = args.includes("--sent");
   const skippedAt = args.indexOf("--skipped");
 
+  // Exactly one of --sent / --skipped: equal booleans mean both or neither.
   if (!slug || sent === (skippedAt !== -1)) {
     io.err(`${USAGE}\n`);
     return 2;
