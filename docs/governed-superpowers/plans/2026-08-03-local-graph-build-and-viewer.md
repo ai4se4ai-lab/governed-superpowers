@@ -3131,6 +3131,14 @@ By the design's own stated principle — a declined flag must not leave an equiv
 
 **Follow-up required before this ships with real consent flows:** either (a) `applyScope` neutralizes `state.key`/`substate.key` under `substateTitles: false` and rewrites `stateEdges`/`substateEdges` to match, or (b) `validate.mjs` rejects a state key that isn't a short structural identifier at write time, so a content-bearing key can never reach `applyScope` in the first place. A guiding note in the assembly procedure (Task 14) can reduce how often this occurs but must not be the only enforcement — a filter module that depends on an upstream agent choosing well-behaved keys is a convention, not a boundary.
 
+## Environment note for Tasks 10-13: `git checkout` reintroduces CRLF on copied viewer files
+
+Found while fixing Task 9's drift-guard coverage.
+
+On this Windows/Git-Bash checkout, `git checkout -- <path>` on one of the viewer's byte-copied files (`graph-color.ts`, `graph-layout.ts`, `globals.css`, `theme.js`) does **not** reliably restore true byte-identity with its `web/` original, even when the content is otherwise unchanged. Git's line-ending normalization converts the restored file to CRLF, while the `web/` original and a fresh `cp` are LF — every line then "differs" in a line-ending sense, and the drift-guard test (Task 9) fails on a file nobody actually edited.
+
+**When this matters:** any time a future task (or a human) needs to revert or re-sync one of the four copied files, use `cp web/<path> viewer/<path>` (or the equivalent), not `git checkout -- viewer/<path>`. This is specific to restoring a copy that should track another file's exact bytes — it does not affect ordinary edits to viewer-only files.
+
 ## Known gap, deferred: record-publish can silently drop the index entry it exists to keep honest
 
 Found during Task 7's code quality review.
